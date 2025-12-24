@@ -7,23 +7,7 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 ## Install and Run
 
-Install dependencies:
-```
-# Linux
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-
-# Mac
-python3 -m venv env
-. env/bin/activate
-pip install -r requirements.txt
-
-# Windows
-python -m venv env
-venv\Scripts\activate
-pip install -r requirements.txt
-```
+Install the Python packages in `requirements.txt`.
 
 Run the main network:
 ```
