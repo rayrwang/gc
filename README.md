@@ -13,6 +13,16 @@ Install requirements:
 python3 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
+
+# Mac
+python3 -m venv env
+. env/bin/activate
+pip install -r requirements.txt
+
+# Windows
+python -m venv env
+venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
 Run the main network:
@@ -20,6 +30,11 @@ Run the main network:
 python main.py
 ```
 This should open a debugger GUI window.
+
+Run the smaller testing network:
+```
+python simple_nets.py
+```
 
 ## Files
 

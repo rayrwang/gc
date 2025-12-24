@@ -59,6 +59,8 @@ def lrn(x, w, y, ss=1e-2):
     """
     `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
 
+    learning rule
+
        x  y             Δw  
      < 1, any        -> 0  
     >= 1, < -1       -> -
