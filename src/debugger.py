@@ -238,7 +238,7 @@ def debugger(PATH, pipes):
                 txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
                 window.blit(txt, (25, 1125+1*LINE_HEIGHT))
 
-                memory = 2 * (info["nrns"] + info["syns"])
+                memory = 2 * (info["copies"]*info["nrns"] + info["syns"])
                 memory_gb = memory / 1e9
                 txt = fonts["debug"].render("Memory:", True, (0,0,0))
                 window.blit(txt, (25, 1125+3*LINE_HEIGHT))
