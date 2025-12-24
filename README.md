@@ -15,6 +15,8 @@ python main.py
 ```
 This should open a debugger GUI window.
 
+Adjust `N_COLS` in `main.py` to change the size of the network.
+
 Run the smaller testing network:
 ```
 python simple_nets.py
