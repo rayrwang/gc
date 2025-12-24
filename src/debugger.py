@@ -9,6 +9,7 @@ import sys
 import random
 
 import torch
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
 from tqdm import tqdm
 

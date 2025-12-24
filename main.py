@@ -28,7 +28,6 @@ if __name__ == "__main__":
     N_COLS = 100
     AGT_PATH = "./saves/agt0"
     agt = Agt(Cfg(N_COLS, ispec, ospec), AGT_PATH)
-
     agt.debug_init()
 
     t_start = datetime.datetime.now()

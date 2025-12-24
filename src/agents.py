@@ -786,25 +786,25 @@ class Agt:  # Agent
     def verify(self):
         print("Checking agent has right number of columns...", end="")
         assert (self.n_cols + len(self.ispec) + len(self.ospec)) == len(list(self.cols))
-        print("PASSED")
+        print("✔️")
 
         print("Checking location in agent's dictionary key matches column location...", end="")
         for (loc,col) in self.cols.items():
             assert loc == col.loc, f"Key {loc} in dictionary has col with loc {col.loc}"
-        print("PASSED")
+        print("✔️")
 
         print("Checking for uniform column location dimensionality...", end="")
         dim = len(list(self.cols.keys())[0])  # loc dim of first col
         for loc in self.cols.keys():
             assert len(loc) == dim, f"Different location dimensionality: {dim} and {len(loc)}"
-        print("PASSED")
+        print("✔️")
 
         print("Checking that there are no location collisions...", end="")  # (inefficient but readable)
         for i, loc1 in enumerate(self.cols.keys()):
             for j, loc2 in enumerate(self.cols.keys()):
                 if i != j:
                     assert loc1 != loc2, f"Location collision: {loc1} and {loc2}"
-        print("PASSED")
+        print("✔️")
 
         print("Checking that targets of conns exist...", end="")
         for col in self.cols.values():
@@ -812,12 +812,12 @@ class Agt:  # Agent
             for (loc, _) in col.conns.keys():
                 assert loc in self.cols
             self.free_col(col)
-        print("PASSED")
+        print("✔️")
 
         print("Checking that there are a correct number of IO cols...", end="")
         assert len(self.I_cols) == len(self.ispec)
         assert len(self.O_cols) == len(self.ospec)
-        print("PASSED")
+        print("✔️")
 
-        print("*** PASSED ALL TESTS ***")
+        print("Passed all checks!")
 
