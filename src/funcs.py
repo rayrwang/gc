@@ -1,5 +1,6 @@
 
 import math
+import platform
 
 import torch
 
@@ -13,7 +14,9 @@ while the others don't have special requirements
 and returning new value is easier to use
 """
 
-@torch.compile
+disable_compile = (platform.system() == "Windows")
+
+@torch.compile(disable=disable_compile)
 def spike(x, threshold=1.0):
     """
     `d, () -> d`
@@ -23,7 +26,7 @@ def spike(x, threshold=1.0):
     return torch.where(x < threshold, 0.0, 1.0)
 
 
-@torch.compile
+@torch.compile(disable=disable_compile)
 def atv(x, w, y, threshold=1.0):
     """
     `d_x, (d_x d_y), d_y, () -> d_y` 
@@ -34,7 +37,7 @@ def atv(x, w, y, threshold=1.0):
 
 
 inhibit_weights = {}
-@torch.compile
+@torch.compile(disable=disable_compile)
 def inhibit(x):
     """
     `[d, d] -> [d, d]`
@@ -54,7 +57,7 @@ def inhibit(x):
     return [x[0] + expected @ weights, x[1]]
 
 
-@torch.compile
+@torch.compile(disable=disable_compile)
 def lrn(x, w, y, ss=1e-2):
     """
     `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
@@ -99,7 +102,7 @@ def lrn(x, w, y, ss=1e-2):
     return w + changes
 
 
-@torch.compile
+@torch.compile(disable=disable_compile)
 def update(x, threshold=1.0):
     """
     `d_x, () -> d_x`
@@ -109,7 +112,7 @@ def update(x, threshold=1.0):
     return torch.zeros(x.shape)
 
 
-@torch.compile
+@torch.compile(disable=disable_compile)
 def update_e(x):
     """
     `d_x -> d_x`
