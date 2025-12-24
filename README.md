@@ -20,6 +20,14 @@ Run the smaller testing network:
 python simple_nets.py
 ```
 
+## Using the Debugger GUI
+
+- The grid of cells on the left hand side shows the modules within the network.
+- Hold left click on a square in the grid to see:
+	- Activations and weights, on the right side
+	- Outgoing connections, as gray rectangles on the grid
+- While holding left click, either hold shift or right click to select an outgoing connection or an activation layer, and see detailed information in the middle pane.
+
 ## Files
 
 ```
