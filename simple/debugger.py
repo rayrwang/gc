@@ -162,7 +162,7 @@ def nrn_debugger(PATH, pipes):
         pg.draw.line(window, (0, 0, 0), (2000, 0), (2000, 1300))
         pg.draw.line(window, (0, 0, 0), (1300+700, 900), (1300+700+500, 900))
 
-        # Display overview of levels of activity ##################################################################
+        # Display overview of levels of activity ##############################
         if pipes is not None:
             _, pipe = pipes["overview"]
             # Try to get new info
@@ -232,7 +232,7 @@ def nrn_debugger(PATH, pipes):
         buttons = pg.mouse.get_pressed(num_buttons=3)
         keys = pg.key.get_pressed()
         if buttons[0]:
-            # Get which col and conn mouse is clicking on ###########################################
+            # Get which col and conn mouse is clicking on #####################
             screen_x, screen_y = pg.mouse.get_pos()
             screen_x, screen_y = screen_x / scale, screen_y / scale
             if keys[pg.K_LSHIFT] or buttons[2]:  # try stay on same col and select conn
@@ -251,9 +251,9 @@ def nrn_debugger(PATH, pipes):
                 gui_state["loc"] = loc
                 gui_state["conn"] = None
 
-            # Draw col and conn debug info ###########################################
+            # Draw col and conn debug info ####################################
             if os.path.isdir(f"{PATH}/{loc}"):  # Check if col location is valid
-                # Draw col debug info ######################################################
+                # Draw col debug info #########################################
                 loc = gui_state["loc"]
                 draw_col(loc, "border")
                 if pipes is not None:  # Read live
@@ -300,7 +300,7 @@ def nrn_debugger(PATH, pipes):
                         for conn_loc, _ in info["conns"].items():
                             draw_col(conn_loc, "highlight")
 
-                # Draw conn debug info ######################################################
+                # Draw conn debug info ########################################
                 if pipes is not None and gui_state["conn"] is not None:  # Read live
                     conn_loc = gui_state["conn"]
                     draw_col(conn_loc, highlight="borderconn")

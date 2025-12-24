@@ -646,7 +646,6 @@ class Agt:  # Agent
             esyns = 0
 
             sum_density = 0
-            sum_numel = 0
             for loc, col in self.cols.items():
                 for name, x in vars(col).items():
                     if name.startswith("nr_"):
@@ -655,7 +654,6 @@ class Agt:  # Agent
                         nrns += x.numel()
                         threshold = 1.0
                         sum_density += torch.sum(torch.where(x < threshold, 0.0, 1.0)).item()
-                        sum_numel += x.numel()
                     elif name.startswith("is_"):
                         isyns += x.numel()
                 for _, weight in col.conns.items():
@@ -666,7 +664,7 @@ class Agt:  # Agent
             info["esyns"] = esyns
             info["syns"] = isyns + esyns
 
-            info["density"] = sum_density / sum_numel
+            info["density"] = sum_density / nrns
             pipe.send(info)
 
         # Send information for single col #####################################################################
