@@ -7,7 +7,7 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 ## Install and Run
 
-Install the Python packages in `requirements.txt`.
+Install the Python packages in `requirements.txt` using your favorite package manager.
 
 Run the main network:
 ```
@@ -59,6 +59,7 @@ Right now it kind of sucks, need to make it "actually be good":
 | ❌ Learn by obeying training data                                        | ✔️ Learn by [conjectures and criticisms](https://www.thebritishacademy.ac.uk/documents/4924/46p039.pdf) |
 | ❌ Reward                                                                | ✔️ Interact with environments **without** reward (😱)                                                   |
 | ❌ Goal is to predict data                                               | ✔️ Goal is to explain the world                                                                         |
+| ❌ Fulfill specified objectives                                          | ✔️ Open ended improvement                                                                               |
 | ❌ AI safety by subservience to humans                                   | ✔️ AI safety by individual freedom                                                                      |
 | ❌ AIs that are tools                                                    | ✔️ AIs who are people                                                                                   |
 
