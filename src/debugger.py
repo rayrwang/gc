@@ -13,7 +13,7 @@
      |                        |         |          |          |
      |                        |         |          |          |
 1100 .------------------------.         |          |          |
-     |        Overview        |         |          |          |
+     |     Global Overview    |         |          |          |
 1300 .------------------------.---------.----------.----------.
 """
 
@@ -191,7 +191,6 @@ def debugger(PATH, pipes):
         "atv": None,
     }
 
-    # for _ in tqdm(itertools.count(), desc="frames"):
     while True:
         window.fill((255, 255, 255))
 
@@ -238,6 +237,13 @@ def debugger(PATH, pipes):
                 age = time.time() - info["timestamp"]
                 txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
                 window.blit(txt, (25, 1125+1*LINE_HEIGHT))
+
+                memory = 2 * (info["nrns"] + info["syns"])
+                memory_gb = memory / 1e9
+                txt = fonts["debug"].render("Memory:", True, (0,0,0))
+                window.blit(txt, (25, 1125+3*LINE_HEIGHT))
+                txt = fonts["debug"].render(f"{memory_gb:.2f} GB", True, (0,0,0))
+                window.blit(txt, (25, 1125+4*LINE_HEIGHT))
 
                 # Total number of activations and weights
                 txt = fonts["debug"].render("# of:", True, (0,0,0))
