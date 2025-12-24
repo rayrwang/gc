@@ -1,0 +1,10 @@
+
+__pycache__/
+env/
+
+.vscode/
+.obsidian/
+
+.DS_Store
+
+saves/
