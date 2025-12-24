@@ -7,7 +7,7 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 ## Install and Run
 
-Install requirements:
+Install dependencies:
 ```
 # Linux
 python3 -m venv env
@@ -53,3 +53,33 @@ simple/          # Snaller neural nets for testing
 |-- debugger.py
 simple_nets.py
 ```
+
+## Roadmap
+
+Right now it kind of sucks, need to make it "actually be good":
+- Learn useful representations
+	- Of perceptual input, goals, and actions
+	- Models of self, other agents, and the world
+	- Language
+	- Abstract ideas
+- Interact intelligently with environments
+	- Explore and learn
+	- Plan and pursue goals
+- Think and be creative 😬
+
+## Methods and Goals
+
+| (nothing necessarily against these, just not the goals of this project) |                                                                                                         |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| ❌ Gradient descent                                                      | ✔️ Hebbian association                                                                                  |
+| ❌ Learn by obeying training data                                        | ✔️ Learn by [conjectures and criticisms](https://www.thebritishacademy.ac.uk/documents/4924/46p039.pdf) |
+| ❌ Reward                                                                | ✔️ Interact with environments **without** reward (😱)                                                   |
+| ❌ Goal is to predict data                                               | ✔️ Goal is to explain the world                                                                         |
+| ❌ AI safety by subservience to humans                                   | ✔️ AI safety by individual freedom                                                                      |
+| ❌ AIs that are tools                                                    | ✔️ AIs who are people                                                                                   |
+
+---
+
+**gc**
+1. **g**eneral intelligence / **c**reativity
+2. George Carlin
