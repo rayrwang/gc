@@ -1,5 +1,4 @@
 
-import time
 from itertools import count
 
 from tqdm import tqdm

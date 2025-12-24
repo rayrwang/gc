@@ -58,23 +58,23 @@ def nrn_debugger(PATH, pipes):
         else:
             return None
         pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)      # -2 tick
-        txt = fonts["small"].render(f"-2", True, (0,0,0))
+        txt = fonts["small"].render("-2", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+7.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+57.5, 15+133-10), (100+57.5, 15+133+5), width=2)    # -1 tick
-        txt = fonts["small"].render(f"-1", True, (0,0,0))
+        txt = fonts["small"].render("-1", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+57.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+107.5, 15+133-10), (100+107.5, 15+133+5), width=2)  # 0 tick
-        txt = fonts["small"].render(f"0", True, (0,0,0))
+        txt = fonts["small"].render("0", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+107.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+157.5, 15+133-10), (100+157.5, 15+133+5), width=2)  # 1 tick
-        txt = fonts["small"].render(f"1", True, (0,0,0))
+        txt = fonts["small"].render("1", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+157.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+207.5, 15+133-10), (100+207.5, 15+133+5), width=2)  # 2 tick
-        txt = fonts["small"].render(f"2", True, (0,0,0))
+        txt = fonts["small"].render("2", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+207.5, 15+133)))
         return histogram
 
@@ -105,23 +105,23 @@ def nrn_debugger(PATH, pipes):
             x = (coord_x-50)/(450-50)*4-2  # [50, 450] -> [-2, 2]
             pg.draw.line(color_bar, get_color(x), (coord_x, 0), (coord_x, 80))
         pg.draw.line(color_bar, (0,0,0), (50, 75), (50, 85), width=5)      # -2 tick
-        txt = fonts["regular"].render(f"-2", True, (0,0,0))
+        txt = fonts["regular"].render("-2", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(50, 85)))
 
         pg.draw.line(color_bar, (0,0,0), (150, 75), (150, 85), width=5)      # -1 tick
-        txt = fonts["regular"].render(f"-1", True, (0,0,0))
+        txt = fonts["regular"].render("-1", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(150, 85)))
 
         pg.draw.line(color_bar, (0,0,0), (250, 75), (250, 85), width=5)      # 0 tick
-        txt = fonts["regular"].render(f"0", True, (0,0,0))
+        txt = fonts["regular"].render("0", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(250, 85)))
 
         pg.draw.line(color_bar, (0,0,0), (350, 75), (350, 85), width=5)      # 1 tick
-        txt = fonts["regular"].render(f"1", True, (0,0,0))
+        txt = fonts["regular"].render("1", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(350, 85)))
 
         pg.draw.line(color_bar, (0,0,0), (450, 75), (450, 85), width=5)      # 2 tick
-        txt = fonts["regular"].render(f"2", True, (0,0,0))
+        txt = fonts["regular"].render("2", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(450, 85)))
         return color_bar
     color_bar = get_color_bar()
@@ -195,7 +195,7 @@ def nrn_debugger(PATH, pipes):
                 (shape,), d, n, m, s, h = info["nrn_stats"]
                 txt = fonts["debug"].render(f"# of activations: {shape:,}", True, (0,0,0))
                 window.blit(txt, (2050, 320))
-                txt = fonts["debug"].render(f"density, norm, mean, std", True, (0,0,0))
+                txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
                 window.blit(txt, (2050, 350))
                 txt = fonts["debug"].render(f"{d:.3f}, {n:.3f}, {m:.3f}, {s:.3f}", True, (0,0,0))
                 window.blit(txt, (2050, 380))
@@ -206,7 +206,7 @@ def nrn_debugger(PATH, pipes):
                 (shape,), d, n, m, s, h = info["syn_stats"]
                 txt = fonts["debug"].render(f"# of weights: {shape:,}", True, (0,0,0))
                 window.blit(txt, (2050, 620))
-                txt = fonts["debug"].render(f"density, norm, mean, std", True, (0,0,0))
+                txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
                 window.blit(txt, (2050, 650))
                 txt = fonts["debug"].render(f"{d:.3f}, {n:.3f}, {m:.3f}, {s:.3f}", True, (0,0,0))
                 window.blit(txt, (2050, 680))
@@ -303,7 +303,7 @@ def nrn_debugger(PATH, pipes):
                 # Draw conn debug info ######################################################
                 if pipes is not None and gui_state["conn"] is not None:  # Read live
                     conn_loc = gui_state["conn"]
-                    draw_col(conn_loc, highlight=f"borderconn")
+                    draw_col(conn_loc, highlight="borderconn")
 
                     conn = cache["nrn"]["conns"].get(conn_loc)
                     if conn is not None:
@@ -321,7 +321,7 @@ def nrn_debugger(PATH, pipes):
                         sq.fill(get_color(conn))
                         window.blit(sq, sq.get_rect(midleft=(2300, 1160)))
                     else:
-                        txt = fonts["regular"].render(f"conn does not exist", True, (0,0,0))
+                        txt = fonts["regular"].render("conn does not exist", True, (0,0,0))
                         window.blit(txt, (2050, 950))
         else:
             gui_state = {

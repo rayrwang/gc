@@ -1,12 +1,8 @@
 
-import time
 import datetime
-import os
 import multiprocessing
 
 import torch
-from tqdm import tqdm
-import cv2
 
 from src.agents import Cfg, Agt
 from src.envs import get_default, run_env

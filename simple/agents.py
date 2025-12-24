@@ -1,5 +1,4 @@
 
-from dataclasses import dataclass
 import random
 import multiprocessing
 import time
@@ -126,8 +125,10 @@ class Ising(NrnAgtBase):
         self.nrns = {}
 
         # Initialize nrns
-        l = math.ceil(n_cols**(1/2))
-        for i, (y, x) in tqdm(enumerate(np.ndindex((l,l))), desc="Initializing bulk of cols", total=n_cols):
+        width = math.ceil(n_cols**(1/2))
+        for i, (y, x) in tqdm(enumerate(np.ndindex((width,width))),
+                              desc="Initializing bulk of cols",
+                              total=n_cols):
             if i < n_cols:
                 loc = (x+1, y+1)  # Offset +1 since 0 is for input/output
                 nrn = Nrn(loc)
@@ -208,8 +209,10 @@ class NrnAgt(NrnAgtBase):
         self.nrns = {}
 
         # Initialize nrns
-        l = math.ceil(n_cols**(1/2))
-        for i, (y, x) in tqdm(enumerate(np.ndindex((l,l))), desc="Initializing bulk of cols", total=n_cols):
+        width = math.ceil(n_cols**(1/2))
+        for i, (y, x) in tqdm(enumerate(np.ndindex((width,width))),
+                              desc="Initializing bulk of cols",
+                              total=n_cols):
             if i < n_cols:
                 loc = (x+1, y+1)  # Offset +1 since 0 is for input/output
                 nrn = Nrn(loc)

@@ -36,24 +36,17 @@ from __future__ import annotations
 
 import pickle
 import os
-from typing import Callable, Any, Iterable, Dict, Sequence, Tuple, List, Annotated
-from numbers import Number
+from typing import Annotated
 from dataclasses import dataclass
 import time
 import random
 import math
 from enum import Enum
-from functools import partial
-import gc
-import threading
 from abc import ABC, abstractmethod
 import multiprocessing
-import itertools
 import shutil
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
 
@@ -449,12 +442,14 @@ class Agt:  # Agent
                 shutil.rmtree(path)
             os.makedirs(path)
 
-            l = math.ceil(self.n_cols**(1/2))  # Side length
+            width = math.ceil(self.n_cols**(1/2))  # Side length
 
             # Initialize io columns
-            for i, spec in tqdm(enumerate(self.ispec), desc="Initializing input cols", total=len(self.ispec)):
+            for i, spec in tqdm(enumerate(self.ispec),
+                                desc="Initializing input cols",
+                                total=len(self.ispec)):
                 assert isinstance(spec, T.I)
-                if type(spec) == T.I_Vector:
+                if type(spec) is T.I_Vector:
                     loc = (i+1, 0)
                     col = I_VectorCol(loc, I_VectorColCfg(spec.d), False)
                     self.I_cols.append(col)
@@ -463,9 +458,11 @@ class Agt:  # Agent
                 else:
                     raise NotImplementedError
 
-            for i, spec in tqdm(enumerate(self.ospec), desc="Initializing output cols", total=len(self.ospec)):
+            for i, spec in tqdm(enumerate(self.ospec),
+                                desc="Initializing output cols",
+                                total=len(self.ospec)):
                 assert isinstance(spec, T.O)
-                if type(spec) == T.O_Vector:
+                if type(spec) is T.O_Vector:
                     loc = (0, i+1)
                     col = O_VectorCol(loc, O_VectorColCfg(spec.d), False)
                     self.O_cols.append(col)
@@ -475,7 +472,9 @@ class Agt:  # Agent
                     raise NotImplementedError
 
             # Initialize bulk of (internal, non io) columns
-            for i, (y, x) in tqdm(enumerate(np.ndindex((l,l))), desc="Initializing bulk of cols", total=self.n_cols):
+            for i, (y, x) in tqdm(enumerate(np.ndindex((width,width))),
+                                  desc="Initializing bulk of cols",
+                                  total=self.n_cols):
                 if i < self.n_cols:
                     loc = (x+1, y+1)  # Offset +1 since 0 is for input/output
                     col = Col(loc, ColCfg())

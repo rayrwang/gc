@@ -8,11 +8,12 @@ from functools import reduce
 import operator
 from dataclasses import dataclass
 from typing import Sequence
-from numbers import Number
 from abc import ABC
 
-class I(ABC): pass
-class O(ABC): pass
+class I(ABC):
+    pass
+class O(ABC):
+    pass
 
 # Input types #################################################################
 @dataclass

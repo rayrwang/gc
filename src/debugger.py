@@ -1,17 +1,12 @@
 
 import pickle
 import os
-from enum import Enum
-import itertools
 import time
 import math
 import sys
-import random
 
-import torch
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
-from tqdm import tqdm
 
 from .agents import Dir
 
@@ -206,9 +201,9 @@ def debugger(PATH, pipes):
         pg.draw.line(window, (0, 0, 0), (1500, 0), (1500, 1300))
         pg.draw.line(window, (0, 0, 0), (2000, 200), (2000, 1300))
 
-        txt = fonts["big"].render(f"Activations:", True, (0,0,0))
+        txt = fonts["big"].render("Activations:", True, (0,0,0))
         window.blit(txt, txt.get_rect(midbottom=(1750, 220)))
-        txt = fonts["big"].render(f"Weights:", True, (0,0,0))
+        txt = fonts["big"].render("Weights:", True, (0,0,0))
         window.blit(txt, txt.get_rect(midbottom=(2250, 220)))
 
         # Display cols
@@ -243,7 +238,7 @@ def debugger(PATH, pipes):
                 window.blit(txt, (25, 1125+1*LINE_HEIGHT))
 
                 # Total number of activations and weights
-                txt = fonts["debug"].render(f"# of:", True, (0,0,0))
+                txt = fonts["debug"].render("# of:", True, (0,0,0))
                 window.blit(txt, (200, 1125+0*LINE_HEIGHT))
                 txt = fonts["debug"].render(f"    activations: {info["nrns"]:,} ({info["copies"]} copies)", True, (0,0,0))
                 window.blit(txt, (200, 1125+1*LINE_HEIGHT))
@@ -254,7 +249,7 @@ def debugger(PATH, pipes):
                 txt = fonts["debug"].render(f"    total weights: {info["syns"]:,}", True, (0,0,0))
                 window.blit(txt, (200, 1125+4*LINE_HEIGHT))
 
-                txt = fonts["debug"].render(f"ratios:", True, (0,0,0))
+                txt = fonts["debug"].render("ratios:", True, (0,0,0))
                 window.blit(txt, (625, 1125+0*LINE_HEIGHT))
                 txt = fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
                 window.blit(txt, (625, 1125+2*LINE_HEIGHT))
@@ -368,7 +363,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, txt.get_rect(topleft=(1700, 25+3*LINE_HEIGHT)))
 
                         # Ratios of numbers of weights to activations
-                        txt = fonts["debug"].render(f"ratios:", True, (0,0,0))
+                        txt = fonts["debug"].render("ratios:", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2050, 25+0*LINE_HEIGHT)))
                         txt = fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2050, 25+1*LINE_HEIGHT)))
@@ -378,13 +373,13 @@ def debugger(PATH, pipes):
                         window.blit(txt, txt.get_rect(topleft=(2050, 25+3*LINE_HEIGHT)))
 
                         # Draw activation and weight stats and histograms
-                        txt = fonts["debug"].render(f"name: shape", True, (0,0,0))
+                        txt = fonts["debug"].render("name: shape", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2325, 25+0*LINE_HEIGHT)))
-                        txt = fonts["debug"].render(f"numel", True, (0,0,0))
+                        txt = fonts["debug"].render("numel", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2325, 25+1*LINE_HEIGHT)))
-                        txt = fonts["debug"].render(f"density, norm", True, (0,0,0))
+                        txt = fonts["debug"].render("density, norm", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2325, 25+2*LINE_HEIGHT)))
-                        txt = fonts["debug"].render(f"mean, std", True, (0,0,0))
+                        txt = fonts["debug"].render("mean, std", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2325, 25+3*LINE_HEIGHT)))
 
                         activations = sorted([name for name in info if name.startswith("nr_")])
@@ -478,7 +473,7 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render("waiting...", True, (0,0,0))
                         window.blit(txt, (1125, 25))
                     elif not info["valid"]:
-                        txt = fonts["debug"].render(f"conn does not exist", True, (0,0,0))
+                        txt = fonts["debug"].render("conn does not exist", True, (0,0,0))
                         window.blit(txt, (1125, 25))
                     else:
                         # Display debug info
@@ -494,9 +489,9 @@ def debugger(PATH, pipes):
                         window.blit(txt, (1125, 25+3*LINE_HEIGHT))
 
                         # Weight values
-                        txt = fonts["debug"].render(f"name: shape, numel", True, (0,0,0))
+                        txt = fonts["debug"].render("name: shape, numel", True, (0,0,0))
                         window.blit(txt, (1125, 25+5*LINE_HEIGHT))
-                        txt = fonts["debug"].render(f"density, norm, mean, std", True, (0,0,0))
+                        txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
                         window.blit(txt, (1125, 25+6*LINE_HEIGHT))
 
                         shape, d, n, m, s, h = info["stats"]
