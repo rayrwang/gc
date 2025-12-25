@@ -544,10 +544,10 @@ class Agt:  # Agent
             lrn = fc.lrn
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                    new_weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
                 elif direction == Dir.E:
                     ...
-                col.conns[(loc, direction)] = weight
+                col.conns[(loc, direction)] = new_weight
                 gc.collect()
 
             # Do output to other cols
