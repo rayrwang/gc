@@ -45,7 +45,6 @@ from enum import Enum
 from abc import ABC, abstractmethod
 import multiprocessing
 import shutil
-import gc
 
 import torch
 import numpy as np
@@ -544,11 +543,10 @@ class Agt:  # Agent
             lrn = fc.lrn
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    new_weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
                 elif direction == Dir.E:
                     ...
-                col.conns[(loc, direction)] = new_weight
-                gc.collect()
+                col.conns[(loc, direction)] = weight
 
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
