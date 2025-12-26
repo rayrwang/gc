@@ -425,7 +425,7 @@ class Agt:  # Agent
         #     single : only run on either gpu or cpu
         #     double : transfer between both
         self.mode = "single"
-        GPU_COL_CAPACITY = 100
+        GPU_COL_CAPACITY = 200
         if torch.cuda.is_available() and self.n_cols > GPU_COL_CAPACITY:  
             self.mode = "double"
 

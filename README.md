@@ -17,7 +17,10 @@ python main.py
 ```
 This should open a debugger GUI window.
 
-Adjust `N_COLS` in `main.py` to change the size of the network.
+Choose the size of the network:
+```
+python main.py 100
+```
 
 Run the smaller testing network:
 ```

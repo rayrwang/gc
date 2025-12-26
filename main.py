@@ -1,6 +1,7 @@
 
 import datetime
 import multiprocessing
+import sys
 
 import torch
 
@@ -21,7 +22,10 @@ if __name__ == "__main__":
     env_process.start()
 
     # Create agent
-    N_COLS = 100
+    if len(sys.argv) > 1:
+        N_COLS = int(sys.argv[1])
+    else:
+        N_COLS = 200 if torch.cuda.is_available() else 50
     AGT_PATH = "./saves/agt0"
     agt = Agt(Cfg(N_COLS, ispec, ospec), AGT_PATH)
     agt.debug_init()
