@@ -80,8 +80,7 @@ def lrn(x, w, y, ss=1e-2):
     xr = x.repeat(d_y, 1).T  # (d_x d_y)
     yr = y.repeat(d_x, 1)    # (d_x d_y)
 
-    # Calculate the *changes* to the weights in the 3 cases
-        # (with 0's when that case doesn't apply)
+    # Calculate the changes to the weights in the 3 cases
 
     # Case 1: y >= 1, add ss to weight
     excite = torch.where(yr >= 1, ss, 0)

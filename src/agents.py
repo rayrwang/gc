@@ -421,14 +421,6 @@ class Agt:  # Agent
         self.ispec  = cfg.ispec  # Input specification
         self.ospec  = cfg.ospec  # Output specification
 
-        # mode:
-        #     single : only run on either gpu or cpu
-        #     double : transfer between both
-        self.mode = "single"
-        GPU_COL_CAPACITY = 200
-        if torch.cuda.is_available() and self.n_cols > GPU_COL_CAPACITY:  
-            self.mode = "double"
-
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
@@ -482,10 +474,6 @@ class Agt:  # Agent
                     self.free_col(col)
                 else:
                     break
-
-            # Set cache
-            if self.mode == "double":
-                self.cache = random.sample(list(self.cols.keys()), int(0.8*GPU_COL_CAPACITY))
 
             # Initialize connections
             for loc, col in tqdm(self.cols.items(), desc="Initializing conns"):
@@ -633,7 +621,7 @@ class Agt:  # Agent
         COOLDOWN_CONN = 0.1
         COOLDOWN_ATV = 0.1
 
-        # Send overview information #####################################################################
+        # Send overview information ###########################################
         pipe, _ = self.pipes["overview"]
         if time.time()-self.t_prevs["overview"] > COOLDOWN_OVERVIEW:
             self.t_prevs["overview"] = time.time()
@@ -667,7 +655,7 @@ class Agt:  # Agent
             info["density"] = sum_density / nrns
             pipe.send(info)
 
-        # Send information for single col #####################################################################
+        # Send information for single col #####################################
         request = None
         pipe, _ = self.pipes["col"]
         while pipe.poll():  # Get most recent request
@@ -695,7 +683,7 @@ class Agt:  # Agent
 
             pipe.send(info)
 
-        # Send information for specific conn #####################################################################
+        # Send information for specific conn ##################################
         request = None
         pipe, _ = self.pipes["conn"]
         while pipe.poll():  # Get most recent request
@@ -715,7 +703,7 @@ class Agt:  # Agent
                 info["valid"] = False
             pipe.send(info)
 
-        # Send information for single activation tensor #####################################################################
+        # Send information for single activation tensor #######################
         request = None
         pipe, _ = self.pipes["atv"]
         while pipe.poll():  # Get most recent request
@@ -733,21 +721,22 @@ class Agt:  # Agent
                 pipe.send(info)
 
     def load_col(self, c: ColBase) -> None:
-        if self.mode == "single":
-            pass
-        elif self.mode == "double":
+        if torch.cuda.is_available():
+            # available < 0.05*total
+            while torch.cuda.memory.mem_get_info()[0] \
+                    < 0.05*torch.cuda.memory.mem_get_info()[1]:
+                to_evict = random.choice(list(self.cols.values()))
+                to_evict.to("cpu")
+                torch.cuda.memory.empty_cache()
             c.to("cuda")
-        else:
-            raise Exception("mode not implemented")
 
     def free_col(self, c: ColBase) -> None:
-        if self.mode == "single":
-            pass
-        elif self.mode == "double":
-            if c.loc not in self.cache:
+        if torch.cuda.is_available():
+            # Should only be necessary during init,
+            # since loading while running already frees memory
+            available, total = torch.cuda.memory.mem_get_info()
+            if available < 0.05*total:
                 c.to("cpu")
-        else:
-            raise Exception("mode not implemented")
 
     def save(self) -> None:
         if not os.path.exists(self.path):
