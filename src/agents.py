@@ -813,26 +813,31 @@ class Agt:  # Agent
         return agt
 
     def verify(self):
-        print("Checking agent has right number of columns...", end="")
-        assert (self.n_cols + len(self.ispec) + len(self.ospec)) == len(list(self.cols))
+        print("\nChecking agent has right number of columns...", end="")
+        assert (self.n_cols + len(self.ispec) + len(self.ospec)) \
+            == len(list(self.cols))
+        assert len(self.ispec) == len(self.I_cols)
+        assert len(self.ospec) == len(self.O_cols)
         print("✔️")
 
-        print("Checking location in agent's dictionary key matches column location...", end="")
-        for (loc,col) in self.cols.items():
-            assert loc == col.loc, f"Key {loc} in dictionary has col with loc {col.loc}"
+        print("Checking location key in Agt.cols matches column location...", end="")
+        for (loc, col) in self.cols.items():
+            assert loc == col.loc, f"Key {loc} in dictionary has col with loc {col.loc}!"
         print("✔️")
 
         print("Checking for uniform column location dimensionality...", end="")
-        dim = len(list(self.cols.keys())[0])  # loc dim of first col
+        loc0 = list(self.cols.keys())[0]
+        dim0 = len(loc0)
         for loc in self.cols.keys():
-            assert len(loc) == dim, f"Different location dimensionality: {dim} and {len(loc)}"
+            assert len(loc) == dim0, \
+                f"Different location dims at {loc0} and {loc}!"
         print("✔️")
 
         print("Checking that there are no location collisions...", end="")  # (inefficient but readable)
         for i, loc1 in enumerate(self.cols.keys()):
             for j, loc2 in enumerate(self.cols.keys()):
                 if i != j:
-                    assert loc1 != loc2, f"Location collision: {loc1} and {loc2}"
+                    assert loc1 != loc2, f"Location collision at {loc1}!"
         print("✔️")
 
         print("Checking that targets of conns exist...", end="")
@@ -841,11 +846,6 @@ class Agt:  # Agent
             for (loc, _) in col.conns.keys():
                 assert loc in self.cols
             self.free_col(col)
-        print("✔️")
-
-        print("Checking that there are a correct number of IO cols...", end="")
-        assert len(self.I_cols) == len(self.ispec)
-        assert len(self.O_cols) == len(self.ospec)
         print("✔️")
 
         print("Passed all checks!")
