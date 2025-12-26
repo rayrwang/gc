@@ -18,7 +18,9 @@ if __name__ == "__main__":
     ispec, ospec = specs
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     agt_pipe, env_pipe = ctx.Pipe()
-    env_process = ctx.Process(target=run_env, args=(GridEnvCfg(size=4), GridEnv, env_pipe, True,))
+    env_process = ctx.Process(target=run_env,
+                              args=(GridEnvCfg(size=4), GridEnv, env_pipe, True,),
+                              daemon=True)
     env_process.start()
 
     # Create agent

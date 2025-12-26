@@ -272,6 +272,7 @@ def debugger(PATH, pipes):
         # Handle gui changes ##################################################################
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                pipes["overview"][1].send(None)
                 sys.exit()
             elif event.type == pg.VIDEORESIZE:
                 w_new, h_new = event.size

@@ -45,6 +45,7 @@ from enum import Enum
 from abc import ABC, abstractmethod
 import multiprocessing
 import shutil
+import sys
 
 import torch
 import numpy as np
@@ -429,6 +430,8 @@ class Agt:  # Agent
         self.cache: list[Loc] = []  
 
         if not skip_init:
+            print("\nInitializing new agent...")
+
             # Reset or create save directory
             if os.path.exists(path):
                 shutil.rmtree(path)
@@ -511,6 +514,8 @@ class Agt:  # Agent
 
             self.use_debug = False
 
+            print("done init.")
+
     def step(self, ipt: list[torch.Tensor]) -> list[torch.Tensor]:
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
@@ -520,6 +525,11 @@ class Agt:  # Agent
             col.ipt(x)
 
         for col in tqdm(self.cols.values(), desc="Stepping cols..."):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():  
+                self.save()
+                sys.exit()
+
             # Step col
             self.load_col(col)
 
@@ -741,6 +751,7 @@ class Agt:  # Agent
                 c.to("cpu")
 
     def save(self) -> None:
+        print(f"\nSaving agent to \"{self.path}\"...")
         if not os.path.exists(self.path):
             os.mkdir(self.path)
 
@@ -752,6 +763,7 @@ class Agt:  # Agent
         # Save cols
         for loc, col in tqdm(self.cols.items(), desc="Saving cols..."):
             col.save(self.path, keep_weights=True)
+        print("done saving.")
 
     @staticmethod
     def load(path: str, load_weights: bool) -> Agt:
