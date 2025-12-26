@@ -165,67 +165,79 @@ class ColBase(ABC):
         for (loc, d), w in self.conns.items():
             self.conns[(loc, d)] = w.to(*args, **kwargs)
 
-    def save(self, path: str, keep_weights: bool) -> None:
+    def save(self, agt_path: str, keep_weights: bool) -> None:
         # Create save directory
-        if not os.path.exists(f"{path}/{self.loc}"):
-            os.mkdir(f"{path}/{self.loc}")
+        if not os.path.exists(f"{agt_path}/{self.loc}"):
+            os.makedirs(f"{agt_path}/{self.loc}")
+
+        # Save type of col
+        with open(f"{agt_path}/{self.loc}/type", "wb") as f:
+            pickle.dump(type(self), f)
 
         # Save cfg
-        with open(f"{path}/{self.loc}/cfg", "wb") as f:
+        with open(f"{agt_path}/{self.loc}/cfg", "wb") as f:
             pickle.dump(self.cfg, f)
 
         # Save activations
         for name in vars(self):
             if name.startswith("nr_"):
-                if not os.path.exists(f"{path}/{self.loc}"):
-                    os.mkdir(f"{path}/{self.loc}")
-                torch.save(getattr(self, name), f"{path}/{self.loc}/{name}")
+                torch.save(getattr(self, name), f"{agt_path}/{self.loc}/{name}")
 
         # Only save weights if they're loaded, otherwise would save None's
         if self.weights_loaded:
-
+            self.to("cpu")  # To avoid issues when loading
             if not keep_weights:
                 self.weights_loaded = False
 
             # Save internal weights
             for name in vars(self):
                 if name.startswith("is_"):
-                    torch.save(getattr(self, name), f"{path}/{self.loc}/{name}")
+                    torch.save(getattr(self, name), f"{agt_path}/{self.loc}/{name}")
                     if not keep_weights:
                         setattr(self, name, None)
 
             # Save conns
-            with open(f"{path}/{self.loc}/conns", "wb") as f:
+            with open(f"{agt_path}/{self.loc}/conns", "wb") as f:
                 pickle.dump(self.conns, f)
             if not keep_weights:
                 self.conns = None
 
     @staticmethod
-    def init_and_load(path: str, name: str, load_weights: bool) -> ColBase:
+    def init_and_load(
+            agt_path: str, 
+            name: str, 
+            load_activations: bool, 
+            load_weights: bool) -> ColBase:
         loc = eval(name)
-        with open(f"{path}/{name}/cfg", "rb") as f:
+        with open(f"{agt_path}/{name}/type", "rb") as f:
+            col_type = pickle.load(f)
+        with open(f"{agt_path}/{name}/cfg", "rb") as f:
             cfg = pickle.load(f)
-        col = Col(loc, cfg, skip_init=True)
-        col.load(path=path, load_weights=load_weights)
+        col = col_type(loc, cfg, skip_init=True)
+        col.load(agt_path=agt_path, load_activations=load_activations, load_weights=load_weights)
         return col
 
-    def load(self, path: str, load_weights: bool) -> None:
+    def load(self,
+            agt_path: str,
+            load_activations: bool,
+            load_weights: bool) -> None:
         # Load cfg
-        with open(f"{path}/{self.loc}/cfg", "rb") as f:
+        with open(f"{agt_path}/{self.loc}/cfg", "rb") as f:
             self.cfg = pickle.load(f)
 
         # Load activations
-        for name in vars(self):
-            if name.startswith("nr_"):
-                setattr(self, name, torch.load(f"{path}/{self.loc}/{name}"))
+        if load_activations:
+            for name in vars(self):
+                if name.startswith("nr_"):
+                    setattr(self, name, torch.load(f"{agt_path}/{self.loc}/{name}"))
 
         # Load weights
         if load_weights:
             for name in vars(self):
                 if name.startswith("is_"):
-                    setattr(self, name, torch.load(f"{path}/{self.loc}/{name}"))
+                    setattr(self, name, torch.load(f"{agt_path}/{self.loc}/{name}"))
 
-            with open(f"{path}/{self.loc}/conns", "rb") as f:
+            with open(f"{agt_path}/{self.loc}/conns", "rb") as f:
                 self.conns = pickle.load(f)
 
             self.weights_loaded = True
@@ -315,7 +327,19 @@ class Col(ColBase):
         self.conns: dict[tuple[Loc, Dir], torch.Tensor] = {}
 
         if skip_init:
-            ...
+            # Activations
+            self.nr_1 = None
+            self.nr_2 = None
+            self.nr_3 = None
+            self.nr_4 = None
+            self.nr_5 = None
+
+            # Weights (within col)
+            self.is_1_2 = None
+            self.is_2_3_f = None
+            self.is_2_3_b = None
+            self.is_2_4 = None
+            self.is_4_5 = None
         else:
             # Activations
             self.nr_1 = neur(1024)
@@ -425,9 +449,6 @@ class Agt:  # Agent
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
-
-        # Which cols to keep on gpu when running in double mode
-        self.cache: list[Loc] = []  
 
         if not skip_init:
             print("\nInitializing new agent...")
@@ -750,10 +771,10 @@ class Agt:  # Agent
             if available < 0.04*total:
                 c.to("cpu")
 
-    def save(self) -> None:
+    def save(self, keep_weights: bool = True) -> None:
         print(f"\nSaving agent to \"{self.path}\"...")
         if not os.path.exists(self.path):
-            os.mkdir(self.path)
+            os.makedirs(self.path)
 
         # Save cfg
         print("Saving cfg...")
@@ -761,12 +782,15 @@ class Agt:  # Agent
             pickle.dump(self.cfg, f)
 
         # Save cols
-        for loc, col in tqdm(self.cols.items(), desc="Saving cols..."):
-            col.save(self.path, keep_weights=True)
+        for loc, col in tqdm(self.cols.items(), desc="Saving cols"):
+            col.save(self.path, keep_weights=keep_weights)
         print("done saving.")
 
     @staticmethod
-    def load(path: str, load_weights: bool) -> Agt:
+    def load(path: str,
+            load_activations: bool = True,
+            load_weights: bool = True) -> Agt:
+        print(f"\nLoading agent from \"{path}\"...")
         # Load cfg
         print("Loading cfg...")
         with open(f"{path}/cfg", "rb") as f:
@@ -775,12 +799,17 @@ class Agt:  # Agent
         agt = Agt(cfg, path, skip_init=True)
 
         # Load cols
-        for name in tqdm(os.listdir(path), desc="Loading cols..."):
+        for name in tqdm(os.listdir(path), desc="Loading cols"):
             if name != "cfg":
-                col = Col.init_and_load(path, name, load_weights)
+                col = Col.init_and_load(path, name, load_activations, load_weights)
 
                 loc = eval(name)
                 agt.cols[loc] = col
+                if isinstance(col, I_ColBase):
+                    agt.I_cols.append(col)
+                elif isinstance(col, O_ColBase):
+                    agt.O_cols.append(col)
+        print("done loading.")
         return agt
 
     def verify(self):
