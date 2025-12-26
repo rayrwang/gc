@@ -732,10 +732,12 @@ class Agt:  # Agent
 
     def free_col(self, c: ColBase) -> None:
         if torch.cuda.is_available():
-            # Should only be necessary during init,
+            # Should only be necessary during large inits,
             # since loading while running already frees memory
             available, total = torch.cuda.memory.mem_get_info()
-            if available < 0.05*total:
+            # Use stronger threahold so that newly loaded cols
+            # are not immediately freed
+            if available < 0.04*total:
                 c.to("cpu")
 
     def save(self) -> None:
