@@ -60,7 +60,7 @@ class GridEnv(EnvBase):
 
         self.ispec, self.ospec = self.get_specs()
 
-        self.grid = torch.zeros(size, size, dtype=torch.int32)
+        self.grid = torch.zeros(size, size, dtype=torch.int32, device="cpu")
         self.pos = (0, 0)
 
     def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:

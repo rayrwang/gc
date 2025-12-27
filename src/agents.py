@@ -312,7 +312,7 @@ class I_VectorCol(BareCol, I_ColBase):
 O_VectorColCfg = BareColCfg
 class O_VectorCol(BareCol, O_ColBase):
     def out(self) -> torch.Tensor:
-        return self.nr_1[0].clone()
+        return self.nr_1[0].clone().cpu()
 
 
 @dataclass
