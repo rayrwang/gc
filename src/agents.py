@@ -430,8 +430,8 @@ class Col(ColBase):
 @dataclass
 class Cfg:  # Agent configuration
     n_cols: int       # Number of columns
-    ispec: list[T.I]  # Input specification
-    ospec: list[T.O]  # Output specification
+    ispec: list[T.I_Base]  # Input specification
+    ospec: list[T.O_Base]  # Output specification
 class Agt:  # Agent
     def __init__(self,
         cfg: Cfg,
@@ -464,7 +464,7 @@ class Agt:  # Agent
             for i, spec in tqdm(enumerate(self.ispec),
                                 desc="Initializing input cols",
                                 total=len(self.ispec)):
-                assert isinstance(spec, T.I)
+                assert isinstance(spec, T.I_Base)
                 if type(spec) is T.I_Vector:
                     loc = (i+1, 0)
                     col = I_VectorCol(loc, I_VectorColCfg(spec.d), False)
@@ -477,7 +477,7 @@ class Agt:  # Agent
             for i, spec in tqdm(enumerate(self.ospec),
                                 desc="Initializing output cols",
                                 total=len(self.ospec)):
-                assert isinstance(spec, T.O)
+                assert isinstance(spec, T.O_Base)
                 if type(spec) is T.O_Vector:
                     loc = (0, i+1)
                     col = O_VectorCol(loc, O_VectorColCfg(spec.d), False)

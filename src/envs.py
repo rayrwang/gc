@@ -7,7 +7,7 @@ import torch
 from . import iotypes as T
 
 
-def get_default(iospec: list[T.I | T.O]) -> list[torch.Tensor]:
+def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
     """Get all zeros (default) inputs or outputs"""
     default = []
     for spec in iospec:
@@ -50,7 +50,7 @@ class GridEnvCfg:
     size: int = 4
 class GridEnv:
     @staticmethod
-    def get_specs(cfg: GridEnvCfg) -> tuple[list[T.I], list[T.O]]:
+    def get_specs(cfg: GridEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
         ispec = [T.I_Vector(d=cfg.size**2)]
 
         # Horizontal and vertical movement,
