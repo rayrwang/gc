@@ -1,5 +1,6 @@
 
 from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
 import cv2
 import torch
@@ -18,54 +19,58 @@ def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
     return default
 
 
-def run_env(cfg, env: type, pipe, show: bool):
-    """
-    cfg should be instance
+class EnvBase(ABC):
+    def run(self, pipe, show: bool):
+        _, ospec = self.get_specs()
+        while True:
+            # Receive action from agt
+            o = None
+            while pipe.poll():
+                o = pipe.recv()
+            o = o or get_default(ospec)
+            i = self._step(o)
 
-    env should be the class itself
-    """
-    specs = env.get_specs(cfg)
-    if cfg is None:
-        env_instance = env()
-    else:
-        env_instance = env(cfg)
-    while True:
-        # Receive action from agt
-        o = None
-        while pipe.poll():
-            o = pipe.recv()
-        o = o or get_default(specs[1])
-        i = env_instance._step(o)
+            # Send percept to agt
+            pipe.send(i)
 
-        # Send percept to agt
-        pipe.send(i)
+            if show:
+                self._show()
 
-        if show:
-            env_instance._show()
+    @abstractmethod
+    def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:
+        ...
+
+    @abstractmethod
+    def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
+        ...
+
+    @abstractmethod
+    def _show(self) -> None:
+        ...
 
 
 # Virtual environments ########################################################
 @dataclass
 class GridEnvCfg:
     size: int = 4
-class GridEnv:
-    @staticmethod
-    def get_specs(cfg: GridEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
-        ispec = [T.I_Vector(d=cfg.size**2)]
+class GridEnv(EnvBase):
+    def __init__(self, cfg: GridEnvCfg):
+        self.cfg = cfg
+        self.size = size = cfg.size
+
+        self.ispec, self.ospec = self.get_specs()
+
+        self.grid = torch.zeros(size, size, dtype=torch.int32)
+        self.pos = (0, 0)
+
+    def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:
+        ispec = [T.I_Vector(d=self.cfg.size**2)]
 
         # Horizontal and vertical movement,
             # place and break square
         n_actions = 4
         ospec = [T.O_Vector(d=n_actions)]
         return ispec, ospec
-
-    def __init__(self, cfg: GridEnvCfg):
-        self.size = size = cfg.size
-
-        self.ispec, self.ospec = self.get_specs(cfg)
-
-        self.grid = torch.zeros(size, size, dtype=torch.int32)
-        self.pos = (0, 0)
 
     def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
         assert len(a) == len(self.ospec)
