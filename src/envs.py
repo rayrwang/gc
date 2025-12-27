@@ -52,19 +52,19 @@ class EnvBase(ABC):
 # Virtual environments ########################################################
 @dataclass
 class GridEnvCfg:
-    size: int = 4
+    width: int = 4
 class GridEnv(EnvBase):
     def __init__(self, cfg: GridEnvCfg):
         self.cfg = cfg
-        self.size = size = cfg.size
+        self.width = width = cfg.width
 
         self.ispec, self.ospec = self.get_specs()
 
-        self.grid = torch.zeros(size, size, dtype=torch.int32, device="cpu")
+        self.grid = torch.zeros(width, width, dtype=torch.int32, device="cpu")
         self.pos = (0, 0)
 
     def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:
-        ispec = [T.I_Vector(d=self.cfg.size**2)]
+        ispec = [T.I_Vector(d=self.cfg.width**2)]
 
         # Horizontal and vertical movement,
             # place and break square
@@ -75,25 +75,34 @@ class GridEnv(EnvBase):
     def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
         assert len(a) == len(self.ospec)
 
+        # React to actions
         right, left, up, down = a[0]
         pos_x, pos_y = self.pos
         threshold = 0.2
-        if right > threshold and (pos_x+1) < self.size:
-            if self.grid[pos_x+1, pos_y] == 0:
-                self.pos = (pos_x+1, pos_y)
-        elif left > threshold and (pos_x-1) >= 0:
-            if self.grid[pos_x-1, pos_y] == 0:
-                self.pos = (pos_x-1, pos_y)
-        if up > threshold and (pos_y+1) < self.size:
-            if self.grid[pos_x, pos_y+1] == 0:
-                self.pos = (pos_x, pos_y+1)
-        elif down > threshold and (pos_y-1) >= 0:
-            if self.grid[pos_x, pos_y-1] == 0:
-                self.pos = (pos_x, pos_y-1)
+        d_x, d_y = 0, 0
 
+        if right > threshold:
+            d_x += 1
+        if left > threshold:
+            d_x -= 1
+        new_x = min(max(pos_x+d_x, 0), self.width-1)
+        if self.grid[new_x, pos_y] != 0:  # Occupied
+            new_x = pos_x
+
+        if up > threshold:
+            d_y += 1
+        if down > threshold:
+            d_y -= 1
+        new_y = min(max(pos_y+d_y, 0), self.width-1)
+        if self.grid[pos_x, new_y] != 0:  # Occupied
+            new_y = pos_y
+
+        self.pos = new_x, new_y
+
+        # Return percepts
         grid = self.grid.clone()
         grid[*self.pos] = 1
-        p = [grid.reshape(self.size**2)]
+        p = [grid.reshape(self.width**2)]
         return p
 
     def _show(self) -> None:
@@ -101,7 +110,7 @@ class GridEnv(EnvBase):
 
         img[*self.pos] = 255  # Draw agt body
         img = img.to(torch.uint8).cpu().numpy()
-        # convert from grid to image space
+        # Convert from grid to image space
         img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
         cv2.imshow("env", img)
         cv2.waitKey(1)

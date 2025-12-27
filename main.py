@@ -14,7 +14,7 @@ if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create environment
-    env = GridEnv(GridEnvCfg(size=4))
+    env = GridEnv(GridEnvCfg(width=4))
     ispec, ospec = env.get_specs()
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     agt_pipe, env_pipe = ctx.Pipe()
