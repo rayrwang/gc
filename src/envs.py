@@ -73,6 +73,8 @@ class GridEnv(EnvBase):
         self.grid = torch.zeros(width, width, dtype=torch.int32, device="cpu")
         self.pos = (0, 0)
 
+        self.opencv_init = False
+
     @staticmethod
     def get_specs(cfg: GridEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
         ispec = [T.I_Vector(d=cfg.width**2)]
@@ -123,7 +125,13 @@ class GridEnv(EnvBase):
         img = img.to(torch.uint8).cpu().numpy()
         # Convert from grid to image space
         img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-        cv2.imshow("env", img)
+        if not self.opencv_init:   
+            self.opencv_init = True 
+            cv2.namedWindow("grid env", cv2.WINDOW_NORMAL)
+            WINDOW_H = 200  # TODO calculate using monitor resolution
+            cv2.resizeWindow("grid env", (int(WINDOW_H*img.shape[1]/img.shape[0]),
+                                          WINDOW_H))
+        cv2.imshow("grid env", img)
         cv2.waitKey(1)
 
 
