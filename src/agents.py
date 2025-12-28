@@ -545,9 +545,10 @@ class Agt:  # Agent
             x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
             col.ipt(x)
 
-        for col in tqdm(self.cols.values(), desc="Stepping cols..."):
+        for col in (bar := tqdm(self.cols.values(), desc="Stepping cols...")):
             # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():  
+            if self.pipes["overview"][0].poll():
+                bar.close()
                 self.save()
                 sys.exit()
 
