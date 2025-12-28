@@ -13,7 +13,7 @@ class EnvCfgBase(ABC):
 class EnvBase(ABC):
     @staticmethod
     @abstractmethod
-    def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:
+    def get_specs() -> tuple[list[T.I_Base], list[T.O_Base]]:
         ...
 
     @abstractmethod

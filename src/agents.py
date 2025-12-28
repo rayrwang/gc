@@ -612,7 +612,7 @@ class Agt:  # Agent
         # Information about a conn
         self.pipes["conn"] = ctx.Pipe()
 
-        # activation tensor
+        # Activation tensor
         self.pipes["atv"] = ctx.Pipe()
 
         # Start debug process
