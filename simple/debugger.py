@@ -3,8 +3,11 @@ import math
 import os
 import time
 import sys
+import warnings
 
-import pygame as pg
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
+with warnings.catch_warnings(action="ignore"):
+    import pygame as pg
 
 
 def nrn_debugger(PATH, pipes):
