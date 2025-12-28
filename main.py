@@ -61,5 +61,5 @@ if __name__ == "__main__":
         o = agt.step(i)
 
         # Send action to env
-        print(f"Actions: {o}")
+        print(f"Output: {o}")
         output_queue.put(o)
