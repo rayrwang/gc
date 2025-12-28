@@ -20,18 +20,18 @@ def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
 
 
 class EnvBase(ABC):
-    def run(self, pipe, show: bool):
+    def run(self, percept_queue, action_queue, show: bool):
         _, ospec = self.get_specs()
         while True:
             # Receive action from agt
             o = None
-            while pipe.poll():
-                o = pipe.recv()
+            while not action_queue.empty():
+                o = action_queue.get()
             o = o or get_default(ospec)
             i = self._step(o)
 
             # Send percept to agt
-            pipe.send(i)
+            percept_queue.put(i)
 
             if show:
                 self._show()

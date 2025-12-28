@@ -17,9 +17,10 @@ if __name__ == "__main__":
     env = GridEnv(GridEnvCfg(width=4))
     ispec, ospec = env.get_specs()
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
-    agt_pipe, env_pipe = ctx.Pipe()
+    input_queue = ctx.Queue()
+    output_queue = ctx.Queue()
     env_process = ctx.Process(target=env.run,
-                              args=(env_pipe, True,),
+                              args=(input_queue, output_queue, True,),
                               daemon=True)
     env_process.start()
 
@@ -39,8 +40,8 @@ if __name__ == "__main__":
 
         # Receive percept from env
         i = None
-        while agt_pipe.poll():
-            i = agt_pipe.recv()
+        while not input_queue.empty():
+            i = input_queue.get()
         print(f"Input: {i}")
         i = i or get_default(ispec)
 
@@ -48,4 +49,4 @@ if __name__ == "__main__":
 
         # Send action to env
         print(f"Actions: {o}")
-        agt_pipe.send(o)
+        output_queue.put(o)
