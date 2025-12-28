@@ -151,14 +151,16 @@ def debugger(PATH, pipes):
 
     pg.init()
     (desktop_w, desktop_h), = pg.display.get_desktop_sizes()
-    scale = 0.8 * min(desktop_w/2560, desktop_h/1440)
+    scale = 0.8 * min(desktop_w/2560, desktop_h/1440)  # Fit to display
     true_window = pg.display.set_mode((scale*W, scale*H), pg.DOUBLEBUF|pg.RESIZABLE)
     pg.display.set_caption("debugger")
 
     # Frequently used graphical elements
-    h = pg.Surface((COL_WIDTH, COL_WIDTH/2))  # Half size grey highlight for showing conns
+    # Half size grey highlight for showing conns
+    h = pg.Surface((COL_WIDTH, COL_WIDTH/2))
     h.fill((200,200,200))
-    r = pg.Surface((COL_WIDTH, COL_WIDTH/2))  # Half size blue border for selecting conn
+    # Half size blue border for selecting conn
+    r = pg.Surface((COL_WIDTH, COL_WIDTH/2))
     r.fill((255,255,255))
     r.set_colorkey((255,255,255))
     pg.draw.rect(r, (100,149,237), r.get_rect(), width=int(COL_WIDTH*0.05))
@@ -176,14 +178,14 @@ def debugger(PATH, pipes):
     }
     LINE_HEIGHT = 30
 
-    # cache of which item user clicked on
+    # Cache of which item user clicked on
     gui_state = {
         "loc": None,
         "conn": None,
         "atv": None,
     }
 
-    # cache of info received from agent
+    # Cache of info received from agent
     cache = {
         "overview": None,
         "col": None,
@@ -269,7 +271,7 @@ def debugger(PATH, pipes):
                 txt = fonts["debug"].render(f"density: {info["density"]*100:.2f}%", True, (0,0,0))
                 window.blit(txt, (875, 1125+0*LINE_HEIGHT))
 
-        # Handle gui changes ##################################################################
+        # Handle gui changes ##################################################
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pipes["overview"][1].send(None)
@@ -412,7 +414,6 @@ def debugger(PATH, pipes):
                             txt = fonts["debug"].render(txt, True, (0,0,0))
                             window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
 
-                            # if h is not None:
                             txt_line -= 1
                             histogram = get_histogram(h, is_weight=False, h_e=h_e)
                             if histogram is not None:
@@ -448,13 +449,6 @@ def debugger(PATH, pipes):
                         # Highlight connected
                         for (conn_loc, direction), _ in info["conns"].items():
                             draw_col(conn_loc, dir2pos[direction])
-                else:  # Read from disk
-                    info = {}
-                    # Highlight connected
-                    with open(f"{PATH}/{loc}/conns", "rb") as f:
-                        info["conns"] = pickle.load(f)
-                        for (conn_loc, direction), _ in info["conns"].items():
-                            draw_col(conn_loc, dir2pos[direction])
 
                 # Draw conn debug info ######################################################
                 if pipes is not None and gui_state["conn"] is not None:  # Read live
@@ -476,7 +470,6 @@ def debugger(PATH, pipes):
                     if info is None and cache["conn"] is not None:
                         if cache["conn"]["request"] == (loc, conn_loc, conn_dir):
                             info = cache["conn"]
-                    # print(cache["conn"])
 
                     if info is None:
                         txt = fonts["debug"].render("waiting...", True, (0,0,0))
@@ -511,7 +504,6 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1125, 25+9*LINE_HEIGHT))
 
-                        # if h is not None:
                         histogram = get_histogram(h, is_weight=True)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
@@ -554,8 +546,6 @@ def debugger(PATH, pipes):
 
                         # Draw activations grid
                         x = info["x"]
-                        # print(x)
-                        # WIDTH = 8
                         WIDTH = 600 // (max(128, x.size)**0.5)
                         GRID_WIDTH = 350 // WIDTH
                         for i, xi in enumerate(x):
