@@ -1,7 +1,6 @@
 
 import datetime
 import multiprocessing
-import sys
 import argparse
 
 import torch
