@@ -86,7 +86,7 @@ def lrn(x, w, y, ss=1e-2):
     excite = torch.where(yr >= 1, ss, 0)
 
     # Case 2: -1 <= y < 1, decay weight
-    weaken = torch.where(torch.logical_and(-1 <= y, y < 1), 1.0, 0.0) \
+    weaken = torch.where(torch.logical_and(-1 <= yr, yr < 1), 1.0, 0.0) \
         * (0.9*w - w)
 
     # Case 3: y < -1, subtract ss from weight
