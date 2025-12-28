@@ -8,34 +8,10 @@ import torch
 from . import iotypes as T
 
 
-def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
-    """Get all zeros (default) inputs or outputs"""
-    default = []
-    for spec in iospec:
-        if type(spec) in [T.I_Vector, T.O_Vector]:
-            default.append(torch.zeros(spec.d))
-        else:
-            raise NotImplementedError
-    return default
-
-
+class EnvCfgBase(ABC):
+    pass
 class EnvBase(ABC):
-    def run(self, percept_queue, action_queue, show: bool):
-        _, ospec = self.get_specs()
-        while True:
-            # Receive action from agt
-            o = None
-            while not action_queue.empty():
-                o = action_queue.get()
-            o = o or get_default(ospec)
-            i = self._step(o)
-
-            # Send percept to agt
-            percept_queue.put(i)
-
-            if show:
-                self._show()
-
+    @staticmethod
     @abstractmethod
     def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:
         ...
@@ -49,22 +25,57 @@ class EnvBase(ABC):
         ...
 
 
+def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
+    """Get all zeros inputs or outputs"""
+    default = []
+    for spec in iospec:
+        if type(spec) in [T.I_Vector, T.O_Vector]:
+            default.append(torch.zeros(spec.d))
+        else:
+            raise NotImplementedError
+    return default
+
+
+def run_env(
+        cfg: EnvCfgBase,
+        env: type[EnvBase],
+        percept_queue,
+        action_queue,
+        show: bool):
+    env_instance = env(cfg)
+    _, ospec = env.get_specs(cfg)
+    while True:
+        # Receive action from agt
+        o = None
+        while not action_queue.empty():
+            o = action_queue.get()
+        o = o or get_default(ospec)
+        i = env_instance._step(o)
+
+        # Send percept to agt
+        percept_queue.put(i)
+
+        if show:
+            env_instance._show()
+
+
 # Virtual environments ########################################################
 @dataclass
-class GridEnvCfg:
+class GridEnvCfg(EnvCfgBase):
     width: int = 4
 class GridEnv(EnvBase):
     def __init__(self, cfg: GridEnvCfg):
         self.cfg = cfg
         self.width = width = cfg.width
 
-        self.ispec, self.ospec = self.get_specs()
+        self.ispec, self.ospec = self.get_specs(cfg)
 
         self.grid = torch.zeros(width, width, dtype=torch.int32, device="cpu")
         self.pos = (0, 0)
 
-    def get_specs(self) -> tuple[list[T.I_Base], list[T.O_Base]]:
-        ispec = [T.I_Vector(d=self.cfg.width**2)]
+    @staticmethod
+    def get_specs(cfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
+        ispec = [T.I_Vector(d=cfg.width**2)]
 
         # Horizontal and vertical movement,
             # place and break square

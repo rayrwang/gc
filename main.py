@@ -6,7 +6,7 @@ import sys
 import torch
 
 from src.agents import Cfg, Agt
-from src.envs import get_default
+from src.envs import get_default, run_env
 from src.envs import GridEnvCfg, GridEnv
 
 if __name__ == "__main__":
@@ -14,13 +14,13 @@ if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create environment
-    env = GridEnv(GridEnvCfg(width=4))
-    ispec, ospec = env.get_specs()
+    cfg = GridEnvCfg(width=4)
+    ispec, ospec = GridEnv.get_specs(cfg)
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     input_queue = ctx.Queue()
     output_queue = ctx.Queue()
-    env_process = ctx.Process(target=env.run,
-                              args=(input_queue, output_queue, True,),
+    env_process = ctx.Process(target=run_env,
+                              args=(cfg, GridEnv, input_queue, output_queue, True,),
                               daemon=True)
     env_process.start()
 
