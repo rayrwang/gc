@@ -9,17 +9,22 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 **NOTE: Tested with Python 3.13**
 
-Install the Python packages in `requirements.txt` using your favorite package manager.
+Install `requirements.txt` using your favorite package manager.
 
 Run the main network:
 ```
 python main.py
 ```
-This should open a debugger GUI window.
+This should open a debugger GUI window. Closing the debugger will stop and save the network.
+
+To load and run a save:
+```
+python main.py --load "./saves/agt0"
+```
 
 Choose the size of the network:
 ```
-python main.py 100
+python main.py --size 100
 ```
 
 Run the smaller testing network:
