@@ -773,7 +773,7 @@ class Agt:  # Agent
                 c.to("cpu")
 
     def save(self, keep_weights: bool = True) -> None:
-        print(f"\nSaving agent to \"{self.path}\"...")
+        print(f"\nSaving agent to \"{self.path}\":")
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
@@ -791,7 +791,7 @@ class Agt:  # Agent
     def load(path: str,
             load_activations: bool = True,
             load_weights: bool = True) -> Agt:
-        print(f"\nLoading agent from \"{path}\"...")
+        print(f"\nLoading agent from \"{path}\":")
         # Load cfg
         print("Loading cfg...")
         with open(f"{path}/cfg", "rb") as f:
