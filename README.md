@@ -27,6 +27,11 @@ Choose the size of the network:
 python main.py --size 100
 ```
 
+To view a saved network without running it:
+```
+python view_only.py "./saves/agt0"
+```
+
 Run the smaller testing network:
 ```
 python simple_nets.py

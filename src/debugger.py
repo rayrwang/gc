@@ -17,7 +17,6 @@
 1300 .------------------------.---------.----------.----------.
 """
 
-import pickle
 import os
 import time
 import math
