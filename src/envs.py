@@ -13,7 +13,7 @@ class EnvCfgBase(ABC):
 class EnvBase(ABC):
     @staticmethod
     @abstractmethod
-    def get_specs() -> tuple[list[T.I_Base], list[T.O_Base]]:
+    def get_specs(cfg: EnvCfgBase) -> tuple[list[T.I_Base], list[T.O_Base]]:
         ...
 
     @abstractmethod
@@ -74,7 +74,7 @@ class GridEnv(EnvBase):
         self.pos = (0, 0)
 
     @staticmethod
-    def get_specs(cfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
+    def get_specs(cfg: GridEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
         ispec = [T.I_Vector(d=cfg.width**2)]
 
         # Horizontal and vertical movement,
