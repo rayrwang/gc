@@ -392,6 +392,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, txt.get_rect(topleft=(2325, 25+2*LINE_HEIGHT)))
                         txt = fonts["debug"].render("mean, std", True, (0,0,0))
                         window.blit(txt, txt.get_rect(topleft=(2325, 25+3*LINE_HEIGHT)))
+                        pg.draw.rect(window, (0,0,0), (2310, 20, 175, 130), width=2)
 
                         activations = sorted([name for name in info if name.startswith("nr_")])
                         txt_line = 0
