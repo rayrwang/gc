@@ -5,3 +5,4 @@ tqdm~=4.67
 opencv-python~=4.12
 mss~=10.1
 pyautogui~=0.9
+pillow~=12.0

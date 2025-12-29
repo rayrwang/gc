@@ -55,8 +55,8 @@ if __name__ == "__main__":
         i = None
         while not input_queue.empty():
             i = input_queue.get()
-        print(f"Input: {i}")
         i = i or get_default(ispec)
+        print(f"Input: {i}")
 
         o = agt.step(i)
 

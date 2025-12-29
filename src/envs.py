@@ -6,7 +6,7 @@ import cv2
 import torch
 import mss
 import numpy as np
-# import pyautogui
+import pyautogui
 
 from . import iotypes as T
 
@@ -177,7 +177,32 @@ class ComputerEnv(EnvBase):
         self.opencv_init: bool = False
 
     def _step(self, a: list[torch.Tensor]) ->  list[torch.Tensor]:
-        # TODO perform keyboard and mouse actions
+        keyboard, m_movement, m_buttons = a
+
+        keyboard_spec = self.ospec[0]
+        m_movement_spec = self.ospec[1]
+        m_buttons_spec = self.ospec[2]
+        assert len(keyboard) == len(keyboard_spec.keys)
+        assert len(m_movement) == 2
+        assert len(m_buttons) == len(m_buttons_spec.buttons)
+
+        # Press keys
+        threshold = 0.5
+        for key, value in zip(keyboard_spec.keys, keyboard):
+            if value < threshold:
+                pyautogui.keyUp(key)
+            else:
+                pyautogui.keyDown(key)
+
+        # Mouse
+        pyautogui.move(*m_movement.tolist())
+
+        threshold = 0.5
+        for button, value in zip(m_buttons_spec.buttons, m_buttons):
+            if value < threshold:
+                pyautogui.mouseUp(button=button)
+            else:
+                pyautogui.mouseDown(button=button)
 
         # Take screenshot
         with mss.mss(with_cursor=True) as sct:
