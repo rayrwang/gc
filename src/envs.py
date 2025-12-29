@@ -179,9 +179,7 @@ class ComputerEnv(EnvBase):
     def _step(self, a: list[torch.Tensor]) ->  list[torch.Tensor]:
         keyboard, m_movement, m_buttons = a
 
-        keyboard_spec = self.ospec[0]
-        m_movement_spec = self.ospec[1]
-        m_buttons_spec = self.ospec[2]
+        keyboard_spec, _, m_buttons_spec = self.ospec
         assert len(keyboard) == len(keyboard_spec.keys)
         assert len(m_movement) == 2
         assert len(m_buttons) == len(m_buttons_spec.buttons)
