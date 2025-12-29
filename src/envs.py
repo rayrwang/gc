@@ -60,11 +60,12 @@ def run_env(
         o = None
         while not action_queue.empty():
             o = action_queue.get()
-        o = o or get_default(ospec)
+        # o = o or get_default(ospec)  # TODO agt not set up for video input
+        o = get_default(ospec)
         i = env_instance._step(o)
 
         # Send percept to agt
-        percept_queue.put(i)
+        # percept_queue.put(i)  # TODO agt not set up for video input
 
         if show:
             env_instance._show()

@@ -7,7 +7,7 @@ import torch
 
 from src.agents import Cfg, Agt
 from src.envs import get_default, run_env
-from src.envs import GridEnvCfg, GridEnv
+from src.envs import ComputerEnvCfg, ComputerEnv
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -23,13 +23,14 @@ if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create environment
-    cfg = GridEnvCfg(width=4)
-    ispec, ospec = GridEnv.get_specs(cfg)
+    cfg = ComputerEnvCfg(image_w=2560//2, image_h=1440//2, keys=["w", "a", "s", "d"])
+    # ispec, ospec = ComputerEnv.get_specs(cfg)
+    ispec, ospec = [], []  # TODO agt not set up for video input
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     input_queue = ctx.Queue()
     output_queue = ctx.Queue()
     env_process = ctx.Process(target=run_env,
-                              args=(cfg, GridEnv, input_queue, output_queue, True,),
+                              args=(cfg, ComputerEnv, input_queue, output_queue, True,),
                               daemon=True)
     env_process.start()
 
