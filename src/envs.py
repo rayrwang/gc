@@ -4,9 +4,6 @@ from abc import ABC, abstractmethod
 
 import cv2
 import torch
-import mss
-import numpy as np
-# import pyautogui
 
 from . import iotypes as T
 
@@ -143,62 +140,6 @@ class GridEnv(EnvBase):
             cv2.resizeWindow("grid env", (int(WINDOW_H*img.shape[1]/img.shape[0]),
                                           WINDOW_H))
         cv2.imshow("grid env", img)
-        cv2.waitKey(1)
-
-
-@dataclass
-class ComputerEnvCfg(EnvCfgBase):
-    image_w: int
-    image_h: int
-    keys: list[str]
-class ComputerEnv(EnvBase):
-    @staticmethod
-    def get_specs(cfg: ComputerEnvCfg):
-        screen = T.I_Video(w=cfg.image_w, h=cfg.image_h)
-
-        keyboard = T.O_Keyboard(keys=cfg.keys)
-        mouse_movement = T.O_MouseMovement()
-        mouse_buttons = T.O_MouseButtons()
-
-        ispec = [screen]
-        ospec = [keyboard, mouse_movement, mouse_buttons]
-        return ispec, ospec
-
-    def __init__(self, cfg: ComputerEnvCfg):
-        self.cfg = cfg
-        self.image_w = cfg.image_w
-        self.image_h = cfg.image_h
-
-        self.ispec, self.ospec = self.get_specs(cfg)
-
-        self.screen = None  # In BGR
-
-        self.opencv_init: bool = False
-
-    def _step(self, a: list[torch.Tensor]) ->  list[torch.Tensor]:
-        # TODO perform keyboard and mouse actions
-
-        # Take screenshot
-        with mss.mss(with_cursor=True) as sct:
-            monitor = sct.monitors[0]
-            img = np.array(sct.grab(monitor))
-            img = img[:, :, 0:3]
-            img = cv2.resize(img, (self.image_w, self.image_h))
-            self.screen = img
-
-        p = cv2.cvtColor(self.screen.copy(), cv2.COLOR_BGR2RGB)
-        p = torch.from_numpy(p)
-        return [p]
-
-    def _show(self):
-        img = self.screen.astype(np.uint8)
-        if not self.opencv_init:   
-            self.opencv_init = True 
-            cv2.namedWindow("computer env", cv2.WINDOW_NORMAL)
-            WINDOW_H = 200  # TODO calculate using monitor resolution
-            cv2.resizeWindow("computer env", (int(WINDOW_H*img.shape[1]/img.shape[0]),
-                                              WINDOW_H))
-        cv2.imshow("computer env", img)
         cv2.waitKey(1)
 
 
