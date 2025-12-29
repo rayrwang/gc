@@ -7,7 +7,7 @@ The actual inputs and outputs are simply lists of tensors.
 from functools import reduce
 import operator
 from dataclasses import dataclass
-from typing import Sequence
+from typing import Sequence, Literal
 from abc import ABC
 
 class I_Base(ABC):
@@ -18,8 +18,8 @@ class O_Base(ABC):
 # Input types #################################################################
 @dataclass
 class I_Video(I_Base):
-    h: int  # height
     w: int  # width
+    h: int  # height
     c: int = 3  # channels
     d: int = 8  # depth: bits per channel
     name: str = ""
@@ -66,10 +66,15 @@ class O_Keyboard(O_Base):
     desc: str = ""
 
 @dataclass
-class O_Mouse(O_Base):
+class O_MouseMovement(O_Base):
     name: str = ""
     desc: str = ""
-    mode: str = "rel"  # "rel" or "abs"
+    mode: Literal["rel", "abs"] = "rel"
+
+@dataclass
+class O_MouseButtons(O_Base):
+    name: str = ""
+    desc: str = ""
     buttons: Sequence[str] = ("left", "middle", "right")
 
 @dataclass
