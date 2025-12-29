@@ -151,6 +151,7 @@ class ComputerEnvCfg(EnvCfgBase):
     image_w: int
     image_h: int
     keys: list[str]
+    disable_actions: bool
 class ComputerEnv(EnvBase):
     @staticmethod
     def get_specs(cfg: ComputerEnvCfg):
@@ -168,6 +169,7 @@ class ComputerEnv(EnvBase):
         self.cfg = cfg
         self.image_w = cfg.image_w
         self.image_h = cfg.image_h
+        self.disable_actions = cfg.disable_actions
 
         self.ispec, self.ospec = self.get_specs(cfg)
 
@@ -183,23 +185,24 @@ class ComputerEnv(EnvBase):
         assert len(m_movement) == 2
         assert len(m_buttons) == len(m_buttons_spec.buttons)
 
-        # Press keys
-        threshold = 0.5
-        for key, value in zip(keyboard_spec.keys, keyboard):
-            if value < threshold:
-                pyautogui.keyUp(key)
-            else:
-                pyautogui.keyDown(key)
+        if not self.disable_actions:
+            # Press keys
+            threshold = 0.5
+            for key, value in zip(keyboard_spec.keys, keyboard):
+                if value < threshold:
+                    pyautogui.keyUp(key)
+                else:
+                    pyautogui.keyDown(key)
 
-        # Mouse
-        pyautogui.move(*m_movement.tolist())
+            # Mouse
+            pyautogui.move(*m_movement.tolist())
 
-        threshold = 0.5
-        for button, value in zip(m_buttons_spec.buttons, m_buttons):
-            if value < threshold:
-                pyautogui.mouseUp(button=button)
-            else:
-                pyautogui.mouseDown(button=button)
+            threshold = 0.5
+            for button, value in zip(m_buttons_spec.buttons, m_buttons):
+                if value < threshold:
+                    pyautogui.mouseUp(button=button)
+                else:
+                    pyautogui.mouseDown(button=button)
 
         # Take screenshot
         with mss.mss(with_cursor=True) as sct:

@@ -23,7 +23,12 @@ if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create environment
-    cfg = ComputerEnvCfg(image_w=2560//2, image_h=1440//2, keys=["w", "a", "s", "d"])
+    cfg = ComputerEnvCfg(
+        image_w=2560//2,
+        image_h=1440//2,
+        keys=["w", "a", "s", "d"],
+        disable_actions=True
+    )
     ispec, ospec = ComputerEnv.get_specs(cfg)
     ispec, ospec = [], ospec  # TODO agt not set up for video input
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
