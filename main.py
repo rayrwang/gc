@@ -24,8 +24,8 @@ if __name__ == "__main__":
 
     # Create environment
     cfg = ComputerEnvCfg(image_w=2560//2, image_h=1440//2, keys=["w", "a", "s", "d"])
-    # ispec, ospec = ComputerEnv.get_specs(cfg)
-    ispec, ospec = [], []  # TODO agt not set up for video input
+    ispec, ospec = ComputerEnv.get_specs(cfg)
+    ispec, ospec = [], ospec  # TODO agt not set up for video input
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     input_queue = ctx.Queue()
     output_queue = ctx.Queue()

@@ -468,6 +468,8 @@ class Agt:  # Agent
                     self.I_cols.append(col)
                     self.cols[loc] = col
                     self.free_col(col)
+                elif type(spec) is T.I_Video:
+                    pass  # TODO
                 else:
                     raise NotImplementedError
 
@@ -478,6 +480,24 @@ class Agt:  # Agent
                 if type(spec) is T.O_Vector:
                     loc = (0, i+1)
                     col = O_VectorCol(loc, O_VectorColCfg(spec.d), False)
+                    self.O_cols.append(col)
+                    self.cols[loc] = col
+                    self.free_col(col)
+                elif type(spec) is T.O_Keyboard:
+                    loc = (0, i+1)
+                    col = O_VectorCol(loc, O_VectorColCfg(len(spec.keys)), False)
+                    self.O_cols.append(col)
+                    self.cols[loc] = col
+                    self.free_col(col)
+                elif type(spec) is T.O_MouseMovement:
+                    loc = (0, i+1)
+                    col = O_VectorCol(loc, O_VectorColCfg(2), False)
+                    self.O_cols.append(col)
+                    self.cols[loc] = col
+                    self.free_col(col)
+                elif type(spec) is T.O_MouseButtons:
+                    loc = (0, i+1)
+                    col = O_VectorCol(loc, O_VectorColCfg(len(spec.buttons)), False)
                     self.O_cols.append(col)
                     self.cols[loc] = col
                     self.free_col(col)
