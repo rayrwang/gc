@@ -1,35 +1,32 @@
 
 """
-NOTE outline:
-
-init:
-    env, debugger
-    agt: initial architecture
-        cols: activations, weights
+init or load from disk:
+    env
+    agt:
+        cols: activations, internal weights
             io cols
             internal cols
-        conns
-for each timestep:
+        conns (external weights)
+    debugger
+for each timestep, in parallel processes:
     step env:
-        receive actions
-        if needed: change state
-        provide observations
+        respond to actions
+        provide percepts
     step agt:
         receive inputs (propagate to input cols)
         for each col:
             apply self inhibition to activations
-                by using actual and expected
+                by using actual and expected values
             global (within whole agent):
                 learning rules for conns
-                pruning and growing conns
                 output to other cols using conns
             local (within col):
                 apply learning rules
-                apply activity rules by adding the propagations
-                    to the updated values
+                apply activity rules by adding the propagations to the updated values
             
             send debug info
-        provide outputs
+        provide outputs (read from output cols)
+save to disk
 """
 
 from __future__ import annotations
