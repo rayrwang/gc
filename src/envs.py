@@ -1,11 +1,16 @@
 
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
+import random
 
 import cv2
 import torch
+import torchvision
 
 from . import iotypes as T
+
+
+torch.set_default_dtype(torch.float16)  # TODO sync with main process
 
 
 class EnvCfgBase(ABC):
@@ -30,15 +35,15 @@ def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
     default = []
     for spec in iospec:
         if type(spec) in [T.I_Vector, T.O_Vector]:
-            default.append(torch.zeros(spec.d))
+            default.append(torch.zeros(spec.d, dtype=torch.get_default_dtype()))
         elif type(spec) is T.I_Video:
-            default.append(torch.zeros(spec.h, spec.w, spec.c))
+            default.append(torch.zeros(spec.h, spec.w, spec.c, dtype=torch.get_default_dtype()))
         elif type(spec) is T.O_Keyboard:
-            default.append(torch.zeros(len(spec.keys)))
+            default.append(torch.zeros(len(spec.keys), dtype=torch.get_default_dtype()))
         elif type(spec) is T.O_MouseMovement:
-            default.append(torch.zeros(2))
+            default.append(torch.zeros(2, dtype=torch.get_default_dtype()))
         elif type(spec) is T.O_MouseButtons:
-            default.append(torch.zeros(len(spec.buttons)))
+            default.append(torch.zeros(len(spec.buttons), dtype=torch.get_default_dtype()))
         else:
             raise NotImplementedError
     return default
@@ -143,5 +148,55 @@ class GridEnv(EnvBase):
         cv2.waitKey(1)
 
 
+class MNISTEnvCfg(EnvCfgBase):
+    ...
+class MNISTEnv(EnvBase):
+    def __init__(self, cfg: MNISTEnvCfg):
+        self.cfg = cfg
+
+        self.mnist = torchvision.datasets.MNIST("data", download=True)
+
+        (image, _) = random.choice(self.mnist)
+        self.image = torchvision.transforms.functional.pil_to_tensor(image)
+
+        self.opencv_init = False
+
+    @staticmethod
+    def get_specs(cfg: MNISTEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
+        ispec = [T.I_Vector(d=28*28)]
+        ospec = [T.O_Vector(d=10)]
+        return ispec, ospec
+
+    def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
+        # Get image of digit corresponding to largest activation in action
+        digits, = a
+        assert digits.shape == (10,)
+        # TODO? use None i/o when unavailable rather than all zeros (get_default)
+        if not torch.allclose(digits, torch.zeros(10, dtype=torch.get_default_dtype(), device="cpu")):
+            # Get new digit
+            digit = torch.topk(digits, 1).indices[0]
+            while True:
+                (image, label) = random.choice(self.mnist)
+                if label == digit:
+                    self.image = torchvision.transforms.functional.pil_to_tensor(image)
+                    break
+        p = [self.image.reshape(-1)]
+        return p
+
+    def _show(self) -> None:
+        img = self.image.clone()
+
+        img = img.to(torch.uint8).cpu().numpy()
+        img = img.reshape(28, 28, 1)
+        if not self.opencv_init:   
+            self.opencv_init = True 
+            cv2.namedWindow("mnist env", cv2.WINDOW_NORMAL)
+            WINDOW_H = 200  # TODO calculate using monitor resolution
+            cv2.resizeWindow("mnist env", (int(WINDOW_H*img.shape[1]/img.shape[0]),
+                                          WINDOW_H))
+        cv2.imshow("mnist env", img)
+        cv2.waitKey(1)
+
+    
 # Real world environments #####################################################
 # TODO
