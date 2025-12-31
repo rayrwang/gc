@@ -3,7 +3,7 @@
 
 <p align="center">
   <picture align="center">
-	<img width="640" height="356" alt="Screenshot of Debugger GUI" src="https://github.com/user-attachments/assets/e6d4e96f-d313-4874-94ad-3622909efea4">
+	<img width="480" height="267" alt="Screenshot of Debugger GUI" src="https://github.com/user-attachments/assets/e6d4e96f-d313-4874-94ad-3622909efea4">
   </picture>
 </p>
 
