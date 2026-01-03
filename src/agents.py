@@ -79,13 +79,10 @@ def conn(c1: ColBase, c2: ColBase, direction: Dir) -> torch.Tensor:
     if direction == Dir.A:
         d1 = c1.a_pre.shape[0]
         d2 = c2.a_post.shape[0]
-    else:
+    elif direction == Dir.E:
         d1 = c1.e_pre.shape[0]
         d2 = c2.e_post.shape[0]
-    if direction == Dir.E:
-        return 2 * torch.randn(d1, d2) / (d1**0.5) + 0.0
-    else:
-        return 2 * torch.randn(d1, d2) / (d1**0.5) + (0*d1**0.5)
+    return 2 * torch.randn(d1, d2) / (d1**0.5)
     
 
 # Constants ###################################################################
