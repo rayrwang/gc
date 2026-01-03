@@ -315,12 +315,14 @@ class O_VectorCol(BareCol, O_ColBase):
 @dataclass
 class ColCfg(ColCfgBase):
     ...
-class Col(ColBase):
-    """A module within the whole network"""
+class Col(ColBase):  # Column (module) within the whole network
     def __init__(self, loc: Loc, cfg: ColCfg, skip_init: bool = False):
         self.loc = loc
         self.cfg = cfg
 
+        # Conns (weights between cols)
+            # nr_4 -> nr_1 (actual)
+            # nr_5 -> nr_2 (expectation)
         self.conns: dict[tuple[Loc, Dir], torch.Tensor] = {}
 
         if skip_init:
@@ -351,10 +353,6 @@ class Col(ColBase):
             self.is_2_3_b = syn(128, 1024)
             self.is_2_4 = syn(1024, 1024)
             self.is_4_5 = syn(1024, 1024)
-
-            # Conns (weights between cols)
-            # nr_4 -> nr_1 (actual)
-            # nr_5 -> nr_2 (expectation)
 
             self.weights_loaded = True
 
@@ -425,8 +423,8 @@ class Col(ColBase):
 
 
 @dataclass
-class Cfg:  # Agent configuration
-    n_cols: int       # Number of columns
+class Cfg:
+    n_cols: int            # Number of columns (modules)
     ispec: list[T.I_Base]  # Input specification
     ospec: list[T.O_Base]  # Output specification
 class Agt:  # Agent
