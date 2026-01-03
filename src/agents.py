@@ -57,22 +57,25 @@ class Dir(Enum):  # Direction of connection
 
 
 # Type hints ##################################################################
-Loc = tuple[int, int]
-Neur = Annotated[list[torch.Tensor], 2]  # 2 copies of activations
+Loc = tuple[int, int]  # Location of col (module)
+Activs = Annotated[list[torch.Tensor], 2]  # 2 copies of activations (actual and expectations)
 
 
 # Activations and weights inits ###############################################
-def neur(d: int) -> Neur:  # Activations
+# Activations
+def activs(d: int) -> Activs:
     """
     nr_<name>[0] : actual activations
     nr_<name>[1] : expectations
     """
     return [torch.randn(d), torch.zeros(d)]
 
-def syn(d_x: int, d_y: int) -> torch.Tensor:  # Internal weights
+# Internal weights
+def weights(d_x: int, d_y: int) -> torch.Tensor:
     return 2 * torch.randn(d_x, d_y) / (d_x**0.5) + (0*d_x**0.5)
 
-def conn(c1: ColBase, c2: ColBase, direction: Dir) -> torch.Tensor:  # External weights
+# External weights
+def conn(c1: ColBase, c2: ColBase, direction: Dir) -> torch.Tensor:
     if direction == Dir.A:
         d1 = c1.a_pre.shape[0]
         d2 = c2.a_post.shape[0]
@@ -262,13 +265,13 @@ class BareCol(ColBase):  # 1 layer, no internals
 
         self.conns: dict[tuple[Loc, Dir], torch.Tensor] = {}
 
-        self.nr_1: Neur | None
+        self.nr_1: Activs | None
 
         if skip_init:
             self.nr_1 = None
             self.weights_loaded = False
         else:
-            self.nr_1 = neur(cfg.d)
+            self.nr_1 = activs(cfg.d)
             self.weights_loaded = True
 
     # For input to and from other cols using conns
@@ -341,18 +344,18 @@ class Col(ColBase):  # Column (module) within the whole network
             self.is_4_5 = None
         else:
             # Activations
-            self.nr_1 = neur(1024)
-            self.nr_2 = neur(1024)
-            self.nr_3 = neur(128)
-            self.nr_4 = neur(1024)
-            self.nr_5 = neur(1024)
+            self.nr_1 = activs(1024)
+            self.nr_2 = activs(1024)
+            self.nr_3 = activs(128)
+            self.nr_4 = activs(1024)
+            self.nr_5 = activs(1024)
 
             # Weights (within col)
-            self.is_1_2 = syn(1024, 1024)
-            self.is_2_3_f = syn(1024, 128)
-            self.is_2_3_b = syn(128, 1024)
-            self.is_2_4 = syn(1024, 1024)
-            self.is_4_5 = syn(1024, 1024)
+            self.is_1_2 = weights(1024, 1024)
+            self.is_2_3_f = weights(1024, 128)
+            self.is_2_3_b = weights(128, 1024)
+            self.is_2_4 = weights(1024, 1024)
+            self.is_4_5 = weights(1024, 1024)
 
             self.weights_loaded = True
 
