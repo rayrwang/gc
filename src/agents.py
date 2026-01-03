@@ -422,167 +422,10 @@ class Col(ColBase):  # Column (module) within the whole network
         self.nr_5[1] = update_e(self.nr_5[1])
 
 
-@dataclass
-class Cfg:
-    n_cols: int            # Number of columns (modules)
-    ispec: list[T.I_Base]  # Input specification
-    ospec: list[T.O_Base]  # Output specification
-class Agt:  # Agent
-    def __init__(self,
-        cfg: Cfg,
-        path: str,
-        skip_init: bool=False  # For loading from save
-    ):
-
-        self.cfg = cfg
-        self.path = path
-
-        self.n_cols = cfg.n_cols  # Number of columns
-        self.ispec  = cfg.ispec  # Input specification
-        self.ospec  = cfg.ospec  # Output specification
-
-        self.I_cols: list[I_ColBase] = []
-        self.O_cols: list[O_ColBase] = []
-        self.cols: dict[Loc, ColBase] = {}  # location : col
-
-        if not skip_init:
-            print("\nInitializing new agent...")
-
-            # Reset or create save directory
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
-            width = math.ceil(self.n_cols**(1/2))  # Side length
-
-            # Initialize io columns
-            for i, spec in tqdm(enumerate(self.ispec),
-                                desc="Initializing input cols",
-                                total=len(self.ispec)):
-                assert isinstance(spec, T.I_Base)
-                if type(spec) is T.I_Vector:
-                    loc = (i+1, 0)
-                    col = I_VectorCol(loc, I_VectorColCfg(spec.d), False)
-                    self.I_cols.append(col)
-                    self.cols[loc] = col
-                    self.free_col(col)
-                else:
-                    raise NotImplementedError
-
-            for i, spec in tqdm(enumerate(self.ospec),
-                                desc="Initializing output cols",
-                                total=len(self.ospec)):
-                assert isinstance(spec, T.O_Base)
-                if type(spec) is T.O_Vector:
-                    loc = (0, i+1)
-                    col = O_VectorCol(loc, O_VectorColCfg(spec.d), False)
-                    self.O_cols.append(col)
-                    self.cols[loc] = col
-                    self.free_col(col)
-                else:
-                    raise NotImplementedError
-
-            # Initialize bulk of (internal, non io) columns
-            for i, (y, x) in tqdm(enumerate(np.ndindex((width,width))),
-                                  desc="Initializing bulk of cols",
-                                  total=self.n_cols):
-                if i < self.n_cols:
-                    loc = (x+1, y+1)  # Offset +1 since 0 is for input/output
-                    col = Col(loc, ColCfg())
-                    self.cols[loc] = col
-                    self.free_col(col)
-                else:
-                    break
-
-            # Initialize connections
-            for loc, col in tqdm(self.cols.items(), desc="Initializing conns"):
-                self.load_col(col)
-                if col in self.O_cols:  # no conns for output cols
-                    continue
-                # Independent probability for each possible conn
-                for other_loc in self.cols.keys():
-                    if other_loc != loc:
-                        distance = fc.dist(loc, other_loc)
-                        if self.is_io(loc):
-                            p = 0.6 / (distance + 1e-3)**2  # Compensate for fewer possible directions
-                        else:
-                            p = 0.3 / (distance + 1e-3)**2
-
-                        if (self.is_io(col.loc) and self.is_io(other_loc)) \
-                            or self.is_i(other_loc):
-                            # Don't directly connect io cols
-                            # and don't connect to input cols
-                            allowed = []
-                        elif self.is_io(col.loc):
-                            # An io col can't expect, can only provide actual
-                            allowed = [Dir.A]
-                        else:
-                            allowed = list(Dir)
-                        for direction in allowed:
-                            if random.random() < p:
-                                col.conns[(other_loc, direction)] = conn(col, self.cols[other_loc], direction)
-                                break  # Only at most one conn per target?
-                self.free_col(col)
-
-            # Create directories for all cols
-            for col in self.cols.values():
-                os.mkdir(f"{path}/{col.loc}")
-
-            self.use_debug = False
-
-            print("done init.")
-
+class AgtBase(ABC):
+    @abstractmethod
     def step(self, ipt: list[torch.Tensor]) -> list[torch.Tensor]:
-        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
-
-        # Receive inputs
-        for col, x in zip(self.I_cols, ipt):
-            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
-            col.ipt(x)
-
-        for col in (bar := tqdm(self.cols.values(), desc="Stepping cols...")):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            # Step col
-            self.load_col(col)
-
-            # Use lateral inhibition to combine actual and expected activations
-            if hasattr(col, "inhibit"):
-                col.inhibit()
-
-            # Apply learning rule to connections
-            lrn = fc.lrn
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    ...
-                col.conns[(loc, direction)] = weight
-
-            # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    self.cols[loc].a_post += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    self.cols[loc].e_post += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
-
-            # Internal lrn, update, atv
-            col.step()
-
-            self.free_col(col)
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Return outputs
-        out = []
-        for col in self.O_cols:
-            out.append(col.out())
-        return out
+        ...
 
     def is_i(self, loc):
         return any([loc == col.loc for col in self.I_cols])
@@ -846,3 +689,165 @@ class Agt:  # Agent
 
         print("Passed all checks!")
 
+
+@dataclass
+class Cfg:
+    n_cols: int            # Number of columns (modules)
+    ispec: list[T.I_Base]  # Input specification
+    ospec: list[T.O_Base]  # Output specification
+class Agt(AgtBase):  # Agent
+    def __init__(self,
+        cfg: Cfg,
+        path: str,
+        skip_init: bool=False  # For loading from save
+    ):
+
+        self.cfg = cfg
+        self.path = path
+
+        self.n_cols = cfg.n_cols  # Number of columns
+        self.ispec  = cfg.ispec  # Input specification
+        self.ospec  = cfg.ospec  # Output specification
+
+        self.I_cols: list[I_ColBase] = []
+        self.O_cols: list[O_ColBase] = []
+        self.cols: dict[Loc, ColBase] = {}  # location : col
+
+        if not skip_init:
+            print("\nInitializing new agent...")
+
+            # Reset or create save directory
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            width = math.ceil(self.n_cols**(1/2))  # Side length
+
+            # Initialize io columns
+            for i, spec in tqdm(enumerate(self.ispec),
+                                desc="Initializing input cols",
+                                total=len(self.ispec)):
+                assert isinstance(spec, T.I_Base)
+                if type(spec) is T.I_Vector:
+                    loc = (i+1, 0)
+                    col = I_VectorCol(loc, I_VectorColCfg(spec.d), False)
+                    self.I_cols.append(col)
+                    self.cols[loc] = col
+                    self.free_col(col)
+                else:
+                    raise NotImplementedError
+
+            for i, spec in tqdm(enumerate(self.ospec),
+                                desc="Initializing output cols",
+                                total=len(self.ospec)):
+                assert isinstance(spec, T.O_Base)
+                if type(spec) is T.O_Vector:
+                    loc = (0, i+1)
+                    col = O_VectorCol(loc, O_VectorColCfg(spec.d), False)
+                    self.O_cols.append(col)
+                    self.cols[loc] = col
+                    self.free_col(col)
+                else:
+                    raise NotImplementedError
+
+            # Initialize bulk of (internal, non io) columns
+            for i, (y, x) in tqdm(enumerate(np.ndindex((width,width))),
+                                  desc="Initializing bulk of cols",
+                                  total=self.n_cols):
+                if i < self.n_cols:
+                    loc = (x+1, y+1)  # Offset +1 since 0 is for input/output
+                    col = Col(loc, ColCfg())
+                    self.cols[loc] = col
+                    self.free_col(col)
+                else:
+                    break
+
+            # Initialize connections
+            for loc, col in tqdm(self.cols.items(), desc="Initializing conns"):
+                self.load_col(col)
+                if col in self.O_cols:  # no conns for output cols
+                    continue
+                # Independent probability for each possible conn
+                for other_loc in self.cols.keys():
+                    if other_loc != loc:
+                        distance = fc.dist(loc, other_loc)
+                        if self.is_io(loc):
+                            p = 0.6 / (distance + 1e-3)**2  # Compensate for fewer possible directions
+                        else:
+                            p = 0.3 / (distance + 1e-3)**2
+
+                        if (self.is_io(col.loc) and self.is_io(other_loc)) \
+                            or self.is_i(other_loc):
+                            # Don't directly connect io cols
+                            # and don't connect to input cols
+                            allowed = []
+                        elif self.is_io(col.loc):
+                            # An io col can't expect, can only provide actual
+                            allowed = [Dir.A]
+                        else:
+                            allowed = list(Dir)
+                        for direction in allowed:
+                            if random.random() < p:
+                                col.conns[(other_loc, direction)] = conn(col, self.cols[other_loc], direction)
+                                break  # Only at most one conn per target?
+                self.free_col(col)
+
+            # Create directories for all cols
+            for col in self.cols.values():
+                os.mkdir(f"{path}/{col.loc}")
+
+            self.use_debug = False
+
+            print("done init.")
+
+    def step(self, ipt: list[torch.Tensor]) -> list[torch.Tensor]:
+        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
+
+        # Receive inputs
+        for col, x in zip(self.I_cols, ipt):
+            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
+            col.ipt(x)
+
+        for col in (bar := tqdm(self.cols.values(), desc="Stepping cols...")):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            # Step col
+            self.load_col(col)
+
+            # Use lateral inhibition to combine actual and expected activations
+            if hasattr(col, "inhibit"):
+                col.inhibit()
+
+            # Apply learning rule to connections
+            lrn = fc.lrn
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    ...
+                col.conns[(loc, direction)] = weight
+
+            # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    self.cols[loc].a_post += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    self.cols[loc].e_post += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
+
+            # Internal lrn, update, atv
+            col.step()
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Return outputs
+        out = []
+        for col in self.O_cols:
+            out.append(col.out())
+        return out
