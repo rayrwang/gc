@@ -4,17 +4,13 @@ import platform
 
 import torch
 
-"""
-NOTE:
+disable_compile = (platform.system() == "Windows")  # Issues
 
-atv returns change,
-while all others return new value,
-since multiple atv's need to happen at the same time,
-while the others don't have special requirements
-and returning new value is easier to use
-"""
+# atv returns change, while all others return new value,
+# since multiple atv's need to happen at the same time,
+# while the others don't have special requirements
+# and returning new value is easier to use
 
-disable_compile = (platform.system() == "Windows")
 
 def spike(x, threshold=1.0):
     """
