@@ -1,6 +1,10 @@
 
 # gc
 
+<p align="center">
+	<img width="500" alt="Screenshot of network debugger GUI" src="https://github.com/user-attachments/assets/e6d4e96f-d313-4874-94ad-3622909efea4">
+</p>
+
 Objective-free, modular, feedback neural networks that learn via association.
 
 (*Disclaimer: Very rough/early/speculative work*)
@@ -83,6 +87,7 @@ Right now it kind of sucks, need to make it "actually be good":
 | ❌ Gradient descent                                                      | ✔️ Hebbian association                                                                                  |
 | ❌ Learn by obeying training data                                        | ✔️ Learn by [conjectures and criticisms](https://www.thebritishacademy.ac.uk/documents/4924/46p039.pdf) |
 | ❌ Reward                                                                | ✔️ Interact with environments **without** reward (😱)                                                   |
+| ❌ Top-down control                                                      | ✔️ Bottom-up cooperation and competition                                                                |
 | ❌ Goal is to predict data                                               | ✔️ Goal is to explain the world                                                                         |
 | ❌ Training and inference                                                | ✔️ Life                                                                                                 |
 | ❌ Fulfill specified objectives                                          | ✔️ Open ended improvement                                                                               |
