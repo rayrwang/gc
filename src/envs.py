@@ -9,7 +9,6 @@ import torchvision
 
 from . import iotypes as T
 
-
 torch.set_default_dtype(torch.float16)  # TODO sync with main process
 
 
@@ -35,15 +34,15 @@ def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
     default = []
     for spec in iospec:
         if type(spec) in [T.I_Vector, T.O_Vector]:
-            default.append(torch.zeros(spec.d, dtype=torch.get_default_dtype()))
+            default.append(torch.zeros(spec.d))
         elif type(spec) is T.I_Video:
-            default.append(torch.zeros(spec.h, spec.w, spec.c, dtype=torch.get_default_dtype()))
+            default.append(torch.zeros(spec.h, spec.w, spec.c))
         elif type(spec) is T.O_Keyboard:
-            default.append(torch.zeros(len(spec.keys), dtype=torch.get_default_dtype()))
+            default.append(torch.zeros(len(spec.keys)))
         elif type(spec) is T.O_MouseMovement:
-            default.append(torch.zeros(2, dtype=torch.get_default_dtype()))
+            default.append(torch.zeros(2))
         elif type(spec) is T.O_MouseButtons:
-            default.append(torch.zeros(len(spec.buttons), dtype=torch.get_default_dtype()))
+            default.append(torch.zeros(len(spec.buttons)))
         else:
             raise NotImplementedError
     return default
