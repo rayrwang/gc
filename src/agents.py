@@ -97,6 +97,9 @@ class ColBase(ABC):
         self.loc: Loc
         self.cfg: ColCfgBase
 
+        # Activations: self.nr_<name>
+        # Weights: self.is_<name>
+
         self.conns: dict[tuple[Loc, Dir], torch.Tensor] | None
 
     @abstractmethod
@@ -133,24 +136,25 @@ class ColBase(ABC):
     def e_post(self, value): ...
 
     @property
-    def count(self) -> tuple[int, int, int, int, int]:  # Count number of elements of each type of data
-        NR = 0  # activations
-        IS = 0  # internal (inside this col) weights
-        ES = 0  # external (to other cols) weights
-        IH = 0  # hyperparameters for internal weights
-        EH = 0  # hyperparameters for external weights
+    def count(self) -> tuple[int, int, int, int, int]:
+        """Count number of elements of each type of data"""
+        nrns = 0  # Activations
+        isyns = 0  # Internal (inside this col) weights
+        esyns = 0  # External (to other cols) weights
+        ihyps = 0  # Hyperparameters for internal weights
+        ehyps = 0  # Hyperparameters for external weights
         for name in vars(self):
             if name.startswith("nr_"):
-                NR += getattr(self, name)[0].numel()
+                nrns += getattr(self, name)[0].numel()
             elif name.startswith("is_"):
-                IS += getattr(self, name).numel()
+                isyns += getattr(self, name).numel()
             elif name.startswith("ih_"):
-                IH += getattr(self, name).numel()
+                ihyps += getattr(self, name).numel()
 
         for weight in self.conns.values():
-            ES += weight.numel()
+            esyns += weight.numel()
 
-        return NR, IS, ES, IH, EH
+        return nrns, isyns, esyns, ihyps, ehyps
 
     def to(self, *args, **kwargs) -> None:
         assert self.weights_loaded

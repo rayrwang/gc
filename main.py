@@ -28,9 +28,10 @@ if __name__ == "__main__":
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     input_queue = ctx.Queue()
     output_queue = ctx.Queue()
-    env_process = ctx.Process(target=run_env,
-                              args=(cfg, GridEnv, input_queue, output_queue, True,),
-                              daemon=True)
+    env_process = ctx.Process(
+        target=run_env,
+        args=(cfg, GridEnv, input_queue, output_queue, True,),
+        daemon=True)
     env_process.start()
 
     # Create agent
