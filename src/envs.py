@@ -11,17 +11,22 @@ from . import iotypes as T
 
 torch.set_default_dtype(torch.float16)  # TODO sync with main process
 
+Specs = tuple[list[T.I_Base], list[T.O_Base]]
+Aux = ...  # Additional info e.g. labels
+Percepts = list[torch.Tensor]
+Actions = list[torch.Tensor]
+
 
 class EnvCfgBase(ABC):
     pass
 class EnvBase(ABC):
     @staticmethod
     @abstractmethod
-    def get_specs(cfg: EnvCfgBase) -> tuple[list[T.I_Base], list[T.O_Base]]:
+    def get_specs(cfg: EnvCfgBase) -> Specs:
         ...
 
     @abstractmethod
-    def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
+    def _step(self, a: Actions) -> Percepts | tuple[Percepts, Aux]:
         ...
 
     @abstractmethod
@@ -29,7 +34,7 @@ class EnvBase(ABC):
         ...
 
 
-def get_default(iospec: list[T.I_Base | T.O_Base]) -> list[torch.Tensor]:
+def get_default(iospec: list[T.I_Base | T.O_Base]) -> Percepts | Actions:
     """Get all zeros inputs or outputs"""
     default = []
     for spec in iospec:
@@ -88,7 +93,7 @@ class GridEnv(EnvBase):
         self.opencv_init = False
 
     @staticmethod
-    def get_specs(cfg: GridEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
+    def get_specs(cfg: GridEnvCfg) -> Specs:
         ispec = [T.I_Vector(d=cfg.width**2)]
 
         # Horizontal and vertical movement,
@@ -97,7 +102,7 @@ class GridEnv(EnvBase):
         ospec = [T.O_Vector(d=n_actions)]
         return ispec, ospec
 
-    def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
+    def _step(self, a: Actions) -> Percepts:
         assert len(a) == len(self.ospec)
 
         # Perform actions

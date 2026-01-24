@@ -59,6 +59,12 @@ class Dir(Enum):  # Direction of connection
 # Type hints ##################################################################
 Loc = tuple[int, int]  # Location of col (module)
 Activs = Annotated[list[torch.Tensor], 2]  # 2 copies of activations (actual and expectations)
+Weights = torch.Tensor
+
+Input = torch.Tensor
+Output = torch.Tensor
+Inputs = list[Input]
+Outputs = list[Output]
 
 
 # Activations and weights inits ###############################################
@@ -71,11 +77,11 @@ def activs(d: int) -> Activs:
     return [torch.randn(d), torch.zeros(d)]
 
 # Internal weights
-def weights(d_x: int, d_y: int) -> torch.Tensor:
+def weights(d_x: int, d_y: int) -> Weights:
     return 2 * torch.randn(d_x, d_y) / (d_x**0.5) + (0*d_x**0.5)
 
 # External weights
-def conn(c1: ColBase, c2: ColBase, direction: Dir) -> torch.Tensor:
+def conn(c1: ColBase, c2: ColBase, direction: Dir) -> Weights:
     if direction == Dir.A:
         d1 = c1.a_pre.shape[0]
         d2 = c2.a_post.shape[0]
@@ -100,7 +106,7 @@ class ColBase(ABC):
         # Activations: self.nr_<name>
         # Weights: self.is_<name>
 
-        self.conns: dict[tuple[Loc, Dir], torch.Tensor] | None
+        self.conns: dict[tuple[Loc, Dir], Weights] | None
 
     @abstractmethod
     def step(self) -> None:
@@ -246,11 +252,11 @@ class ColBase(ABC):
 
 class I_ColBase(ColBase):
     @abstractmethod
-    def ipt(self, x: list[torch.Tensor]) -> None:
+    def ipt(self, x: Input) -> None:
         ...
 class O_ColBase(ColBase):
     @abstractmethod
-    def out(self) -> torch.Tensor:
+    def out(self) -> Output:
         ...
 
 
@@ -264,7 +270,7 @@ class BareCol(ColBase):  # 1 layer, no internals
         self.cfg = cfg
         self.d = cfg.d
 
-        self.conns: dict[tuple[Loc, Dir], torch.Tensor] = {}
+        self.conns: dict[tuple[Loc, Dir], Weights] = {}
 
         self.nr_1: Activs | None
 
@@ -306,13 +312,13 @@ class I_VectorCol(BareCol, I_ColBase):
     def step(self):
         pass
 
-    def ipt(self, x) -> None:
+    def ipt(self, x: Input) -> None:
         self.nr_1[0] = x
 
 
 O_VectorColCfg = BareColCfg
 class O_VectorCol(BareCol, O_ColBase):
-    def out(self) -> torch.Tensor:
+    def out(self) -> Output:
         return self.nr_1[0].clone().cpu()
 
 
@@ -327,7 +333,7 @@ class Col(ColBase):  # Column (module) within the whole network
         # Conns (weights between cols)
             # nr_4 -> nr_1 (actual)
             # nr_5 -> nr_2 (expectation)
-        self.conns: dict[tuple[Loc, Dir], torch.Tensor] = {}
+        self.conns: dict[tuple[Loc, Dir], Weights] = {}
 
         if skip_init:
             # Activations
@@ -428,7 +434,7 @@ class Col(ColBase):  # Column (module) within the whole network
 
 class AgtBase(ABC):
     @abstractmethod
-    def step(self, ipt: list[torch.Tensor]) -> list[torch.Tensor]:
+    def step(self, ipt: Inputs) -> Outputs:
         ...
 
     def is_i(self, loc):
@@ -804,7 +810,7 @@ class Agt(AgtBase):  # Agent
 
             print("done init.")
 
-    def step(self, ipt: list[torch.Tensor]) -> list[torch.Tensor]:
+    def step(self, ipt: Inputs) -> Outputs:
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
         # Receive inputs
@@ -832,7 +838,7 @@ class Agt(AgtBase):  # Agent
                 if direction == Dir.A:
                     weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
                 elif direction == Dir.E:
-                    ...
+                    ...  # TODO
                 col.conns[(loc, direction)] = weight
 
             # Do output to other cols
@@ -967,7 +973,7 @@ class MNISTAgt(AgtBase):
 
             print("done init.")
 
-    def step(self, ipt: list[torch.Tensor]) -> list[torch.Tensor]:
+    def step(self, ipt: Inputs) -> Outputs:
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
         # Receive inputs
