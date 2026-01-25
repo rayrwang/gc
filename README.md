@@ -59,6 +59,7 @@ src/
 |-- envs.py      # Virtual environments or software interfaces to the real world
 |-- debugger.py  # Debugger GUI
 main.py
+mnist.py
 
 simple/          # Snaller neural nets for testing
 |-- funcs.py

@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import random
+from typing import Any
 
 import cv2
 import torch
@@ -12,7 +13,7 @@ from . import iotypes as T
 torch.set_default_dtype(torch.float16)  # TODO sync with main process
 
 Specs = tuple[list[T.I_Base], list[T.O_Base]]
-Aux = ...  # Additional info e.g. labels
+Aux = Any  # Additional info e.g. labels
 Percepts = list[torch.Tensor]
 Actions = list[torch.Tensor]
 
