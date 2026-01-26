@@ -845,16 +845,11 @@ class Agt(AgtBase):  # Agent
                 self.save()
                 sys.exit()
 
-            # Step col
-            self.load_col(col)
-
             # Use lateral inhibition to combine actual and expected activations
             if hasattr(col, "inhibit"):
                 col.inhibit()
 
             col.update_activations()
-
-            self.free_col(col)
 
             if self.use_debug:
                 self.debug_update()
@@ -867,8 +862,9 @@ class Agt(AgtBase):  # Agent
                 self.save()
                 sys.exit()
 
-            # Step col
             self.load_col(col)
+
+            col.step_weights()
 
             # Apply learning rule to connections
             lrn = fc.lrn
@@ -878,8 +874,6 @@ class Agt(AgtBase):  # Agent
                 elif direction == Dir.E:
                     ...  # TODO
                 col.conns[(loc, direction)] = weight
-
-            col.step_weights()
 
             self.free_col(col)
 
