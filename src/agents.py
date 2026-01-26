@@ -15,15 +15,24 @@ for each timestep, in parallel processes:
     step agt:
         receive inputs (propagate to input cols)
         for each col:
+            apply activity rule (propagate activations) both locally (within a col),
+            and globally (across the whole agent)
+            
+            send debug info
+
+        then again for each col:
             apply self inhibition to activations
                 by using actual and expected values
-            global (within whole agent):
-                learning rules for conns
-                output to other cols using conns
-            local (within col):
-                apply learning rules
-                apply activity rules by adding the propagations to the updated values
-            
+                
+            set old activations equal to new activations
+            reset new activations
+
+            send debug info
+
+        then again for each col:
+            apply learning rules both locally (within col)
+            and globally (across whole agent)
+
             send debug info
         provide outputs (read from output cols)
 save to disk
@@ -109,37 +118,33 @@ class ColBase(ABC):
         self.conns: dict[tuple[Loc, Dir], Weights] | None
 
     @abstractmethod
-    def step(self) -> None:
+    def step_activations(self) -> None:
         ...
 
-    # For input to and from other cols using conns
-    @property
     @abstractmethod
-    def a_pre(self): ...
-    @a_pre.setter
-    @abstractmethod
-    def a_pre(self, value): ...
+    def update_activations(self) -> None:
+        ...
 
-    @property
     @abstractmethod
-    def a_post(self): ...
-    @a_post.setter
-    @abstractmethod
-    def a_post(self, value): ...
+    def step_weights(self) -> None:
+        ...
 
-    @property
-    @abstractmethod
-    def e_pre(self): ...
-    @e_pre.setter
-    @abstractmethod
-    def e_pre(self, value): ...
+    # Maps conn sources and targets to name of activation layers
+    conn_layer_dict: dict
 
-    @property
-    @abstractmethod
-    def e_post(self): ...
-    @e_post.setter
-    @abstractmethod
-    def e_post(self, value): ...
+    def __getattr__(self, name):
+        if name in self.conn_layer_dict:
+            layer_name, i = self.conn_layer_dict[name]
+            return getattr(self, layer_name)[i]
+        else:
+            raise AttributeError
+
+    def __setattr__(self, name, value):
+        if name in self.conn_layer_dict:
+            layer_name, i = self.conn_layer_dict[name]
+            getattr(self, layer_name)[i] = value
+        else:
+            super().__setattr__(name, value)  # Default behavior
 
     @property
     def count(self) -> tuple[int, int, int, int, int]:
@@ -275,41 +280,39 @@ class BareCol(ColBase):  # 1 layer, no internals
         self.nr_1: Activs | None
 
         if skip_init:
-            self.nr_1 = None
+            self.nr_1 = None; self.nr_1_ = None
             self.weights_loaded = False
         else:
-            self.nr_1 = activs(cfg.d)
+            self.nr_1 = activs(cfg.d); self.nr_1_ = activs(cfg.d)
             self.weights_loaded = True
 
-    # For input to and from other cols using conns
-    @property
-    def a_pre(self): return self.nr_1[0]
-    @a_pre.setter
-    def a_pre(self, value): self.nr_1[0] = value
+    conn_layer_dict = {
+        "a_pre": ("nr_1", 0),
+        "a_pre_": ("nr_1_", 0),
+        "a_post": ("nr_1", 0),
+        "a_post_": ("nr_1_", 0),
+        "e_pre": ("nr_1", 0),
+        "e_pre_": ("nr_1_", 0),
+        "e_post": ("nr_1", 1),
+        "e_post_": ("nr_1_", 1),
+    }
 
-    @property
-    def a_post(self): return self.nr_1[0]
-    @a_post.setter
-    def a_post(self, value): self.nr_1[0] = value
+    def step_activations(self):
+        pass
 
-    @property
-    def e_pre(self): return self.nr_1[0]
-    @e_pre.setter
-    def e_pre(self, value): self.nr_1[0] = value
+    def update_activations(self):
+        self.nr_1 = self.nr_1_.copy()
 
-    @property
-    def e_post(self): return self.nr_1[1]
-    @e_post.setter
-    def e_post(self, value): self.nr_1[1] = value
+        self.nr_1_[0] = fc.update(self.nr_1_[0])
+        self.nr_1_[1] = fc.update_e(self.nr_1_[1])
 
-    def step(self):
-        self.nr_1[0] = fc.update(self.nr_1[0])
-        self.nr_1[1] = fc.update(self.nr_1[1])
+    def step_weights(self):
+        pass
 
 
 I_VectorColCfg = BareColCfg
 class I_VectorCol(BareCol, I_ColBase):
-    def step(self):
+    def update_activations(self):  # Receives perceptual input, don't reset
         pass
 
     def ipt(self, x: Input) -> None:
@@ -337,11 +340,11 @@ class Col(ColBase):  # Column (module) within the whole network
 
         if skip_init:
             # Activations
-            self.nr_1 = None
-            self.nr_2 = None
-            self.nr_3 = None
-            self.nr_4 = None
-            self.nr_5 = None
+            self.nr_1 = None; self.nr_1_ = None
+            self.nr_2 = None; self.nr_2_ = None
+            self.nr_3 = None; self.nr_3_ = None
+            self.nr_4 = None; self.nr_4_ = None
+            self.nr_5 = None; self.nr_5_ = None
 
             # Weights (within col)
             self.is_1_2 = None
@@ -350,12 +353,12 @@ class Col(ColBase):  # Column (module) within the whole network
             self.is_2_4 = None
             self.is_4_5 = None
         else:
-            # Activations
-            self.nr_1 = activs(1024)
-            self.nr_2 = activs(1024)
-            self.nr_3 = activs(128)
-            self.nr_4 = activs(1024)
-            self.nr_5 = activs(1024)
+            # Activations: current and new versions
+            self.nr_1 = activs(1024); self.nr_1_ = activs(1024)
+            self.nr_2 = activs(1024); self.nr_2_ = activs(1024)
+            self.nr_3 = activs(128); self.nr_3_ = activs(128)
+            self.nr_4 = activs(1024); self.nr_4_ = activs(1024)
+            self.nr_5 = activs(1024); self.nr_5_ = activs(1024)
 
             # Weights (within col)
             self.is_1_2 = weights(1024, 1024)
@@ -368,68 +371,60 @@ class Col(ColBase):  # Column (module) within the whole network
 
     def inhibit(self):
         # Lateral inhibition for winner take all, by combining actual and expected
-        self.nr_1 = fc.inhibit(self.nr_1)
-        self.nr_2 = fc.inhibit(self.nr_2)
-        self.nr_3 = fc.inhibit(self.nr_3)
-        self.nr_4 = fc.inhibit(self.nr_4)
-        self.nr_5 = fc.inhibit(self.nr_5)
+        self.nr_1_ = fc.inhibit(self.nr_1_)
+        self.nr_2_ = fc.inhibit(self.nr_2_)
+        self.nr_3_ = fc.inhibit(self.nr_3_)
+        self.nr_4_ = fc.inhibit(self.nr_4_)
+        self.nr_5_ = fc.inhibit(self.nr_5_)
 
-    @property
-    def a_pre(self): return self.nr_4[0]
-    @a_pre.setter
-    def a_pre(self, value): self.nr_4[0] = value
+    conn_layer_dict = {
+        "a_pre": ("nr_4", 0),
+        "a_pre_": ("nr_4_", 0),
+        "a_post": ("nr_1", 0),
+        "a_post_": ("nr_1_", 0),
+        "e_pre": ("nr_5", 0),
+        "e_pre_": ("nr_5_", 0),
+        "e_post": ("nr_2", 1),
+        "e_post_": ("nr_2_", 1),
+    }
 
-    @property
-    def a_post(self): return self.nr_1[0]
-    @a_post.setter
-    def a_post(self, value): self.nr_1[0] = value
+    def step_activations(self):
+        # Apply activity rule (propagate activations)
+        self.nr_1_[0]
+        self.nr_2_[0] += fc.atv(self.nr_1[0], self.is_1_2, self.nr_2[0]) \
+            + fc.atv(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
+        self.nr_3_[0] += fc.atv(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
+        self.nr_4_[0] += fc.atv(self.nr_2[0], self.is_2_4, self.nr_4[0])
+        self.nr_5_[0] += fc.atv(self.nr_4[0], self.is_4_5, self.nr_5[0])
 
-    @property
-    def e_pre(self): return self.nr_5[0]
-    @e_pre.setter
-    def e_pre(self, value): self.nr_5[0] = value
+    def update_activations(self):
+        # Set current activations equal to new activations
+        self.nr_1 = self.nr_1_.copy()
+        self.nr_2 = self.nr_2_.copy()
+        self.nr_3 = self.nr_3_.copy()
+        self.nr_4 = self.nr_4_.copy()
+        self.nr_5 = self.nr_5_.copy()
 
-    @property
-    def e_post(self): return self.nr_2[1]
-    @e_post.setter
-    def e_post(self, value): self.nr_2[1] = value
+        # Reset new activations
+        self.nr_1_[0] = fc.update(self.nr_1_[0])
+        self.nr_2_[0] = fc.update(self.nr_2_[0])
+        self.nr_3_[0] = fc.update(self.nr_3_[0])
+        self.nr_4_[0] = fc.update(self.nr_4_[0])
+        self.nr_5_[0] = fc.update(self.nr_5_[0])
 
-    def step(self):
-        atv = fc.atv
-        lrn = fc.lrn
-        update = fc.update
-        update_e = fc.update_e
+        self.nr_1_[1] = fc.update_e(self.nr_1_[1])
+        self.nr_2_[1] = fc.update_e(self.nr_2_[1])
+        self.nr_3_[1] = fc.update_e(self.nr_3_[1])
+        self.nr_4_[1] = fc.update_e(self.nr_4_[1])
+        self.nr_5_[1] = fc.update_e(self.nr_5_[1])
 
+    def step_weights(self):
         # Apply learning rules
-        self.is_1_2   = lrn(self.nr_1[0], self.is_1_2, self.nr_2[0])
-        self.is_2_3_f = lrn(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
-        self.is_2_3_b = lrn(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
-        self.is_2_4   = lrn(self.nr_2[0], self.is_2_4, self.nr_4[0])
-        self.is_4_5   = lrn(self.nr_4[0], self.is_4_5, self.nr_5[0])
-
-        # Apply activity rules (propagate activations)
-        nr_1_ = update(self.nr_1[0])
-        nr_2_ = update(self.nr_2[0]) \
-            + atv(self.nr_1[0], self.is_1_2, self.nr_2[0]) \
-            + atv(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
-        nr_3_ = update(self.nr_3[0]) \
-            + atv(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
-        nr_4_ = update(self.nr_4[0]) + atv(self.nr_2[0], self.is_2_4, self.nr_4[0])
-        nr_5_ = update(self.nr_5[0]) + atv(self.nr_4[0], self.is_4_5, self.nr_5[0])
-
-        # Update actual
-        self.nr_1[0] = nr_1_
-        self.nr_2[0] = nr_2_
-        self.nr_3[0] = nr_3_
-        self.nr_4[0] = nr_4_
-        self.nr_5[0] = nr_5_
-
-        # Update expectations
-        self.nr_1[1] = update_e(self.nr_1[1])
-        self.nr_2[1] = update_e(self.nr_2[1])
-        self.nr_3[1] = update_e(self.nr_3[1])
-        self.nr_4[1] = update_e(self.nr_4[1])
-        self.nr_5[1] = update_e(self.nr_5[1])
+        self.is_1_2   = fc.lrn(self.nr_1[0], self.is_1_2, self.nr_2[0])
+        self.is_2_3_f = fc.lrn(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
+        self.is_2_3_b = fc.lrn(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
+        self.is_2_4   = fc.lrn(self.nr_2[0], self.is_2_4, self.nr_4[0])
+        self.is_4_5   = fc.lrn(self.nr_4[0], self.is_4_5, self.nr_5[0])
 
 
 class AgtBase(ABC):
@@ -516,7 +511,7 @@ class AgtBase(ABC):
             sum_density = 0
             for loc, col in self.cols.items():
                 for name, x in vars(col).items():
-                    if name.startswith("nr_"):
+                    if name.startswith("nr_") and name[-1] != "_":
                         copies = len(x)  # Assume is same for all activations
                         x = x[0]
                         nrns += x.numel()
@@ -551,7 +546,7 @@ class AgtBase(ABC):
             info["syns"] = info["isyns"] + info["esyns"]
             # Values of activations
             for name, x in vars(col).items():
-                if name.startswith("nr_"):
+                if name.startswith("nr_") and name[-1] != "_":
                     info[name] = [stats(x_i) for x_i in x]
                 elif name.startswith("is_"):
                     info[name] = stats(x, True)
@@ -818,7 +813,32 @@ class Agt(AgtBase):  # Agent
             x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
             col.ipt(x)
 
-        for col in (bar := tqdm(self.cols.values(), desc="Stepping cols...")):
+        # First pass: compute new activations
+        for col in (bar := tqdm(self.cols.values(), desc="Propagating activations...")):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            self.load_col(col)
+
+            col.step_activations()
+
+            # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Second pass: set old activations equal to new, and reset new
+        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...")):
             # Used to communicate debugger exited
             if self.pipes["overview"][0].poll():
                 bar.close()
@@ -832,6 +852,24 @@ class Agt(AgtBase):  # Agent
             if hasattr(col, "inhibit"):
                 col.inhibit()
 
+            col.update_activations()
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Third pass: compute new weights
+        for col in (bar := tqdm(self.cols.values(), desc="Updating weights...")):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            # Step col
+            self.load_col(col)
+
             # Apply learning rule to connections
             lrn = fc.lrn
             for (loc, direction), weight in col.conns.items():
@@ -841,15 +879,7 @@ class Agt(AgtBase):  # Agent
                     ...  # TODO
                 col.conns[(loc, direction)] = weight
 
-            # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    self.cols[loc].a_post += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    self.cols[loc].e_post += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
-
-            # Internal lrn, update, atv
-            col.step()
+            col.step_weights()
 
             self.free_col(col)
 
