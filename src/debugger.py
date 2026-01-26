@@ -337,7 +337,7 @@ def debugger(PATH, pipes):
                 loc = gui_state["loc"]
                 draw_col(loc, "border")
                 _, pipe = pipes["col"]
-                
+
                 # Send request
                 pipe.send(loc)
 
@@ -580,6 +580,12 @@ def debugger(PATH, pipes):
                         pg.draw.aaline(window, (0, 0, 0), (1125, 100+WIDTH*left), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom left portion
                         pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*top, 100+WIDTH*right))  # bottom right portion
                         pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom vertical edge
+            else:
+                gui_state = {
+                    "loc": None,
+                    "conn": None,
+                    "atv": None,
+                }
         else:
             gui_state = {
                 "loc": None,
