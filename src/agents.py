@@ -14,26 +14,25 @@ for each timestep, in parallel processes:
         provide percepts
     step agt:
         receive inputs (propagate to input cols)
-        for each col:
-            apply activity rule (propagate activations) both locally (within a col),
+        for each col: (first pass)
+            apply learning rule both locally (within a col)
             and globally (across the whole agent)
+
+            apply activity rule (propagate activations) locally and globally
+                the new activations will only be used after all of them
+                have been computed, which happens in the second pass
             
             send debug info
 
-        then again for each col:
+        then again for each col: (second pass)
             apply self inhibition to activations
                 by using actual and expected values
                 
-            set old activations equal to new activations
+            set current activations equal to new
             reset new activations
 
             send debug info
 
-        then again for each col:
-            apply learning rules both locally (within col)
-            and globally (across whole agent)
-
-            send debug info
         provide outputs (read from output cols)
 save to disk
 """
@@ -118,15 +117,11 @@ class ColBase(ABC):
         self.conns: dict[tuple[Loc, Dir], Weights] | None
 
     @abstractmethod
-    def step_activations(self) -> None:
+    def step(self) -> None:
         ...
 
     @abstractmethod
     def update_activations(self) -> None:
-        ...
-
-    @abstractmethod
-    def step_weights(self) -> None:
         ...
 
     # Maps conn sources and targets to name of activation layers
@@ -297,17 +292,14 @@ class BareCol(ColBase):  # 1 layer, no internals
         "e_post_": ("nr_1_", 1),
     }
 
-    def step_activations(self):
+    def step(self):
         pass
 
     def update_activations(self):
-        self.nr_1 = self.nr_1_.copy()
+        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
 
         self.nr_1_[0] = fc.update(self.nr_1_[0])
         self.nr_1_[1] = fc.update_e(self.nr_1_[1])
-
-    def step_weights(self):
-        pass
 
 
 I_VectorColCfg = BareColCfg
@@ -388,7 +380,14 @@ class Col(ColBase):  # Column (module) within the whole network
         "e_post_": ("nr_2_", 1),
     }
 
-    def step_activations(self):
+    def step(self):
+        # Apply learning rules
+        self.is_1_2   = fc.lrn(self.nr_1[0], self.is_1_2, self.nr_2[0])
+        self.is_2_3_f = fc.lrn(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
+        self.is_2_3_b = fc.lrn(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
+        self.is_2_4   = fc.lrn(self.nr_2[0], self.is_2_4, self.nr_4[0])
+        self.is_4_5   = fc.lrn(self.nr_4[0], self.is_4_5, self.nr_5[0])
+
         # Apply activity rule (propagate activations)
         self.nr_1_[0]
         self.nr_2_[0] += fc.atv(self.nr_1[0], self.is_1_2, self.nr_2[0]) \
@@ -399,7 +398,7 @@ class Col(ColBase):  # Column (module) within the whole network
 
     def update_activations(self):
         # Set current activations equal to new activations
-        self.nr_1 = self.nr_1_.copy()
+        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_2 = self.nr_2_.copy()
         self.nr_3 = self.nr_3_.copy()
         self.nr_4 = self.nr_4_.copy()
@@ -417,14 +416,6 @@ class Col(ColBase):  # Column (module) within the whole network
         self.nr_3_[1] = fc.update_e(self.nr_3_[1])
         self.nr_4_[1] = fc.update_e(self.nr_4_[1])
         self.nr_5_[1] = fc.update_e(self.nr_5_[1])
-
-    def step_weights(self):
-        # Apply learning rules
-        self.is_1_2   = fc.lrn(self.nr_1[0], self.is_1_2, self.nr_2[0])
-        self.is_2_3_f = fc.lrn(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
-        self.is_2_3_b = fc.lrn(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
-        self.is_2_4   = fc.lrn(self.nr_2[0], self.is_2_4, self.nr_4[0])
-        self.is_4_5   = fc.lrn(self.nr_4[0], self.is_4_5, self.nr_5[0])
 
 
 class AgtBase(ABC):
@@ -813,8 +804,8 @@ class Agt(AgtBase):  # Agent
             x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
             col.ipt(x)
 
-        # First pass: compute new activations
-        for col in (bar := tqdm(self.cols.values(), desc="Propagating activations...")):
+        # First pass: compute new weights and activations
+        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...")):
             # Used to communicate debugger exited
             if self.pipes["overview"][0].poll():
                 bar.close()
@@ -823,7 +814,17 @@ class Agt(AgtBase):  # Agent
 
             self.load_col(col)
 
-            col.step_activations()
+            # Apply learning and activity rules internally
+            col.step()
+
+            # Apply learning rule to connections
+            lrn = fc.lrn
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    ...  # TODO
+                col.conns[(loc, direction)] = weight
 
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
@@ -837,7 +838,7 @@ class Agt(AgtBase):  # Agent
             if self.use_debug:
                 self.debug_update()
 
-        # Second pass: set old activations equal to new, and reset new
+        # Second pass: set current activations equal to new, and reset new
         for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...")):
             # Used to communicate debugger exited
             if self.pipes["overview"][0].poll():
@@ -850,32 +851,6 @@ class Agt(AgtBase):  # Agent
                 col.inhibit()
 
             col.update_activations()
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Third pass: compute new weights
-        for col in (bar := tqdm(self.cols.values(), desc="Updating weights...")):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            self.load_col(col)
-
-            col.step_weights()
-
-            # Apply learning rule to connections
-            lrn = fc.lrn
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    ...  # TODO
-                col.conns[(loc, direction)] = weight
-
-            self.free_col(col)
 
             if self.use_debug:
                 self.debug_update()
