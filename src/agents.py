@@ -980,19 +980,18 @@ class MNISTAgt(AgtBase):
             x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
             col.ipt(x)
 
-        for col in (bar := tqdm(self.cols.values(), desc="Stepping cols...")):
+        # First pass: compute new weights and activations
+        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...")):
             # Used to communicate debugger exited
             if self.pipes["overview"][0].poll():
                 bar.close()
                 self.save()
                 sys.exit()
 
-            # Step col
             self.load_col(col)
 
-            # Use lateral inhibition to combine actual and expected activations
-            if hasattr(col, "inhibit"):
-                col.inhibit()
+            # Apply learning and activity rules internally
+            col.step()
 
             # Apply learning rule to connections
             lrn = fc.lrn
@@ -1000,20 +999,34 @@ class MNISTAgt(AgtBase):
                 if direction == Dir.A:
                     weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
                 elif direction == Dir.E:
-                    ...
+                    ...  # TODO
                 col.conns[(loc, direction)] = weight
 
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    self.cols[loc].a_post += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
+                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
                 elif direction == Dir.E:
-                    self.cols[loc].e_post += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
-
-            # Internal lrn, update, atv
-            col.step()
+                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
 
             self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Second pass: set current activations equal to new, and reset new
+        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...")):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            # Use lateral inhibition to combine actual and expected activations
+            if hasattr(col, "inhibit"):
+                col.inhibit()
+
+            col.update_activations()
 
             if self.use_debug:
                 self.debug_update()
