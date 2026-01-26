@@ -472,6 +472,7 @@ class AgtBase(ABC):
             h = None
             # Histogram
             if is_weight:
+                # TODO dynamically compute bins e.g. using std
                 # 43 bins: (-inf, -0.1025), [-0.1025, -0.0975), ..., [-0.0025, 0.0025), ..., [0.0975, 0.1025), [0.1025, inf)
                 bins = torch.tensor([float("-inf")] + [0.005*i - 0.1025 for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
             else:
