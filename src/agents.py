@@ -320,7 +320,7 @@ class O_VectorCol(BareCol, O_ColBase):
 @dataclass
 class ColCfg(ColCfgBase):
     ...
-class Col(ColBase):  # Column (module) within the whole network
+class Col(ColBase):  # Column (module) within the agent (whole network)
     def __init__(self, loc: Loc, cfg: ColCfg, skip_init: bool = False):
         self.loc = loc
         self.cfg = cfg
@@ -390,11 +390,11 @@ class Col(ColBase):  # Column (module) within the whole network
 
         # Apply activity rule (propagate activations)
         self.nr_1_[0]
-        self.nr_2_[0] += fc.atv(self.nr_1[0], self.is_1_2, self.nr_2[0]) \
-            + fc.atv(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
-        self.nr_3_[0] += fc.atv(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
-        self.nr_4_[0] += fc.atv(self.nr_2[0], self.is_2_4, self.nr_4[0])
-        self.nr_5_[0] += fc.atv(self.nr_4[0], self.is_4_5, self.nr_5[0])
+        self.nr_2_[0] += fc.atv(self.nr_1[0], self.is_1_2, self.nr_2_[0]) \
+            + fc.atv(self.nr_3[0], self.is_2_3_b, self.nr_2_[0])
+        self.nr_3_[0] += fc.atv(self.nr_2[0], self.is_2_3_f, self.nr_3_[0])
+        self.nr_4_[0] += fc.atv(self.nr_2[0], self.is_2_4, self.nr_4_[0])
+        self.nr_5_[0] += fc.atv(self.nr_4[0], self.is_4_5, self.nr_5_[0])
 
     def update_activations(self):
         # Set current activations equal to new activations
@@ -829,9 +829,9 @@ class Agt(AgtBase):  # Agent
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
+                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
                 elif direction == Dir.E:
-                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
+                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
 
             self.free_col(col)
 
@@ -1005,9 +1005,9 @@ class MNISTAgt(AgtBase):
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post)
+                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
                 elif direction == Dir.E:
-                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post)
+                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
 
             self.free_col(col)
 
