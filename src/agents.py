@@ -502,6 +502,7 @@ class AgtBase(ABC):
             sum_density = 0
             for loc, col in self.cols.items():
                 for name, x in vars(col).items():
+                    # Only count current activations, not new
                     if name.startswith("nr_") and name[-1] != "_":
                         copies = len(x)  # Assume is same for all activations
                         x = x[0]
@@ -537,6 +538,7 @@ class AgtBase(ABC):
             info["syns"] = info["isyns"] + info["esyns"]
             # Values of activations
             for name, x in vars(col).items():
+                # Only send current activations, not new
                 if name.startswith("nr_") and name[-1] != "_":
                     info[name] = [stats(x_i) for x_i in x]
                 elif name.startswith("is_"):

@@ -331,14 +331,14 @@ def debugger(PATH, pipes):
                 gui_state["loc"] = loc
                 gui_state["conn"] = None
 
-            # Draw col and conn debug info ####################################
+            # Draw debug info
             if os.path.isdir(f"{PATH}/{loc}"):  # Check if col location is valid
                 # Draw col debug info #########################################
                 loc = gui_state["loc"]
                 draw_col(loc, "border")
-                _, pipe = pipes["col"]
 
                 # Send request
+                _, pipe = pipes["col"]
                 pipe.send(loc)
 
                 # Try to get new information
@@ -458,8 +458,9 @@ def debugger(PATH, pipes):
                 if gui_state["conn"] is not None:
                     conn_loc, conn_dir = gui_state["conn"]
                     draw_col(conn_loc, highlight=f"border{dir2pos[conn_dir]}")
-                    _, pipe = pipes["conn"]
+                    
                     # Send request
+                    _, pipe = pipes["conn"]
                     pipe.send((loc, conn_loc, conn_dir))
 
                     # Try to get new information
@@ -512,11 +513,11 @@ def debugger(PATH, pipes):
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
 
-                # Draw activations
+                # Draw activations ############################################
                 if gui_state["atv"] is not None:
+                    # Send request
                     _, pipe = pipes["atv"]
                     request = (loc, gui_state["atv"])
-                    # Send request
                     pipe.send(request)
 
                     # Try to get new information
