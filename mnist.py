@@ -23,7 +23,7 @@ if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create environment
-    cfg = MNISTEnvCfg()
+    cfg = MNISTEnvCfg("active")
     ispec, ospec = MNISTEnv.get_specs(cfg)
     ctx = multiprocessing.get_context("spawn")  # Avoid duplicating memory
     input_queue = ctx.Queue()
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         # Receive percept from env
         i = None
         while not input_queue.empty():
-            i = input_queue.get()
+            i, _ = input_queue.get()
         i = i or get_default(ispec)
         print(f"Input: {i}")
 

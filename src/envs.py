@@ -2,10 +2,11 @@
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import random
-from typing import Any
+from typing import Any, Literal
 
 import cv2
 import torch
+from torch.utils.data import Dataset
 import torchvision
 
 from . import iotypes as T
@@ -153,47 +154,68 @@ class GridEnv(EnvBase):
         cv2.waitKey(1)
 
 
+class MNISTDataset(Dataset):
+    def __init__(self, train=True):
+        self.mnist = torchvision.datasets.MNIST("data", train=train, download=True)
+        self.len = len(self.mnist)
+
+    def __getitem__(self, i):
+        (image_raw, label_raw) = self.mnist[i]
+        image = torchvision.transforms.functional.to_tensor(image_raw)
+        image = image.reshape(-1)
+        label = torch.zeros(10)
+        label[label_raw] = 1
+        return image, label
+
+    def __len__(self):
+        return self.len
+@dataclass
 class MNISTEnvCfg(EnvCfgBase):
-    ...
+    # active  : choose image based on agent's action
+    # passive : randomly show images
+    mode: Literal["active", "passive"]
 class MNISTEnv(EnvBase):
     def __init__(self, cfg: MNISTEnvCfg):
         self.cfg = cfg
+        self.mode = cfg.mode
 
-        self.mnist = torchvision.datasets.MNIST("data", download=True)
+        self.mnist = MNISTDataset()
 
-        (image, _) = random.choice(self.mnist)
-        self.image = torchvision.transforms.functional.pil_to_tensor(image)
+        (self.image, self.label) = random.choice(self.mnist)
 
         self.opencv_init = False
 
     @staticmethod
-    def get_specs(cfg: MNISTEnvCfg) -> tuple[list[T.I_Base], list[T.O_Base]]:
+    def get_specs(cfg: MNISTEnvCfg) -> Specs:
         ispec = [T.I_Vector(d=28*28)]
         ospec = [T.O_Vector(d=10)]
         return ispec, ospec
 
-    def _step(self, a: list[torch.Tensor]) -> list[torch.Tensor]:
-        # Get image of digit corresponding to largest activation in action
-        digits, = a
-        assert digits.shape == (10,)
-        # TODO? use None i/o when unavailable rather than all zeros (get_default)
-        if not torch.allclose(digits, torch.zeros(10, dtype=torch.get_default_dtype(), device="cpu")):
-            # Get new digit
-            digit = torch.topk(digits, 1).indices[0]
-            while True:
-                (image, label) = random.choice(self.mnist)
-                if label == digit:
-                    self.image = torchvision.transforms.functional.pil_to_tensor(image)
-                    break
-        p = [self.image.reshape(-1)]
-        return p
+    def _step(self, a: Actions) -> tuple[Percepts, Aux]:
+        if self.mode == "active":
+            # Get image of digit corresponding to largest activation in action
+            digits, = a
+            assert digits.shape == (10,)
+            # TODO? use None i/o when unavailable rather than all zeros (get_default)
+            if not torch.allclose(digits, torch.zeros(10, dtype=torch.get_default_dtype(), device="cpu")):
+                # Get new digit
+                digit = torch.topk(digits, 1).indices[0]
+                while True:
+                    (image, label) = random.choice(self.mnist)
+                    label_int = torch.topk(label, 1).indices[0]
+                    if label_int == digit:
+                        self.image, self.label = image, label
+                        break
+        elif self.mode == "passive":
+            (self.image, self.label) = random.choice(self.mnist)
+        return [self.image.clone()], self.label
 
     def _show(self) -> None:
-        img = self.image.clone()
+        img = self.image.clone() * 255
 
         img = img.to(torch.uint8).cpu().numpy()
         img = img.reshape(28, 28, 1)
-        if not self.opencv_init:   
+        if not self.opencv_init:
             self.opencv_init = True 
             cv2.namedWindow("mnist env", cv2.WINDOW_NORMAL)
             WINDOW_H = 200  # TODO calculate using monitor resolution
