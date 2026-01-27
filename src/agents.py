@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import pickle
 import os
-from typing import Annotated
+from typing import Annotated, overload
 from dataclasses import dataclass
 import time
 import random
@@ -419,8 +419,14 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
 
 class AgtBase(ABC):
+    @overload
     @abstractmethod
     def step(self, ipt: Inputs) -> Outputs:
+        ...
+
+    @overload
+    @abstractmethod
+    def step(self, ipt: Inputs, disable_print: bool) -> Outputs:
         ...
 
     def is_i(self, loc):
@@ -855,7 +861,7 @@ class Agt(AgtBase):  # Agent
 
             col.update_activations()
 
-            if self.use_debug:
+            if self.use_debug:  # TODO not here?
                 self.debug_update()
 
         # Return outputs
@@ -975,7 +981,7 @@ class MNISTAgt(AgtBase):
 
             print("done init.")
 
-    def step(self, ipt: Inputs) -> Outputs:
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
         # Receive inputs
@@ -984,7 +990,7 @@ class MNISTAgt(AgtBase):
             col.ipt(x)
 
         # First pass: compute new weights and activations
-        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...")):
+        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
             # Used to communicate debugger exited
             if self.pipes["overview"][0].poll():
                 bar.close()
@@ -1018,7 +1024,7 @@ class MNISTAgt(AgtBase):
                 self.debug_update()
 
         # Second pass: set current activations equal to new, and reset new
-        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...")):
+        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
             # Used to communicate debugger exited
             if self.pipes["overview"][0].poll():
                 bar.close()
