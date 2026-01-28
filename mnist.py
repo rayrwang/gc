@@ -62,6 +62,3 @@ if __name__ == "__main__":
         # Send action to env
         print(f"Output: {o}")
         output_queue.put(o)
-
-    # TODO Test quality of representations
-
