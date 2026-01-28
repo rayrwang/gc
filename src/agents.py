@@ -263,7 +263,7 @@ class O_ColBase(ColBase):
 @dataclass
 class BareColCfg(ColCfgBase):
     d: int = D_DEFAULT
-class BareCol(ColBase):  # 1 layer, no internals
+class BareCol(ColBase):  # 1 layer, no internal weights
     def __init__(self, loc, cfg, skip_init=False):
         self.loc = loc
 
