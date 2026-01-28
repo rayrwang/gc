@@ -15,11 +15,10 @@ from src.envs import MNISTEnvCfg, MNISTEnv
 
 
 def get_representations(agt: MNISTAgt):
-    # Don't look at inputs (cheating)
     return torch.cat([
         col.nr_1[0].clone() 
         for col in agt.cols.values()
-        if not agt.is_i(col.loc)])
+        if not agt.is_i(col.loc)])  # Don't look at inputs (cheating)
 
 
 if __name__ == "__main__":
