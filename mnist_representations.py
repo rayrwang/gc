@@ -61,11 +61,11 @@ if __name__ == "__main__":
 
     # Classifier: Takes in agent's internal representations
     classifier = nn.Linear(get_representations(agt).shape[0], 10)
-    optim = torch.optim.SGD(classifier.parameters(), lr=1)
+    optim = torch.optim.SGD(classifier.parameters(), lr=1e-1)
 
     # Control classifier: Takes in the image
     control_classifier = nn.Linear(784, 10)
-    control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1)
+    control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-1)
 
     mnist_test = MNISTDataset(train=False)
     wait_propagate = 5  # Number of steps to wait for the image to propagate through the agent
@@ -86,21 +86,20 @@ if __name__ == "__main__":
             for _ in range(wait_propagate):
                 agt.step(i, True)
             representations = get_representations(agt)
-            representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype()) / 255
+            representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
             label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-            pred = classifier(representations)
-            loss = F.mse_loss(pred, label)
+            pred = F.softmax(classifier(representations), dim=0)
+            loss = F.cross_entropy(pred, label)
             optim.zero_grad()
             loss.backward()
             optim.step()
 
             # Control classifier
             img, = i
-            img = img * 1
-            img = img.to(torch.get_default_device()).to(torch.get_default_dtype()) / 255
+            img = img.to(torch.get_default_device()).to(torch.get_default_dtype())
             label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-            pred = control_classifier(img)
-            loss = F.mse_loss(pred, label)
+            pred = F.softmax(control_classifier(img), dim=0)
+            loss = F.cross_entropy(pred, label)
             control_optim.zero_grad()
             loss.backward()
             control_optim.step()
