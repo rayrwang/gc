@@ -666,7 +666,7 @@ class AgtBase(ABC):
 
     def load_col(self, c: ColBase) -> None:
         if torch.cuda.is_available():
-            # available < 0.05*total
+            # While available memory is less than 5% of total
             while torch.cuda.memory.mem_get_info()[0] \
                     < 0.05*torch.cuda.memory.mem_get_info()[1]:
                 to_evict = random.choice(list(self.cols.values()))
