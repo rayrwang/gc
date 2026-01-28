@@ -836,11 +836,16 @@ class Agt(AgtBase):  # Agent
                 col.conns[(loc, direction)] = weight
 
             # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
-                elif direction == Dir.E:
-                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+                if self.is_i(loc):  # Don't discretize inputs
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += col.a_pre @ weight
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += col.e_pre @ weight
+                else:
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
 
             self.free_col(col)
 
@@ -1013,10 +1018,16 @@ class MNISTAgt(AgtBase):
 
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
-                elif direction == Dir.E:
-                    self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+                if self.is_i(loc):  # Don't discretize inputs
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += col.a_pre @ weight
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += col.e_pre @ weight
+                else:
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
 
             self.free_col(col)
 
