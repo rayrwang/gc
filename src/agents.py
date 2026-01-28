@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import pickle
 import os
-from typing import Annotated
+from typing import Annotated, Literal
 from dataclasses import dataclass
 import time
 import random
@@ -111,7 +111,9 @@ class ColBase(ABC):
         self.loc: Loc
         self.cfg: ColCfgBase
 
-        # Activations: self.nr_<name>
+        # Activations:
+            # current: self.nr_<name>
+            # new: self.nr_<name>_
         # Weights: self.is_<name>
 
         self.conns: dict[tuple[Loc, Dir], Weights] | None
@@ -124,8 +126,14 @@ class ColBase(ABC):
     def update_activations(self) -> None:
         ...
 
-    # Maps conn sources and targets to name of activation layers
-    conn_layer_dict: dict
+    # Maps
+        # conn source or target: {a, e}_{pre, post}{ , _}
+        #                        ^ actual or expectation conn
+        #                               ^ source or target
+        #                                          ^ current or new
+        # to 
+        # name of activation layer and kind (actual or expectations)
+    conn_layer_dict: dict[str, tuple[str, Literal[0, 1]]]
 
     def __getattr__(self, name):
         if name in self.conn_layer_dict:
