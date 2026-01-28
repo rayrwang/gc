@@ -845,6 +845,7 @@ class Agt(AgtBase):  # Agent
                 col.conns[(loc, direction)] = weight
 
             # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
                 if self.is_i(loc):  # Don't discretize inputs
                     if direction == Dir.A:
                         self.cols[loc].a_post_ += col.a_pre @ weight
