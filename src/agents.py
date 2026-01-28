@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import pickle
 import os
-from typing import Annotated, overload
+from typing import Annotated
 from dataclasses import dataclass
 import time
 import random
@@ -419,15 +419,76 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
 
 class AgtBase(ABC):
-    @overload
-    @abstractmethod
-    def step(self, ipt: Inputs) -> Outputs:
-        ...
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
+        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
-    @overload
-    @abstractmethod
-    def step(self, ipt: Inputs, disable_print: bool) -> Outputs:
-        ...
+        # Receive inputs
+        for col, x in zip(self.I_cols, ipt):
+            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
+            col.ipt(x)
+
+        # First pass: compute new weights and activations
+        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            self.load_col(col)
+
+            # Apply learning and activity rules internally
+            col.step()
+
+            # Apply learning rule to connections
+            lrn = fc.lrn
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    ...  # TODO
+                col.conns[(loc, direction)] = weight
+
+            # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
+                if self.is_i(loc):  # Don't discretize inputs
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += col.a_pre @ weight
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += col.e_pre @ weight
+                else:
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Second pass: set current activations equal to new, and reset new
+        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            # Use lateral inhibition to combine actual and expected activations
+            if hasattr(col, "inhibit"):
+                col.inhibit()
+
+            col.update_activations()
+
+            if self.use_debug:  # TODO not here?
+                self.debug_update()
+
+        # Return outputs
+        out = []
+        for col in self.O_cols:
+            out.append(col.out())
+        return out
 
     def is_i(self, loc):
         return any([loc == col.loc for col in self.I_cols])
@@ -814,77 +875,6 @@ class Agt(AgtBase):  # Agent
 
             print("done init.")
 
-    def step(self, ipt: Inputs) -> Outputs:
-        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
-
-        # Receive inputs
-        for col, x in zip(self.I_cols, ipt):
-            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
-            col.ipt(x)
-
-        # First pass: compute new weights and activations
-        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...")):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            self.load_col(col)
-
-            # Apply learning and activity rules internally
-            col.step()
-
-            # Apply learning rule to connections
-            lrn = fc.lrn
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    ...  # TODO
-                col.conns[(loc, direction)] = weight
-
-            # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if self.is_i(loc):  # Don't discretize inputs
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += col.a_pre @ weight
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += col.e_pre @ weight
-                else:
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
-
-            self.free_col(col)
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Second pass: set current activations equal to new, and reset new
-        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...")):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            # Use lateral inhibition to combine actual and expected activations
-            if hasattr(col, "inhibit"):
-                col.inhibit()
-
-            col.update_activations()
-
-            if self.use_debug:  # TODO not here?
-                self.debug_update()
-
-        # Return outputs
-        out = []
-        for col in self.O_cols:
-            out.append(col.out())
-        return out
-
 
 @dataclass
 class BareCfg:
@@ -996,77 +986,6 @@ class BareAgt(AgtBase):
 
             print("done init.")
 
-    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
-        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
-
-        # Receive inputs
-        for col, x in zip(self.I_cols, ipt):
-            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
-            col.ipt(x)
-
-        # First pass: compute new weights and activations
-        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            self.load_col(col)
-
-            # Apply learning and activity rules internally
-            col.step()
-
-            # Apply learning rule to connections
-            lrn = fc.lrn
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    ...  # TODO
-                col.conns[(loc, direction)] = weight
-
-            # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if self.is_i(loc):  # Don't discretize inputs
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += col.a_pre @ weight
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += col.e_pre @ weight
-                else:
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
-
-            self.free_col(col)
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Second pass: set current activations equal to new, and reset new
-        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            # Use lateral inhibition to combine actual and expected activations
-            if hasattr(col, "inhibit"):
-                col.inhibit()
-
-            col.update_activations()
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Return outputs
-        out = []
-        for col in self.O_cols:
-            out.append(col.out())
-        return out
-
 
 @dataclass
 class MNISTCfg:
@@ -1126,74 +1045,3 @@ class MNISTAgt(AgtBase):
             self.use_debug = False
 
             print("done init.")
-
-    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
-        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
-
-        # Receive inputs
-        for col, x in zip(self.I_cols, ipt):
-            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
-            col.ipt(x)
-
-        # First pass: compute new weights and activations
-        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            self.load_col(col)
-
-            # Apply learning and activity rules internally
-            col.step()
-
-            # Apply learning rule to connections
-            lrn = fc.lrn
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    ...  # TODO
-                col.conns[(loc, direction)] = weight
-
-            # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if self.is_i(loc):  # Don't discretize inputs
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += col.a_pre @ weight
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += col.e_pre @ weight
-                else:
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
-
-            self.free_col(col)
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Second pass: set current activations equal to new, and reset new
-        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
-            # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
-                sys.exit()
-
-            # Use lateral inhibition to combine actual and expected activations
-            if hasattr(col, "inhibit"):
-                col.inhibit()
-
-            col.update_activations()
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Return outputs
-        out = []
-        for col in self.O_cols:
-            out.append(col.out())
-        return out
