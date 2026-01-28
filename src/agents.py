@@ -275,10 +275,10 @@ class BareCol(ColBase):  # 1 layer, no internals
         self.nr_1: Activs | None
 
         if skip_init:
-            self.nr_1 = None; self.nr_1_ = None
+            self.nr_1, self.nr_1_ = None, None
             self.weights_loaded = False
         else:
-            self.nr_1 = activs(cfg.d); self.nr_1_ = activs(cfg.d)
+            self.nr_1, self.nr_1_ = activs(cfg.d), activs(cfg.d)
             self.weights_loaded = True
 
     conn_layer_dict = {
@@ -332,11 +332,11 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
         if skip_init:
             # Activations
-            self.nr_1 = None; self.nr_1_ = None
-            self.nr_2 = None; self.nr_2_ = None
-            self.nr_3 = None; self.nr_3_ = None
-            self.nr_4 = None; self.nr_4_ = None
-            self.nr_5 = None; self.nr_5_ = None
+            self.nr_1, self.nr_1_ = None, None
+            self.nr_2, self.nr_2_ = None, None
+            self.nr_3, self.nr_3_ = None, None
+            self.nr_4, self.nr_4_ = None, None
+            self.nr_5, self.nr_5_ = None, None
 
             # Weights (within col)
             self.is_1_2 = None
@@ -346,11 +346,11 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             self.is_4_5 = None
         else:
             # Activations: current and new versions
-            self.nr_1 = activs(1024); self.nr_1_ = activs(1024)
-            self.nr_2 = activs(1024); self.nr_2_ = activs(1024)
-            self.nr_3 = activs(128); self.nr_3_ = activs(128)
-            self.nr_4 = activs(1024); self.nr_4_ = activs(1024)
-            self.nr_5 = activs(1024); self.nr_5_ = activs(1024)
+            self.nr_1, self.nr_1_ = activs(1024), activs(1024)
+            self.nr_2, self.nr_2_ = activs(1024), activs(1024)
+            self.nr_3, self.nr_3_ = activs(128), activs(128)
+            self.nr_4, self.nr_4_ = activs(1024), activs(1024)
+            self.nr_5, self.nr_5_ = activs(1024), activs(1024)
 
             # Weights (within col)
             self.is_1_2 = weights(1024, 1024)
