@@ -213,7 +213,7 @@ def debugger(PATH, pipes):
 
         # Display cols
         for name in os.listdir(PATH):
-            if name != "cfg":
+            if name not in ["type", "cfg"]:
                 draw_col(eval(name))
 
         # Display overview info ###############################################

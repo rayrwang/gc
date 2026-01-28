@@ -620,6 +620,10 @@ class AgtBase(ABC):
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
+        # Save type of agt
+        with open(f"{self.path}/type", "wb") as f:
+            pickle.dump(type(self), f)
+
         # Save cfg
         print("Saving cfg...")
         with open(f"{self.path}/cfg", "wb") as f:
@@ -633,18 +637,23 @@ class AgtBase(ABC):
     @staticmethod
     def load(path: str,
             load_activations: bool = True,
-            load_weights: bool = True) -> Agt:
+            load_weights: bool = True) -> AgtBase:
         print(f"\nLoading agent from \"{path}\":")
+
+        # Load type of agt
+        with open(f"{path}/type", "rb") as f:
+            agt_type = pickle.load(f)
+
         # Load cfg
         print("Loading cfg...")
         with open(f"{path}/cfg", "rb") as f:
             cfg = pickle.load(f)
 
-        agt = Agt(cfg, path, skip_init=True)
+        agt = agt_type(cfg, path, skip_init=True)
 
         # Load cols
         for name in tqdm(os.listdir(path), desc="Loading cols"):
-            if name != "cfg":
+            if name not in ["type", "cfg"]:
                 col = Col.init_and_load(path, name, load_activations, load_weights)
 
                 loc = eval(name)
