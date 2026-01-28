@@ -780,10 +780,9 @@ class Cfg:
     ospec: list[T.O_Base]  # Output specification
 class Agt(AgtBase):  # Agent
     def __init__(self,
-        cfg: Cfg,
-        path: str,
-        skip_init: bool=False  # For loading from save
-    ):
+            cfg: Cfg,
+            path: str,
+            skip_init: bool=False):  # For loading from save
 
         self.cfg = cfg
         self.path = path
@@ -891,10 +890,9 @@ class BareCfg:
     ospec: list[T.O_Base]
 class BareAgt(AgtBase):
     def __init__(self,
-        cfg: Cfg,
-        path: str,
-        skip_init: bool=False  # For loading from save
-    ):
+            cfg: Cfg,
+            path: str,
+            skip_init: bool=False):  # For loading from save
 
         self.cfg = cfg
         self.path = path
@@ -1001,10 +999,9 @@ class MNISTCfg:
     ospec: list[T.O_Base]
 class MNISTAgt(AgtBase):
     def __init__(self,
-        cfg: Cfg,
-        path: str,
-        skip_init: bool=False  # For loading from save
-    ):
+            cfg: Cfg,
+            path: str,
+            skip_init: bool=False):  # For loading from save
 
         self.cfg = cfg
         self.path = path
