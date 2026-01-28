@@ -52,7 +52,7 @@ if __name__ == "__main__":
         else:
             N_COLS = 20
         AGT_PATH = "./saves/agt0"
-        agt = MNISTAgt(MNISTCfg(N_COLS, ispec, ospec), AGT_PATH)
+        agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
     agt.debug_init()
 
     # Classifier: Takes in agent's internal representations

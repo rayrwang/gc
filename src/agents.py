@@ -886,11 +886,11 @@ class Agt(AgtBase):  # Agent
 
 
 @dataclass
-class MNISTCfg:
+class BareCfg:
     n_cols: int
     ispec: list[T.I_Base]
     ospec: list[T.O_Base]
-class MNISTAgt(AgtBase):
+class BareAgt(AgtBase):
     def __init__(self,
         cfg: Cfg,
         path: str,
@@ -986,6 +986,137 @@ class MNISTAgt(AgtBase):
                                 col.conns[(other_loc, direction)] = conn(col, self.cols[other_loc], direction)
                                 break  # Only at most one conn per target?
                 self.free_col(col)
+
+            # Create directories for all cols
+            for col in self.cols.values():
+                os.mkdir(f"{path}/{col.loc}")
+
+            self.use_debug = False
+
+            print("done init.")
+
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
+        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
+
+        # Receive inputs
+        for col, x in zip(self.I_cols, ipt):
+            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
+            col.ipt(x)
+
+        # First pass: compute new weights and activations
+        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            self.load_col(col)
+
+            # Apply learning and activity rules internally
+            col.step()
+
+            # Apply learning rule to connections
+            lrn = fc.lrn
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    ...  # TODO
+                col.conns[(loc, direction)] = weight
+
+            # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
+                if self.is_i(loc):  # Don't discretize inputs
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += col.a_pre @ weight
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += col.e_pre @ weight
+                else:
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Second pass: set current activations equal to new, and reset new
+        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
+            # Used to communicate debugger exited
+            if self.pipes["overview"][0].poll():
+                bar.close()
+                self.save()
+                sys.exit()
+
+            # Use lateral inhibition to combine actual and expected activations
+            if hasattr(col, "inhibit"):
+                col.inhibit()
+
+            col.update_activations()
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Return outputs
+        out = []
+        for col in self.O_cols:
+            out.append(col.out())
+        return out
+
+
+@dataclass
+class MNISTCfg:
+    ispec: list[T.I_Base]
+    ospec: list[T.O_Base]
+class MNISTAgt(AgtBase):
+    def __init__(self,
+        cfg: Cfg,
+        path: str,
+        skip_init: bool=False  # For loading from save
+    ):
+
+        self.cfg = cfg
+        self.path = path
+
+        self.ispec = ispec = cfg.ispec  # Input specification
+        self.ospec = ospec = cfg.ospec  # Output specification
+
+        assert len(ispec) == 1
+        assert type(ispec[0]) is T.I_Vector
+        assert ispec[0].d == 784
+
+        assert len(ospec) == 1
+        assert type(ospec[0]) is T.O_Vector
+        assert ospec[0].d == 10
+
+        self.I_cols: list[I_ColBase] = []
+        self.O_cols: list[O_ColBase] = []
+        self.cols: dict[Loc, ColBase] = {}  # location : col
+
+        if not skip_init:
+            print("\nInitializing new agent...")
+
+            # Reset or create save directory
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            col1 = I_VectorCol((1, 0), I_VectorColCfg(784))
+            self.cols[1, 0] = col1
+            self.I_cols.append(col1)
+            col2 = BareCol((1, 1), BareColCfg(32))
+            self.cols[1, 1] = col2
+            col3 = BareCol((1, 2), BareColCfg(32))
+            self.cols[1, 2] = col3
+            col_out = O_VectorCol((0, 1), O_VectorColCfg(10))
+            self.cols[0, 1] = col_out
+            self.O_cols.append(col_out)
+
+            for loc, other_loc in [((1, 0), (1, 1)), ((1, 1), (1, 2))]:
+                self.cols[loc].conns[other_loc, Dir.A] = conn(self.cols[loc], self.cols[other_loc], Dir.A)
 
             # Create directories for all cols
             for col in self.cols.values():

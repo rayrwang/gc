@@ -5,7 +5,7 @@ import argparse
 
 import torch
 
-from src.agents import MNISTCfg, MNISTAgt
+from src.agents import BareCfg, BareAgt
 from src.envs import get_default, run_env
 from src.envs import MNISTEnvCfg, MNISTEnv
 
@@ -35,14 +35,14 @@ if __name__ == "__main__":
 
     # Create agent
     if args.load:
-        agt = MNISTAgt.load(args.load)
+        agt = BareAgt.load(args.load)
     else:
         if args.size:
             N_COLS = args.size
         else:
             N_COLS = 200 if torch.cuda.is_available() else 50
         AGT_PATH = "./saves/agt0"
-        agt = MNISTAgt(MNISTCfg(N_COLS, ispec, ospec), AGT_PATH)
+        agt = BareAgt(BareCfg(N_COLS, ispec, ospec), AGT_PATH)
     agt.debug_init()
 
     t_start = datetime.datetime.now()
