@@ -537,7 +537,7 @@ class AgtBase(ABC):
         self.t_prevs["atv"] = time.time()
 
     def debug_update(self):
-        def stats(x, is_weight=False):
+        def stats(x, is_weight):
             shape = tuple(x.shape)
             threshold = 1.0  # temp
             d = (torch.sum(torch.where(x < threshold, 0.0, 1.0)) / x.numel()).item()
@@ -638,7 +638,7 @@ class AgtBase(ABC):
             for name, x in vars(col).items():
                 # Only send current activations, not new
                 if name.startswith("nr_") and name[-1] != "_":
-                    info[name] = [stats(x_i) for x_i in x]
+                    info[name] = [stats(x_i, False) for x_i in x]
                 elif name.startswith("is_"):
                     info[name] = stats(x, True)
 
