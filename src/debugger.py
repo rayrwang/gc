@@ -78,7 +78,7 @@ def debugger(PATH, pipes):
 
         window.blit(col, (x*COL_WIDTH, y*COL_WIDTH))
 
-    def get_histogram(h, is_weight=False, h_e=None):
+    def get_histogram(h, bin_width, is_weight=False, h_e=None):
         assert not (is_weight and h_e)
 
         histogram = pg.Surface((100+215, 15+133+15))
@@ -114,11 +114,11 @@ def debugger(PATH, pipes):
                 return None
 
         pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)      # -2 tick
-        txt = fonts["small"].render("-0.1" if is_weight else "-2", True, (0,0,0))
+        txt = fonts["small"].render(f"-{20*bin_width}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+7.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+57.5, 15+133-10), (100+57.5, 15+133+5), width=2)    # -1 tick
-        txt = fonts["small"].render("-0.05" if is_weight else "-1", True, (0,0,0))
+        txt = fonts["small"].render(f"-{10*bin_width}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+57.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+107.5, 15+133-10), (100+107.5, 15+133+5), width=2)  # 0 tick
@@ -126,11 +126,11 @@ def debugger(PATH, pipes):
         histogram.blit(txt, txt.get_rect(midtop=(100+107.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+157.5, 15+133-10), (100+157.5, 15+133+5), width=2)  # 1 tick
-        txt = fonts["small"].render("0.05" if is_weight else "1", True, (0,0,0))
+        txt = fonts["small"].render(f"{10*bin_width}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+157.5, 15+133)))
 
         pg.draw.line(histogram, (100,149,237), (100+207.5, 15+133-10), (100+207.5, 15+133+5), width=2)  # 2 tick
-        txt = fonts["small"].render("0.1" if is_weight else "2", True, (0,0,0))
+        txt = fonts["small"].render(f"{20*bin_width}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+207.5, 15+133)))
         return histogram
 
@@ -415,8 +415,8 @@ def debugger(PATH, pipes):
                     activations = sorted([name for name in info if name.startswith("nr_")])
                     txt_line = 0
                     for name in activations:
-                        shape, d, n, m, s, h = info[name][0]
-                        _, _, _, _, _, h_e = info[name][1]
+                        shape, d, n, m, s, (h, _) = info[name][0]
+                        _, _, _, _, _, (h_e, _) = info[name][1]
                         txt = f"{name}: {shape}"
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
@@ -434,7 +434,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
 
                         txt_line -= 1
-                        histogram = get_histogram(h, is_weight=False, h_e=h_e)
+                        histogram = get_histogram(h, 0.1, is_weight=False, h_e=h_e)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midright=(1975, 250+(txt_line)*LINE_HEIGHT)))
                         txt_line += 3
@@ -442,7 +442,7 @@ def debugger(PATH, pipes):
                     weights = sorted([name for name in info if name.startswith("is_")])
                     txt_line = 0
                     for name in weights:
-                        shape, d, n, m, s, h = info[name]
+                        shape, d, n, m, s, (h, bin_width) = info[name]
                         txt = f"{name}: {shape}"
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
@@ -460,7 +460,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
 
                         txt_line -= 1
-                        histogram = get_histogram(h, is_weight=True)
+                        histogram = get_histogram(h, bin_width, is_weight=True)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midright=(2475, 250+(txt_line)*LINE_HEIGHT)))
                         txt_line += 3
@@ -516,7 +516,7 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
                         window.blit(txt, (1125, 25+6*LINE_HEIGHT))
 
-                        shape, d, n, m, s, h = info["stats"]
+                        shape, d, n, m, s, (h, bin_width) = info["stats"]
                         txt = f"conn: {shape}, {math.prod(shape):,}"
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1125, 25+8*LINE_HEIGHT))
@@ -524,7 +524,7 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1125, 25+9*LINE_HEIGHT))
 
-                        histogram = get_histogram(h, is_weight=True)
+                        histogram = get_histogram(h, bin_width, is_weight=True)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
 

@@ -544,19 +544,41 @@ class AgtBase(ABC):
             n = torch.linalg.vector_norm(x).item()
             m = torch.mean(x).item()
             s = torch.std(x).item()
+            # Histogram: The histogram displays from -2 to +2 standard deviations,
+            # with 43 bins in total, where each bin is 1/10 of a std wide.
+            #
+            # For example if the std is 1 (and so each bin is 0.1 wide), the bins are:
+            # (-inf, -2.05), [-2.05, -1.95), ..., [-0.05, 0.05), ..., [1.95, 2.05), [2.05, inf)
+            # 
+            # For activation tensors, the histogram std is fixed at 1, but for weights
+            # it is computed by rounding down the actual std to 1eX, 2eX, or 5eX,
+            # giving bin widths of 1e(X-1), 2e(X-1), and 5e(X-1).
             h = None
-            # Histogram
             if is_weight:
-                # TODO dynamically compute bins e.g. using std
-                # 43 bins: (-inf, -0.1025), [-0.1025, -0.0975), ..., [-0.0025, 0.0025), ..., [0.0975, 0.1025), [0.1025, inf)
-                bins = torch.tensor([float("-inf")] + [0.005*i - 0.1025 for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
-            else:
-                # 43 bins: (-inf, -2.05), [-2.05, -1.95), ..., [-0.05, 0.05), ..., [1.95, 2.05), [2.05, inf)
-                bins = torch.tensor([float("-inf")] + [0.1*i - 2.05 for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
+                # Compute bin size
+                bin_width = s / 10
+                # Repetitive but avoids bugs
+                if bin_width < 0.002:
+                    bin_width = 0.001
+                elif 0.002 <= bin_width < 0.005:
+                    bin_width = 0.002
+                elif 0.005 <= bin_width < 0.01:
+                    bin_width = 0.005
+                elif 0.01 <= bin_width < 0.02:
+                    bin_width = 0.01
+                elif 0.02 <= bin_width < 0.05:
+                    bin_width = 0.02
+                elif 0.05 <= bin_width < 0.1:
+                    bin_width = 0.05
+                else:
+                    bin_width = 0.1
+            else:  # Actuvations
+                bin_width = 0.1
+            bins = torch.tensor([float("-inf")] + [bin_width*i - 20.5*bin_width for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
             h, _ = torch.histogram(x.cpu().to(torch.float64), bins)  # NOTE issue if use lower float precision
             h = h.tolist()
             assert x.numel() == sum(h), "Failed to calculate histogram, probably because tensor is NaN"
-            return (shape, d, n, m, s, h)
+            return (shape, d, n, m, s, (h, bin_width))
 
         COOLDOWN_OVERVIEW = 0.2
         COOLDOWN_COL = 0.5
