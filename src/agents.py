@@ -558,17 +558,17 @@ class AgtBase(ABC):
                 # Compute bin size
                 bin_width = s / 10
                 # Repetitive but avoids bugs
-                if bin_width < 0.002:
+                if bin_width < 0.0015:
                     bin_width = 0.001
-                elif 0.002 <= bin_width < 0.005:
+                elif 0.0015 <= bin_width < 0.003:
                     bin_width = 0.002
-                elif 0.005 <= bin_width < 0.01:
+                elif 0.003 <= bin_width < 0.006:
                     bin_width = 0.005
-                elif 0.01 <= bin_width < 0.02:
+                elif 0.006 <= bin_width < 0.015:
                     bin_width = 0.01
-                elif 0.02 <= bin_width < 0.05:
+                elif 0.015 <= bin_width < 0.03:
                     bin_width = 0.02
-                elif 0.05 <= bin_width < 0.1:
+                elif 0.03 <= bin_width < 0.6:
                     bin_width = 0.05
                 else:
                     bin_width = 0.1
