@@ -145,7 +145,22 @@ def debugger(PATH, pipes):
         Dir.E: "bottom",
     }
 
-    COL_WIDTH = int(1100 / (1+math.ceil(len(os.listdir(PATH))**0.5)))
+    # Calculate size of rendered grid cells according to distance spanned by grid
+    x_min, x_max = float("inf"), float("-inf")
+    y_min, y_max = float("inf"), float("-inf")
+    for name in os.listdir(PATH):
+        if name not in ["type", "cfg"]:
+            x, y = eval(name)
+            if x < x_min:
+                x_min = x
+            if x > x_max:
+                x_max = x
+            if y < y_min:
+                y_min = y
+            if y > y_max:
+                y_max = y
+    dist_spanned = max(x_max - x_min, y_max - y_min)
+    COL_WIDTH = 1100 // (dist_spanned + 1)
 
     # Draw on 2500 x 1300 virtual window, then scale to size of real window
     W, H = (2500, 1300)
