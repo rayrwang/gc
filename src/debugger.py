@@ -78,9 +78,7 @@ def debugger(PATH, pipes):
 
         window.blit(col, (x*COL_WIDTH, y*COL_WIDTH))
 
-    def get_histogram(h, bin_width, is_weight=False, h_e=None):
-        assert not (is_weight and h_e)
-
+    def get_histogram(h, bin_width, h_e=None):
         histogram = pg.Surface((100+215, 15+133+15))
         histogram.fill((255,255,255))
         histogram.set_colorkey((255,255,255))
@@ -434,7 +432,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
 
                         txt_line -= 1
-                        histogram = get_histogram(h, 0.1, is_weight=False, h_e=h_e)
+                        histogram = get_histogram(h, 0.1, h_e=h_e)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midright=(1975, 250+(txt_line)*LINE_HEIGHT)))
                         txt_line += 3
@@ -460,7 +458,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
 
                         txt_line -= 1
-                        histogram = get_histogram(h, bin_width, is_weight=True)
+                        histogram = get_histogram(h, bin_width)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midright=(2475, 250+(txt_line)*LINE_HEIGHT)))
                         txt_line += 3
@@ -524,7 +522,7 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1125, 25+9*LINE_HEIGHT))
 
-                        histogram = get_histogram(h, bin_width, is_weight=True)
+                        histogram = get_histogram(h, bin_width)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
 
