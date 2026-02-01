@@ -67,10 +67,10 @@ if __name__ == "__main__":
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-1)
 
     mnist_test = MNISTDataset(train=False)
-    wait_propagate = 5  # Number of steps to wait for the image to propagate through the agent
+    wait_propagate = 1  # Number of steps to wait for the image to propagate through the agent
     label = None
     for step in itertools.count():
-        if step % 10 == 0 and step % 100 != 0:
+        if step % 10 == 0 and step % 50 != 0:
             print(f"Step {step}")
 
         # Receive percept from env
@@ -110,7 +110,7 @@ if __name__ == "__main__":
             control_correct = 0
             total = 0
             with torch.no_grad():
-                for _ in range(40):
+                for _ in range(1000):
                     img, label = random.choice(mnist_test)
                     img, label = img.to(torch.get_default_device()), label.to(torch.get_default_device())
 
