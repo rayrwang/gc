@@ -459,7 +459,7 @@ class AgtBase(ABC):
 
             # Do output to other cols
             for (loc, direction), weight in col.conns.items():
-                if self.is_i(loc):  # Don't discretize inputs
+                if self.is_i(col.loc):  # Don't discretize inputs
                     if direction == Dir.A:
                         self.cols[loc].a_post_ += col.a_pre @ weight
                     elif direction == Dir.E:
