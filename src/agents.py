@@ -312,11 +312,13 @@ class BareCol(ColBase):  # 1 layer, no internal weights
 
 I_VectorColCfg = BareColCfg
 class I_VectorCol(BareCol, I_ColBase):
-    def update_activations(self):  # Receives perceptual input, don't reset
-        pass
+    def update_activations(self):
+        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
+
+        # Receives perceptual input, don't reset
 
     def ipt(self, x: Input) -> None:
-        self.nr_1[0] = x
+        self.nr_1_[0] = x
 
 
 O_VectorColCfg = BareColCfg
