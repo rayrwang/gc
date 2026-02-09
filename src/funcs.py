@@ -99,7 +99,7 @@ def update(x, threshold=1.0):
     """
     `d_x, () -> d_x`
     
-    reset or decay activations after applying activity rule
+    reset activations after applying activity rule
     """
     return torch.zeros(x.shape)
 
@@ -108,7 +108,7 @@ def update_e(x):
     """
     `d_x -> d_x`
     
-    Update expectations
+    reset expectations
     """
     return torch.zeros(x.shape)
 
