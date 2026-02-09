@@ -43,6 +43,7 @@ def inhibit(x):
         # 0's down diagonal, -A / (d-1) everywhere else
         A = 5.0
         weights = (0 + A/(d-1))*torch.eye(d) - torch.full((d, d), A/(d-1))
+        inhibit_weights[d] = weights
     THRESHOLD = 0.8
     # Where both activations AND expectations are above threshold
     expected = spike(x[0]) * torch.where(x[1] < THRESHOLD, 0.0, 1.0)
