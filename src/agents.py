@@ -85,18 +85,18 @@ def activs(d: int) -> Activs:
     return [torch.randn(d), torch.zeros(d)]
 
 # Internal weights
-def weights(d_x: int, d_y: int) -> Weights:
-    return 2 * torch.randn(d_x, d_y) / (d_x**0.5) + (0*d_x**0.5)
+def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
+    return scale * torch.randn(d_x, d_y) / (d_x**0.5) + (0*d_x**0.5)
 
 # External weights
-def conn(c1: ColBase, c2: ColBase, direction: Dir) -> Weights:
+def conn(c1: ColBase, c2: ColBase, direction: Dir, scale: float = 2.0) -> Weights:
     if direction == Dir.A:
         d1 = c1.a_pre.shape[0]
         d2 = c2.a_post.shape[0]
     elif direction == Dir.E:
         d1 = c1.e_pre.shape[0]
         d2 = c2.e_post.shape[0]
-    return 2 * torch.randn(d1, d2) / (d1**0.5)
+    return scale * torch.randn(d1, d2) / (d1**0.5)
     
 
 # Constants ###################################################################
