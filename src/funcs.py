@@ -90,8 +90,8 @@ def lrn(x, w, y, ss=1e-2, disable=False):
     # Case 3: y < -1, subtract ss from weight
     inhibit = torch.where(yr < -1, -ss, 0.0)
 
-    xr = spike(xr)  # Only change weights when x >= 1
-    changes = xr * (excite + weaken + inhibit)
+    # Only change weights when x >= 1
+    changes = spike(xr) * (excite + weaken + inhibit)
 
     # Scale changes for regulation
     changes = changes * torch.exp(-(w / (0.1 * d_x**-0.5))**2)
