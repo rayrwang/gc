@@ -31,12 +31,15 @@ def atv(x, w, y, threshold=1.0):
 
 
 inhibit_weights = {}
-def inhibit(x):
+def inhibit(x, disable=False):
     """
-    `[d, d] -> [d, d]`
+    `d, bool -> d`
 
     lateral inhibition for winner take all behavior
     """
+    if disable:
+        return x
+
     d = x[0].shape[0]
     weights = inhibit_weights.get(d)
     if weights is None:
