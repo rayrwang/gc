@@ -52,7 +52,7 @@ def inhibit(x):
 @torch.compile(disable=disable_compile)
 def lrn(x, w, y, ss=1e-2, disable=False):
     """
-    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
 
     learning rule
 

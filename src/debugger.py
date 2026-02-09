@@ -255,10 +255,10 @@ def debugger(PATH, pipes):
                 txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
                 window.blit(txt, (25, 1125+1*LINE_HEIGHT))
 
-                # 2 bytes per element
-                # current and new versions of activations
-                    # "copies" copies of activations for each version
                 memory = 2 * (2*info["copies"]*info["nrns"] + info["syns"])
+                #        ^ 2 bytes per element
+                #             ^ current and new versions of activations
+                #               ^ "copies" copies of activations for each version
                 memory_gb = memory / 1e9
                 txt = fonts["debug"].render("Memory:", True, (0,0,0))
                 window.blit(txt, (25, 1125+3*LINE_HEIGHT))
@@ -399,7 +399,7 @@ def debugger(PATH, pipes):
                     txt = fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
                     window.blit(txt, txt.get_rect(topleft=(2075, 25+3*LINE_HEIGHT)))
 
-                    # Draw activation and weight stats and histograms
+                    # Legend for stats
                     txt = fonts["debug"].render("name: shape", True, (0,0,0))
                     window.blit(txt, txt.get_rect(topleft=(2325, 25+0*LINE_HEIGHT)))
                     txt = fonts["debug"].render("numel", True, (0,0,0))
@@ -408,8 +408,9 @@ def debugger(PATH, pipes):
                     window.blit(txt, txt.get_rect(topleft=(2325, 25+2*LINE_HEIGHT)))
                     txt = fonts["debug"].render("mean, std", True, (0,0,0))
                     window.blit(txt, txt.get_rect(topleft=(2325, 25+3*LINE_HEIGHT)))
-                    pg.draw.rect(window, (0,0,0), (2310, 20, 175, 130), width=2)
+                    pg.draw.rect(window, (0,0,0), (2310, 15, 175, 135), width=2)
 
+                    # Draw activation and weight stats and histograms
                     activations = sorted([name for name in info if name.startswith("nr_")])
                     txt_line = 0
                     for name in activations:
