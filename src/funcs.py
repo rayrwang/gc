@@ -50,7 +50,7 @@ def inhibit(x):
 
 
 @torch.compile(disable=disable_compile)
-def lrn(x, w, y, ss=1e-2):
+def lrn(x, w, y, ss=1e-2, disable=False):
     """
     `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
 
@@ -62,6 +62,8 @@ def lrn(x, w, y, ss=1e-2):
     >= 1, [-1, 1)    -> towards 0
     >= 1, >= 1       -> +
     """
+    if disable:
+        return w
 
     d_x, = x.shape
     d_y, = y.shape
