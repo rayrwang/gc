@@ -81,31 +81,30 @@ if __name__ == "__main__":
             if i is not None:
                 break
 
-        # Train classifiers
-        if label is not None:
-            # Actual classifier
-            for _ in range(wait_propagate):
-                agt.step(i, True)
-            representations = get_representations(agt)
-            representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
-            label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-            pred = F.softmax(classifier(representations), dim=0)
-            loss = F.cross_entropy(pred, label)
-            optim.zero_grad()
-            loss.backward()
-            optim.step()
+        # Train classifiers ###################################################
+        # Actual classifier
+        for _ in range(wait_propagate):
+            agt.step(i, True)
+        representations = get_representations(agt)
+        representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
+        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
+        pred = F.softmax(classifier(representations), dim=0)
+        loss = F.cross_entropy(pred, label)
+        optim.zero_grad()
+        loss.backward()
+        optim.step()
 
-            # Control classifier
-            img, = i
-            img = img.to(torch.get_default_device()).to(torch.get_default_dtype())
-            label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-            pred = F.softmax(control_classifier(img), dim=0)
-            loss = F.cross_entropy(pred, label)
-            control_optim.zero_grad()
-            loss.backward()
-            control_optim.step()
+        # Control classifier
+        img, = i
+        img = img.to(torch.get_default_device()).to(torch.get_default_dtype())
+        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
+        pred = F.softmax(control_classifier(img), dim=0)
+        loss = F.cross_entropy(pred, label)
+        control_optim.zero_grad()
+        loss.backward()
+        control_optim.step()
 
-        # Test classifiers
+        # Test classifiers ####################################################
         if step % 50 == 0:
             print(f"\nTesting on step {step}...")
             correct = 0
