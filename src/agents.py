@@ -131,9 +131,10 @@ class ColBase(ABC):
         #                        ^ actual or expectation conn
         #                               ^ source or target
         #                                          ^ current or new
-        # to 
-        # name of activation layer and kind (actual or expectations)
+        #                 v
     conn_layer_dict: dict[str, tuple[str, Literal[0, 1]]]
+        # to                         ^ name of activation layer and 
+        #                                 ^ kind (actual or expectations)
 
     def __getattr__(self, name):
         if name in self.conn_layer_dict:
@@ -171,6 +172,7 @@ class ColBase(ABC):
         return nrns, isyns, esyns, ihyps, ehyps
 
     def to(self, *args, **kwargs) -> None:
+        """Move all tensors between cpu and gpu"""
         assert self.weights_loaded
 
         for name, value in vars(self).items():
