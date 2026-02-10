@@ -68,16 +68,18 @@ if __name__ == "__main__":
 
     mnist_test = MNISTDataset(train=False)
     wait_propagate = 2  # Number of steps to wait for the image to propagate through the agent
-    label = None
     for step in itertools.count():
         if step % 10 == 0 and step % 50 != 0:
             print(f"Step {step}")
 
         # Receive percept from env
         i = None
-        while not input_queue.empty():
-            i, label = input_queue.get()
-        i = i or get_default(ispec)
+        label = None
+        while True:
+            while not input_queue.empty():
+                i, label = input_queue.get()
+            if i is not None:
+                break
 
         # Train classifiers
         if label is not None:
