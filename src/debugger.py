@@ -135,7 +135,8 @@ def debugger(PATH, pipes):
     def get_color(x):
         x = min(max(x, -2), 2)  # Clip to within [-2, 2]
         x = round(x*255/2)  # [-2, 2] -> [-255, 255]
-        color = (255-max(0,x),255+min(0,x),255-abs(x))
+        # Red for negative, white for 0, green for positive
+        color = (255-max(0,x), 255+min(0,x), 255-abs(x))
         return tuple(color)
 
     dir2pos = {
