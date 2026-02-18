@@ -133,11 +133,13 @@ def debugger(PATH, pipes):
         return histogram
 
     def get_color(x):
+        if math.isnan(x):  # Cyan
+            return (0, 255, 255)
         x = min(max(x, -2), 2)  # Clip to within [-2, 2]
         x = round(x*255/2)  # [-2, 2] -> [-255, 255]
         # Red for negative, white for 0, green for positive
         color = (255-max(0,x), 255+min(0,x), 255-abs(x))
-        return tuple(color)
+        return color
 
     dir2pos = {
         Dir.A: "top",
