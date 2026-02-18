@@ -548,15 +548,14 @@ class AgtBase(ABC):
             n = torch.linalg.vector_norm(x).item()
             m = torch.mean(x).item()
             s = torch.std(x).item()
-            # Histogram: The histogram displays from -2 to +2 standard deviations,
+            # Histogram: The histogram displays approximately from -2 to +2 standard deviations,
             # with 43 bins in total, where each bin is 1/10 of a std wide.
             #
             # For example if the std is 1 (and so each bin is 0.1 wide), the bins are:
             # (-inf, -2.05), [-2.05, -1.95), ..., [-0.05, 0.05), ..., [1.95, 2.05), [2.05, inf)
             # 
-            # For activation tensors, the histogram std is fixed at 1, but for weights
-            # it is computed by rounding down the actual std to 1eX, 2eX, or 5eX,
-            # giving bin widths of 1e(X-1), 2e(X-1), and 5e(X-1).
+            # For activation tensors the bins are fixed at 0.1 wide,
+            # but for weights it is computed by rounding std/10 to 1eX, 2eX, or 5eX.
             h = None
             if is_weight:
                 # Compute bin size
@@ -572,7 +571,7 @@ class AgtBase(ABC):
                     bin_width = 0.01
                 elif 0.015 <= bin_width < 0.03:
                     bin_width = 0.02
-                elif 0.03 <= bin_width < 0.6:
+                elif 0.03 <= bin_width < 0.06:
                     bin_width = 0.05
                 else:
                     bin_width = 0.1
