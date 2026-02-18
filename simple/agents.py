@@ -6,6 +6,7 @@ from numbers import Number
 import os
 import math
 import shutil
+import sys
 
 from tqdm import tqdm
 import numpy as np
@@ -148,6 +149,9 @@ class Ising(NrnAgtBase):
         self.create_directory()
 
     def step(self):
+        if self.pipes["overview"][0].poll():
+            sys.exit()
+            
         for nrn in tqdm(self.nrns.values(), disable=True):
             delta_h = 0
             for conn_loc, weight in nrn.conns.items():
@@ -188,6 +192,9 @@ class Oscillator(NrnAgtBase):
         self.create_directory()
 
     def step(self):
+        if self.pipes["overview"][0].poll():
+            sys.exit()
+
         self.nrns[(0,0)].x += 2
         for nrn in tqdm(self.nrns.values(), disable=True):
             self.debug_update()
@@ -234,6 +241,9 @@ class NrnAgt(NrnAgtBase):
         self.create_directory()
 
     def step(self):
+        if self.pipes["overview"][0].poll():
+            sys.exit()
+
         # If have low enough weights, need constantly active nrs,
             # otherwise activity would die out
         self.nrns[(20, 20)].x = 1

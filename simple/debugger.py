@@ -31,7 +31,7 @@ def nrn_debugger(PATH, pipes):
         col.blit(txt, txt_rect)
 
         if highlight == "border":
-            pg.draw.rect(col, (0, 0, 0), col.get_rect(), width=int(COL_WIDTH*0.1))
+            pg.draw.rect(col, (0, 0, 0), col.get_rect(), width=int(COL_WIDTH*0.2))
         elif highlight == "borderconn":
             col.blit(r, (0, 0))
 
@@ -86,7 +86,10 @@ def nrn_debugger(PATH, pipes):
     # Draw on 2500 x 1300 virtual window, then scale to size of real window
     W, H = (1300+700+500, 1300)
     window = pg.Surface((W, H))
-    scale = 0.8
+
+    pg.init()
+    (desktop_w, desktop_h), = pg.display.get_desktop_sizes()
+    scale = 0.8 * min(desktop_w/2560, desktop_h/1440)  # Fit to display
     true_window = pg.display.set_mode((scale*W, scale*H), pg.DOUBLEBUF|pg.RESIZABLE)
     pg.display.set_caption("simple debugger")
 
@@ -130,12 +133,13 @@ def nrn_debugger(PATH, pipes):
     color_bar = get_color_bar()
 
     # Frequently used visual elements
-    h = pg.Surface((COL_WIDTH, COL_WIDTH))  # Highlight conns
-    h.fill((65,105,225))
-    r = pg.Surface((COL_WIDTH, COL_WIDTH))  # Select a conn
+    h = pg.Surface((COL_WIDTH, COL_WIDTH))  # Highlight outgoing connections (blue border)
+    h.fill((255,255,255))
+    pg.draw.rect(h, (65,105,225), h.get_rect(), width=int(COL_WIDTH*0.2))
+    r = pg.Surface((COL_WIDTH, COL_WIDTH))  # Select a conn (orange border)
     r.fill((255,255,255))
     r.set_colorkey((255,255,255))
-    pg.draw.rect(r, (255,165,0), r.get_rect(), width=int(COL_WIDTH*0.1))
+    pg.draw.rect(r, (255,165,0), r.get_rect(), width=int(COL_WIDTH*0.2))
     templates = {
         "h": h,
         "r": r
@@ -222,9 +226,10 @@ def nrn_debugger(PATH, pipes):
                         x = info[eval(name)]
                         draw_col(eval(name), color=get_color(x))
 
-        # Handle col and conn debug ##################################################################
+        # Handle col and conn debug ###########################################
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                pipes["overview"][1].send(None)
                 sys.exit()
             elif event.type == pg.VIDEORESIZE:
                 w_new, h_new = event.size
