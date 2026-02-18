@@ -133,9 +133,9 @@ def debugger(PATH, pipes):
         return histogram
 
     def get_color(x):
+        x = min(max(x, -2), 2)  # Clip to within [-2, 2]
         x = round(x*255/2)  # [-2, 2] -> [-255, 255]
         color = (255-max(0,x),255+min(0,x),255-abs(x))
-        color = [min(max(x, 0), 255) for x in color]
         return tuple(color)
 
     dir2pos = {
