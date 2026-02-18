@@ -482,7 +482,7 @@ class AgtBase(ABC):
         # Second pass: set current activations equal to new, and reset new
         for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
             # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
+            if self.pipes["overview"][0].poll():  # TODO not here?
                 bar.close()
                 self.save()
                 sys.exit()

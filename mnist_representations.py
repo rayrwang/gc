@@ -9,7 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from src.agents import MNISTCfg, MNISTAgt
-from src.envs import get_default, run_env
+from src.envs import run_env
 from src.envs import MNISTDataset
 from src.envs import MNISTEnvCfg, MNISTEnv
 
