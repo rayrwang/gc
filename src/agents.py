@@ -581,8 +581,8 @@ class AgtBase(ABC):
             bins = torch.tensor([float("-inf")] + [bin_width*i - 20.5*bin_width for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
             h, _ = torch.histogram(x.cpu().to(torch.float64), bins)  # NOTE issue if use lower float precision
             h = h.tolist()
-            assert x.numel() == sum(h), "Failed to calculate histogram, probably because tensor is NaN"
-            return (shape, d, n, m, s, (h, bin_width))
+            has_nan = x.numel() != sum(h)
+            return (shape, d, n, m, s, (h, bin_width), has_nan)
 
         COOLDOWN_OVERVIEW = 0.2
         COOLDOWN_COL = 0.5

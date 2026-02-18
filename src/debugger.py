@@ -78,38 +78,12 @@ def debugger(PATH, pipes):
 
         window.blit(col, (x*COL_WIDTH, y*COL_WIDTH))
 
-    def get_histogram(h, bin_width, h_e=None):
+    def get_histogram(h, bin_width, has_nan, h_e=None):
+        # Draw border and markings
         histogram = pg.Surface((100+215, 15+133+15))
         histogram.fill((255,255,255))
         histogram.set_colorkey((255,255,255))
         pg.draw.rect(histogram, (0,0,0), (100+0, 15+0, 215, 133), 1)  # Border
-
-        txt = fonts["small"].render("0", True, (0,0,0))
-        histogram.blit(txt, txt.get_rect(midright=(100, 15+133)))
-        if max(h) > 0:  # check not NaN tensor
-            txt = fonts["small"].render(f"{int(max(h)):,}", True, (0,0,0))
-            histogram.blit(txt, txt.get_rect(midright=(100, 15+0)))
-            for i, num in enumerate(h):
-                height = round(133*(num/max(h)))
-                pg.draw.rect(histogram, (0,0,0), (100+i*5, 15+133-height, 5, height))  # Opaque, black bars
-        else:
-            return None
-
-        if h_e is not None:
-            if max(h_e) > 0:
-                max_height = max(h_e)
-                txt = fonts["small"].render(f"{int(max_height):,}", True, (100,100,255))
-                histogram.blit(txt, txt.get_rect(midright=(100, 15+15)))
-                for i, num in enumerate(h_e):
-                    height = round(133*(num/max_height))
-                    surface = pg.Surface(histogram.get_size(), pg.SRCALPHA)
-                    surface.fill((255, 255, 255))
-                    surface.set_colorkey((255, 255, 255))
-                    height_e = round(133*(num/max_height))
-                    pg.draw.rect(surface, (200, 220, 255, 180), (100+i*5, 15+133-height_e, 5, height_e))  # Translucent, light blue bars
-                    histogram.blit(surface, (0, 0))
-            else:
-                return None
 
         pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)      # -2 std tick
         txt = fonts["small"].render(f"-{20*bin_width:g}", True, (0,0,0))
@@ -130,6 +104,34 @@ def debugger(PATH, pipes):
         pg.draw.line(histogram, (100,149,237), (100+207.5, 15+133-10), (100+207.5, 15+133+5), width=2)  # +2 std tick
         txt = fonts["small"].render(f"{20*bin_width:g}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+207.5, 15+133)))
+
+        # Draw histogram h in black
+        txt = fonts["small"].render("0", True, (0,0,0))
+        histogram.blit(txt, txt.get_rect(midright=(100, 15+133)))
+        txt = fonts["small"].render(f"{int(max(h)):,}", True, (0,0,0))
+        histogram.blit(txt, txt.get_rect(midright=(100, 15+0)))
+        for i, num in enumerate(h):
+            height = round(133*(num/max(h)))
+            pg.draw.rect(histogram, (0,0,0), (100+i*5, 15+133-height, 5, height))  # Opaque, black bars
+
+        # Draw histogram h_e in light blue
+        if h_e is not None:
+            max_height = max(h_e)
+            txt = fonts["small"].render(f"{int(max_height):,}", True, (100,100,255))
+            histogram.blit(txt, txt.get_rect(midright=(100, 15+15)))
+            for i, num in enumerate(h_e):
+                height = round(133*(num/max_height))
+                surface = pg.Surface(histogram.get_size(), pg.SRCALPHA)
+                surface.fill((255, 255, 255))
+                surface.set_colorkey((255, 255, 255))
+                height_e = round(133*(num/max_height))
+                pg.draw.rect(surface, (200, 220, 255, 180), (100+i*5, 15+133-height_e, 5, height_e))  # Translucent, light blue bars
+                histogram.blit(surface, (0, 0))
+
+        # Draw NaN warning
+        if has_nan:
+            txt = fonts["med_bold"].render(f"Has NaN", True, (255,0,0))
+            histogram.blit(txt, txt.get_rect(center=(100+(215/2), 15+(133/2))))
         return histogram
 
     def get_color(x):
@@ -191,6 +193,7 @@ def debugger(PATH, pipes):
     fonts = {
         "col": pg.font.SysFont("Helvetica", int(0.3*COL_WIDTH)),
         "big": pg.font.SysFont("Helvetica", 48),
+        "med_bold": pg.font.SysFont("Helvetica", 36, True),
         "debug": pg.font.SysFont("Helvetica", 24),
         "small": pg.font.SysFont("Helvetica", 12)
     }
@@ -417,8 +420,8 @@ def debugger(PATH, pipes):
                     activations = sorted([name for name in info if name.startswith("nr_")])
                     txt_line = 0
                     for name in activations:
-                        shape, d, n, m, s, (h, _) = info[name][0]
-                        _, _, _, _, _, (h_e, _) = info[name][1]
+                        shape, d, n, m, s, (h, _), has_nan = info[name][0]
+                        _, _, _, _, _, (h_e, _), has_nan_e = info[name][1]
                         txt = f"{name}: {shape}"
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
@@ -436,7 +439,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
 
                         txt_line -= 1
-                        histogram = get_histogram(h, 0.1, h_e=h_e)
+                        histogram = get_histogram(h, 0.1, has_nan or has_nan_e, h_e=h_e)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midright=(1975, 250+(txt_line)*LINE_HEIGHT)))
                         txt_line += 3
@@ -444,7 +447,7 @@ def debugger(PATH, pipes):
                     weights = sorted([name for name in info if name.startswith("is_")])
                     txt_line = 0
                     for name in weights:
-                        shape, d, n, m, s, (h, bin_width) = info[name]
+                        shape, d, n, m, s, (h, bin_width), has_nan = info[name]
                         txt = f"{name}: {shape}"
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
@@ -462,7 +465,7 @@ def debugger(PATH, pipes):
                         window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
 
                         txt_line -= 1
-                        histogram = get_histogram(h, bin_width)
+                        histogram = get_histogram(h, bin_width, has_nan)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midright=(2475, 250+(txt_line)*LINE_HEIGHT)))
                         txt_line += 3
@@ -518,7 +521,7 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
                         window.blit(txt, (1125, 25+6*LINE_HEIGHT))
 
-                        shape, d, n, m, s, (h, bin_width) = info["stats"]
+                        shape, d, n, m, s, (h, bin_width), has_nan = info["stats"]
                         txt = f"conn: {shape}, {math.prod(shape):,}"
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1125, 25+8*LINE_HEIGHT))
@@ -526,7 +529,7 @@ def debugger(PATH, pipes):
                         txt = fonts["debug"].render(txt, True, (0,0,0))
                         window.blit(txt, (1125, 25+9*LINE_HEIGHT))
 
-                        histogram = get_histogram(h, bin_width)
+                        histogram = get_histogram(h, bin_width, has_nan)
                         if histogram is not None:
                             window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
 
