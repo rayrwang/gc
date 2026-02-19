@@ -130,7 +130,7 @@ def debugger(PATH, pipes):
 
         # Draw NaN warning
         if has_nan:
-            txt = fonts["med_bold"].render(f"Has NaN", True, (255,0,0))
+            txt = fonts["med_bold"].render("Has NaN", True, (255,0,0))
             histogram.blit(txt, txt.get_rect(center=(100+(215/2), 15+(133/2))))
         return histogram
 
