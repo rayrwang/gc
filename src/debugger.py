@@ -58,11 +58,11 @@ def debugger(PATH, pipes):
                 px_y = i * COL_WIDTH / len(colors)
                 pg.draw.rect(col, color, (0, px_y, COL_WIDTH, COL_WIDTH/len(colors)))
 
-        h, r = templates["h"], templates["r"]
+        conn_highlight, conn_select = templates["conn_highlight"], templates["conn_select"]
         if highlight == "top":
-            col.blit(h, (0, 0))
+            col.blit(conn_highlight, (0, 0))
         elif highlight == "bottom":
-            col.blit(h, (0, COL_WIDTH/2))
+            col.blit(conn_highlight, (0, COL_WIDTH/2))
 
         pg.draw.rect(col, (0,0,0), (0, 0, COL_WIDTH, COL_WIDTH), 1)  # Outer (thin) border
         txt = fonts["col"].render(f"{x},{y}", True, (0,0,0))
@@ -72,9 +72,9 @@ def debugger(PATH, pipes):
         if highlight == "border":
             pg.draw.rect(col, (0, 0, 0), col.get_rect(), width=int(COL_WIDTH*0.05))
         elif highlight == "bordertop":
-            col.blit(r, (0, 0))
+            col.blit(conn_select, (0, 0))
         elif highlight == "borderbottom":
-            col.blit(r, (0, COL_WIDTH/2))
+            col.blit(conn_select, (0, COL_WIDTH/2))
 
         window.blit(col, (x*COL_WIDTH, y*COL_WIDTH))
 
@@ -177,16 +177,16 @@ def debugger(PATH, pipes):
 
     # Frequently used graphical elements
     # Half size grey highlight for showing conns
-    h = pg.Surface((COL_WIDTH, COL_WIDTH/2))
-    h.fill((200,200,200))
+    conn_highlight = pg.Surface((COL_WIDTH, COL_WIDTH/2))
+    conn_highlight.fill((200,200,200))
     # Half size blue border for selecting conn
-    r = pg.Surface((COL_WIDTH, COL_WIDTH/2))
-    r.fill((255,255,255))
-    r.set_colorkey((255,255,255))
-    pg.draw.rect(r, (100,149,237), r.get_rect(), width=int(COL_WIDTH*0.05))
+    conn_select = pg.Surface((COL_WIDTH, COL_WIDTH/2))
+    conn_select.fill((255,255,255))
+    conn_select.set_colorkey((255,255,255))
+    pg.draw.rect(conn_select, (100,149,237), conn_select.get_rect(), width=int(COL_WIDTH*0.05))
     templates = {
-        "h": h,
-        "r": r
+        "conn_highlight": conn_highlight,
+        "conn_select": conn_select
     }
 
     pg.font.init()
