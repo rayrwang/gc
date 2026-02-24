@@ -88,7 +88,7 @@ if __name__ == "__main__":
         representations = get_representations(agt)
         representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
         label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-        pred = F.softmax(classifier(representations), dim=0)
+        pred = classifier(representations)
         loss = F.cross_entropy(pred, label)
         optim.zero_grad()
         loss.backward()
@@ -98,7 +98,7 @@ if __name__ == "__main__":
         img, = i
         img = img.to(torch.get_default_device()).to(torch.get_default_dtype())
         label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-        pred = F.softmax(control_classifier(img), dim=0)
+        pred = control_classifier(img)
         loss = F.cross_entropy(pred, label)
         control_optim.zero_grad()
         loss.backward()
