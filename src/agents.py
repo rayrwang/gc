@@ -1055,18 +1055,15 @@ class MNISTAgt(AgtBase):
             os.makedirs(path)
 
             col1 = I_VectorCol((1, 0), I_VectorColCfg(784))
-            self.cols[1, 0] = col1
+            self.cols[col1.loc] = col1
             self.I_cols.append(col1)
             col2 = BareCol((1, 1), BareColCfg(32))
-            self.cols[1, 1] = col2
-            col3 = BareCol((1, 2), BareColCfg(32))
-            self.cols[1, 2] = col3
+            self.cols[col2.loc] = col2
             col_out = O_VectorCol((0, 1), O_VectorColCfg(10))
-            self.cols[0, 1] = col_out
+            self.cols[col_out.loc] = col_out
             self.O_cols.append(col_out)
 
-            for loc, other_loc in [((1, 0), (1, 1)), ((1, 1), (1, 2))]:
-                self.cols[loc].conns[other_loc, Dir.A] = conn(self.cols[loc], self.cols[other_loc], Dir.A)
+            self.cols[1, 0].conns[(1, 1), Dir.A] = conn(self.cols[1, 0], self.cols[1, 1], Dir.A, 16)
 
             # Create directories for all cols
             for col in self.cols.values():
