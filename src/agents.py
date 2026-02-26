@@ -465,7 +465,8 @@ class AgtBase(ABC):
             for (loc, direction), weight in col.conns.items():
                 if self.is_i(col.loc):  # Don't discretize inputs
                     if direction == Dir.A:
-                        self.cols[loc].a_post_ += col.a_pre @ weight
+                        self.cols[loc].a_post_ += fc.spike(col.a_pre) @ weight
+                        # self.cols[loc].a_post_ += col.a_pre @ weight
                     elif direction == Dir.E:
                         self.cols[loc].e_post_ += col.e_pre @ weight
                 else:

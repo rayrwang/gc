@@ -37,6 +37,7 @@ def inhibit(x, disable=False):
 
     lateral inhibition for winner take all behavior
     """
+    disable = True
     if disable:
         return x
 
@@ -54,7 +55,7 @@ def inhibit(x, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn(x, w, y, ss=1e-2, disable=False):
+def lrn(x, w, y, ss=4e-2, disable=False):
     """
     `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
 
@@ -94,7 +95,7 @@ def lrn(x, w, y, ss=1e-2, disable=False):
     changes = spike(xr) * (excite + weaken + inhibit)
 
     # Scale changes for regulation
-    changes = changes * torch.exp(-(w / (0.1 * d_x**-0.5))**2)
+    # changes = changes * torch.exp(-(w / (5 * d_x**-0.5))**2)
 
     return w + changes
 
