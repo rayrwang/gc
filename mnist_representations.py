@@ -67,6 +67,7 @@ if __name__ == "__main__":
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-1)
 
     mnist_test = MNISTDataset(train=False)
+    # TODO remove this after override step function
     wait_propagate = 2  # Number of steps to wait for the image to propagate through the agent
     for step in itertools.count():
         if step % 10 == 0 and step % 50 != 0:

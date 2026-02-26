@@ -1072,3 +1072,13 @@ class MNISTAgt(AgtBase):
             self.use_debug = False
 
             print("done init.")
+
+    # def step(self, ipt: Inputs, disable_print: bool = False):
+    #     """
+    #     Override default `step`, since using default results in
+    #     mismatched learning, with new input and old representations.
+
+    #     In the general case this is unavoidable (?),
+    #     but in this small testing case it can be prevented.
+    #     """
+        
