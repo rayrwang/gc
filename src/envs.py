@@ -202,7 +202,7 @@ class MNISTEnv(EnvBase):
                 digit = torch.argmax(digits)
                 while True:
                     (image, label) = random.choice(self.mnist)
-                    label_int = torch.topk(label, 1).indices[0]
+                    label_int = torch.argmax(label)
                     if label_int == digit:
                         self.image, self.label = image, label
                         break
