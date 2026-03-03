@@ -121,12 +121,12 @@ if __name__ == "__main__":
                         agt.step([img], True)
                     representations = get_representations(agt)
                     pred = classifier(representations)
-                    if torch.topk(pred, 1).indices[0] == torch.topk(label, 1).indices[0]:
+                    if torch.argmax(pred) == torch.argmax(label):
                         correct += 1
 
                     # Control classifier
                     control_pred = control_classifier(img)
-                    if torch.topk(control_pred, 1).indices[0] == torch.topk(label, 1).indices[0]:
+                    if torch.argmax(control_pred) == torch.argmax(label):
                         control_correct += 1
                     total += 1
             print(f"Accuracy: {100*correct/total:.2f}%")

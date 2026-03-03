@@ -199,7 +199,7 @@ class MNISTEnv(EnvBase):
             # TODO? use None i/o when unavailable rather than all zeros (get_default)
             if not torch.allclose(digits, torch.zeros(10, dtype=torch.get_default_dtype(), device="cpu")):
                 # Get new digit
-                digit = torch.topk(digits, 1).indices[0]
+                digit = torch.argmax(digits)
                 while True:
                     (image, label) = random.choice(self.mnist)
                     label_int = torch.topk(label, 1).indices[0]
