@@ -163,7 +163,7 @@ class MNISTDataset(Dataset):
         (image_raw, label_raw) = self.mnist[i]
         image = torchvision.transforms.functional.to_tensor(image_raw)
         image = image.reshape(-1)
-        label = torch.zeros(10)
+        label = torch.zeros(10)  # TODO just use raw label?
         label[label_raw] = 1
         return image, label
 
