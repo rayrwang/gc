@@ -320,6 +320,7 @@ class I_VectorCol(BareCol, I_ColBase):
         # Receives perceptual input, don't reset
 
     def ipt(self, x: Input) -> None:
+        x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
         self.nr_1_[0] = x
 
 
@@ -436,7 +437,6 @@ class AgtBase(ABC):
 
         # Receive inputs
         for col, x in zip(self.I_cols, ipt):
-            x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
             col.ipt(x)
 
         # First pass: compute new weights and activations
