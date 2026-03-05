@@ -1074,12 +1074,33 @@ class MNISTAgt(AgtBase):
 
             print("done init.")
 
-    # def step(self, ipt: Inputs, disable_print: bool = False):
-    #     """
-    #     Override default `step`, since using default results in
-    #     mismatched learning, with new input and old representations.
+    def step(self, ipt: Inputs, disable_print: bool = False):
+        """
+        Override default `step`, since using default results in
+        mismatched learning, with new input and old representations.
 
-    #     In the general case this is unavoidable (?),
-    #     but in this small testing case it can be prevented.
-    #     """
-        
+        In the general case this is unavoidable (?),
+        but in this small testing case it can be prevented.
+        """
+        col1 = self.cols[1, 0]
+        col2 = self.cols[1, 1]
+        col1.ipt(ipt[0])
+        col1.update_activations()
+        col2.a_post_ += fc.spike(col1.a_pre) @ col1.conns[(1, 1), Dir.A]
+        col2.update_activations()
+
+        col1.conns[(1, 1), Dir.A] = fc.lrn(
+            col1.a_pre,
+            col1.conns[(1, 1), Dir.A],
+            col2.a_post
+        )
+        col1.conns[(1, 1), Dir.A] = fc.lrn(
+            col1.a_pre,
+            col1.conns[(1, 1), Dir.A],
+            torch.randn(col2.a_post.shape)
+        )
+
+        if self.pipes["overview"][0].poll():
+            self.save()
+            sys.exit()
+        self.debug_update()
