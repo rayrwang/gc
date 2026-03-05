@@ -1066,6 +1066,7 @@ class MNISTAgt(AgtBase):
             self.cols[col_out.loc] = col_out
             self.O_cols.append(col_out)
             col_out.update_activations()  # Zero out, currently unused
+            col_out.update_activations()
 
             # Conns
             self.cols[1, 0].conns[(1, 1), Dir.A] = conn(self.cols[1, 0], self.cols[1, 1], Dir.A, 16)
