@@ -67,8 +67,12 @@ if __name__ == "__main__":
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-1)
 
     mnist_test = MNISTDataset(train=False)
+
+    REPORT_INTERVAL = 10
+    TEST_INTERVAL = 50
+    TEST_SIZE = 500
     for step in itertools.count():
-        if step % 10 == 0 and step % 50 != 0:
+        if step % REPORT_INTERVAL == 0 and step % TEST_INTERVAL != 0:
             print(f"Step {step}")
 
         # Receive percept from env
@@ -103,13 +107,13 @@ if __name__ == "__main__":
         control_optim.step()
 
         # Test classifiers ####################################################
-        if step % 50 == 0:
+        if step % TEST_INTERVAL == 0:
             print(f"\nTesting on step {step}...")
             correct = 0
             control_correct = 0
             total = 0
             with torch.no_grad():
-                for _ in range(500):
+                for _ in range(TEST_SIZE):
                     img, label = random.choice(mnist_test)
                     img, label = img.to(torch.get_default_device()), label.to(torch.get_default_device())
 
