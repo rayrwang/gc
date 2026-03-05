@@ -1091,7 +1091,7 @@ class MNISTAgt(AgtBase):
         
         col1.ipt(ipt[0])
         col1.update_activations()
-        col2.a_post_ += fc.spike(col1.a_pre) @ col1.conns[(1, 1), Dir.A]
+        col2.a_post_ += col1.a_pre @ col1.conns[(1, 1), Dir.A]
         col2.update_activations()
 
         col1.conns[(1, 1), Dir.A] = fc.lrn(
