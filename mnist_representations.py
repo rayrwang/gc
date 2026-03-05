@@ -67,6 +67,7 @@ if __name__ == "__main__":
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-1)
 
     mnist_test = MNISTDataset(train=False)
+    # TODO remove this after override step function
     wait_propagate = 2  # Number of steps to wait for the image to propagate through the agent
     for step in itertools.count():
         if step % 10 == 0 and step % 50 != 0:
@@ -120,12 +121,12 @@ if __name__ == "__main__":
                         agt.step([img], True)
                     representations = get_representations(agt)
                     pred = classifier(representations)
-                    if torch.topk(pred, 1).indices[0] == torch.topk(label, 1).indices[0]:
+                    if torch.argmax(pred) == torch.argmax(label):
                         correct += 1
 
                     # Control classifier
                     control_pred = control_classifier(img)
-                    if torch.topk(control_pred, 1).indices[0] == torch.topk(label, 1).indices[0]:
+                    if torch.argmax(control_pred) == torch.argmax(label):
                         control_correct += 1
                     total += 1
             print(f"Accuracy: {100*correct/total:.2f}%")

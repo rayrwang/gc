@@ -163,7 +163,7 @@ class MNISTDataset(Dataset):
         (image_raw, label_raw) = self.mnist[i]
         image = torchvision.transforms.functional.to_tensor(image_raw)
         image = image.reshape(-1)
-        label = torch.zeros(10)
+        label = torch.zeros(10)  # TODO just use raw label?
         label[label_raw] = 1
         return image, label
 
@@ -199,10 +199,10 @@ class MNISTEnv(EnvBase):
             # TODO? use None i/o when unavailable rather than all zeros (get_default)
             if not torch.allclose(digits, torch.zeros(10, dtype=torch.get_default_dtype(), device="cpu")):
                 # Get new digit
-                digit = torch.topk(digits, 1).indices[0]
+                digit = torch.argmax(digits)
                 while True:
                     (image, label) = random.choice(self.mnist)
-                    label_int = torch.topk(label, 1).indices[0]
+                    label_int = torch.argmax(label)
                     if label_int == digit:
                         self.image, self.label = image, label
                         break
