@@ -1054,15 +1054,20 @@ class MNISTAgt(AgtBase):
                 shutil.rmtree(path)
             os.makedirs(path)
 
+            # Cols
             col1 = I_VectorCol((1, 0), I_VectorColCfg(784))
             self.cols[col1.loc] = col1
             self.I_cols.append(col1)
+
             col2 = BareCol((1, 1), BareColCfg(32))
             self.cols[col2.loc] = col2
+
             col_out = O_VectorCol((0, 1), O_VectorColCfg(10))
             self.cols[col_out.loc] = col_out
             self.O_cols.append(col_out)
+            col_out.update_activations()  # Zero out, currently unused
 
+            # Conns
             self.cols[1, 0].conns[(1, 1), Dir.A] = conn(self.cols[1, 0], self.cols[1, 1], Dir.A, 16)
 
             # Create directories for all cols
@@ -1073,7 +1078,7 @@ class MNISTAgt(AgtBase):
 
             print("done init.")
 
-    def step(self, ipt: Inputs, disable_print: bool = False):
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
         """
         Override default `step`, since using default results in
         mismatched learning, with new input and old representations.
@@ -1099,4 +1104,10 @@ class MNISTAgt(AgtBase):
             self.save()
             sys.exit()
         self.debug_update()
+
+        # Return outputs (currently unused)
+        out = []
+        for col in self.O_cols:
+            out.append(col.out())
+        return out
         
