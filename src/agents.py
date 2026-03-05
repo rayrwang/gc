@@ -1055,15 +1055,15 @@ class MNISTAgt(AgtBase):
             os.makedirs(path)
 
             # Cols
-            col1 = I_VectorCol((1, 0), I_VectorColCfg(784))
+            col1 = I_VectorCol((0, 0), I_VectorColCfg(784))
             self.cols[col1.loc] = col1
             self.I_cols.append(col1)
 
-            col2 = BareCol((1, 1), BareColCfg(32))
+            col2 = BareCol((1, 0), BareColCfg(32))
             self.cols[col2.loc] = col2
 
             # Conns
-            self.cols[1, 0].conns[(1, 1), Dir.A] = conn(self.cols[1, 0], self.cols[1, 1], Dir.A, 16)
+            self.cols[col1.loc].conns[col2.loc, Dir.A] = conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 16)
 
             # Create directories for all cols
             for col in self.cols.values():
@@ -1081,17 +1081,17 @@ class MNISTAgt(AgtBase):
         In the general case this is unavoidable (?),
         but in this small testing case it can be prevented.
         """
-        col1 = self.cols[1, 0]
-        col2 = self.cols[1, 1]
+        col1 = self.cols[0, 0]
+        col2 = self.cols[1, 0]
         
         col1.ipt(ipt[0])
         col1.update_activations()
-        col2.a_post_ += col1.a_pre @ col1.conns[(1, 1), Dir.A]
+        col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]
         col2.update_activations()
 
-        col1.conns[(1, 1), Dir.A] = fc.lrn(
+        col1.conns[col2.loc, Dir.A] = fc.lrn(
             col1.a_pre,
-            col1.conns[(1, 1), Dir.A],
+            col1.conns[col2.loc, Dir.A],
             col2.a_post
         )
 
