@@ -79,6 +79,18 @@ def debugger(PATH, pipes):
         window.blit(col, (x*COL_WIDTH, y*COL_WIDTH))
 
     def get_histogram(h, bin_width, has_nan, all_nan, h_e=None):
+        """
+        Histogram: The histogram displays approximately from -2 to +2 standard deviations,
+        with 43 bins in total, where each bin is 1/10 of a std wide.
+    
+        For example if the std is 1 (and so each bin is 0.1 wide), the bins are:
+        (-inf, -2.05), [-2.05, -1.95), ..., [-0.05, 0.05), ..., [1.95, 2.05), [2.05, inf)
+        
+        For activation tensors the bins are fixed at 0.1 wide,
+        but for weights it is computed by rounding std/10 to 1eX, 2eX, or 5eX.
+
+        h_e is only used for activation tensors
+        """
         # Draw border and markings
         histogram = pg.Surface((100+215, 15+133+15))
         histogram.fill((255,255,255))
@@ -105,7 +117,7 @@ def debugger(PATH, pipes):
         txt = fonts["small"].render(f"{20*bin_width:g}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+207.5, 15+133)))
 
-        if not all_nan:
+        if not all_nan:  # TODO distinguish between h and h_e?
             # Draw histogram h in black
             txt = fonts["small"].render("0", True, (0,0,0))
             histogram.blit(txt, txt.get_rect(midright=(100, 15+133)))
