@@ -581,7 +581,8 @@ class AgtBase(ABC):
             h, _ = torch.histogram(x.cpu().to(torch.float64), bins)  # NOTE issue if use lower float precision
             h = h.tolist()
             has_nan = x.numel() != sum(h)
-            return (shape, d, n, m, s, (h, bin_width), has_nan)
+            all_nan = sum(h) == 0
+            return (shape, d, n, m, s, (h, bin_width), has_nan, all_nan)
 
         COOLDOWN_OVERVIEW = 0.2
         COOLDOWN_COL = 0.5
