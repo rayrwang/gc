@@ -59,7 +59,7 @@ src/
 |-- envs.py      # Virtual environments or software interfaces to the real world
 |-- debugger.py  # Debugger GUI
 main.py
-mnist.py
+
 
 simple/          # Snaller neural nets for testing
 |-- funcs.py
@@ -67,6 +67,15 @@ simple/          # Snaller neural nets for testing
 |-- debugger.py
 simple_nets.py
 ```
+
+## References
+
+- **Neuroscience: Exploring the Brain** (2016); M. F. Bear, B. W. Connors, M. A. Paradiso
+- **A Path Towards Autonomous Machine Intelligence** (2022); Y. LeCun
+- **Active Inference: The Free Energy Principle in Mind, Brain, and Behavior** (2022); T. Parr, G. Pezzulo, K. J. Friston
+- **The Book of Why: The New Science of Cause and Effect** (2018); J. Pearl, D. Mackenzie
+- **Conjectures and Refutations: The Growth of Scientific Knowledge** (1963); K. Popper
+- **The Alberta Plan for AI Research** (2022); R. S. Sutton, M. Bowling, P. M. Pilarski
 
 ## Roadmap
 
