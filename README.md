@@ -60,7 +60,6 @@ src/
 |-- debugger.py  # Debugger GUI
 main.py
 
-
 simple/          # Snaller neural nets for testing
 |-- funcs.py
 |-- agents.py
