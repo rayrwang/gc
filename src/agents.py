@@ -60,7 +60,7 @@ from . import iotypes as T
 from . import funcs as fc
 
 class Dir(Enum):  # Direction (kind) of connection
-    A = 0  # Actual / "prediction errors" : connects actual to actual activation
+    A = 0  # Actual / "prediction errors" : connects actual to actual activations
     E = 1  # Expectations / "predictions" : connected actual to expectations activations
 
 

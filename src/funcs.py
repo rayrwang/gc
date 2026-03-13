@@ -35,7 +35,8 @@ def inhibit(x, disable=False):
     """
     `d, bool -> d`
 
-    lateral inhibition for winner take all behavior
+    lateral inhibition for winner take all behavior,
+    to have more (less) activity for (un)expected
     """
     if disable:
         return x
