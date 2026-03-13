@@ -838,6 +838,7 @@ class Agt(AgtBase):  # Agent
                 if col in self.O_cols:  # no conns for output cols
                     continue
                 # Independent probability for each possible conn
+                # TODO randomly sample the required number of conns (more efficient)
                 for other_loc in self.cols.keys():
                     if other_loc != loc:
                         distance = fc.dist(loc, other_loc)
