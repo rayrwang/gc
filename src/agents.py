@@ -1083,6 +1083,10 @@ class MNISTAgt(AgtBase):
         In the general case this is unavoidable (?),
         but in this small testing case it can be prevented.
         """
+        # In general learning rule is discrete,
+        # so discretize input here (until come up with continuous learning rule)
+        ipt[0] = torch.where(ipt[0] > 0, 1.0, 0.0)
+
         col1 = self.cols[0, 0]
         col2 = self.cols[1, 0]
         
