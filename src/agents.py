@@ -1065,7 +1065,8 @@ class MNISTAgt(AgtBase):
             self.cols[col2.loc] = col2
 
             # Conns
-            self.cols[col1.loc].conns[col2.loc, Dir.A] = conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 16)
+            self.cols[col1.loc].conns[col2.loc, Dir.A] = \
+                conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 3)
 
             # Create directories for all cols
             for col in self.cols.values():
