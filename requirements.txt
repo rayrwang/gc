@@ -1,6 +1,6 @@
-numpy~=2.2
-torch~=2.9
-torchvision~=0.24
-opencv-python~=4.12
-pygame-ce~=2.5
-tqdm~=4.67
+numpy
+torch
+torchvision
+opencv-python==4.12.*  # Font issue on newer versions
+pygame-ce
+tqdm
