@@ -16,7 +16,7 @@ def spike(x, threshold=1.0):
     """
     `d, () -> d`
 
-    activation function
+    Activation function
     """
     return torch.where(x < threshold, 0.0, 1.0)
 
@@ -25,7 +25,7 @@ def atv(x, w, y, threshold=1.0):
     """
     `d_x, (d_x d_y), d_y, () -> d_y` 
     
-    activity rule
+    Activity rule
     """
     return spike(x, threshold=threshold) @ w
 
@@ -35,8 +35,8 @@ def inhibit(x, disable=False):
     """
     `d, bool -> d`
 
-    lateral inhibition for winner take all behavior,
-    to have more (less) activity for (un)expected
+    Lateral inhibition for winner take all behavior,
+    to have less (more) activity for (un)expected
     """
     if disable:
         return x
@@ -59,7 +59,7 @@ def lrn(x, w, y, ss=1e-2, disable=False):
     """
     `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
 
-    learning rule
+    (Discrete) learning rule
 
        x  y             Δw  
      < 1, any        -> 0  
@@ -104,7 +104,7 @@ def update(x, threshold=1.0):
     """
     `d_x, () -> d_x`
     
-    reset activations after applying activity rule
+    Reset activations after applying activity rule
     """
     return torch.zeros(x.shape)
 
@@ -113,7 +113,7 @@ def update_e(x):
     """
     `d_x -> d_x`
     
-    reset expectations
+    Reset expectations
     """
     return torch.zeros(x.shape)
 
