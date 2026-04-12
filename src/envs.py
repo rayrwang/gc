@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import random
 from typing import Any, Literal
+import time
 
 import cv2
 import torch
@@ -63,6 +64,9 @@ def run_env(
         show: bool):
     env_instance = env(cfg)
     _, ospec = env.get_specs(cfg)
+
+    COOLDOWN_SEND = 0.01
+    t_prev_send = time.perf_counter()
     while True:
         # Receive action from agt
         o = None
@@ -72,7 +76,9 @@ def run_env(
         i = env_instance._step(o)
 
         # Send percept to agt
-        percept_queue.put(i)
+        if (time.perf_counter() - t_prev_send) > COOLDOWN_SEND:
+            t_prev_send = time.perf_counter()
+            percept_queue.put(i)
 
         if show:
             env_instance._show()
