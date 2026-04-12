@@ -21,12 +21,9 @@ import os
 import time
 import math
 import sys
-import warnings
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
-with warnings.catch_warnings(action="ignore"):
-    # Pygame hasn't been updated since Sep 2024
-    import pygame as pg
+import pygame as pg
 
 from .agents import Dir
 
