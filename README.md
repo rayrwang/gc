@@ -11,9 +11,7 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 ## Install and Run
 
-**NOTE: Tested with Python 3.13**
-
-Install `requirements.txt` using your favorite package manager.
+Install `requirements.txt`.
 
 Run the main network:
 ```
