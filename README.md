@@ -36,6 +36,11 @@ To view a saved network without running it:
 python view_only.py "./saves/agt0"
 ```
 
+Run an example:
+```
+python examples/00_mnist_representations.py
+```
+
 Run the smaller testing network:
 ```
 python simple_nets.py
@@ -52,6 +57,7 @@ python simple_nets.py
 ## Files
 
 ```
+# Main networks
 src/
 |-- funcs.py     # Functions used in agents
 |-- agents.py    # Main neural nets file
@@ -59,8 +65,12 @@ src/
 |-- envs.py      # Virtual environments or software interfaces to the real world
 |-- debugger.py  # Debugger GUI
 main.py
+view_only.py
+examples/
+|-- XX_<name>.py
 
-simple/          # Snaller neural nets for testing
+# Snaller neural nets for testing
+simple/          
 |-- funcs.py
 |-- agents.py
 |-- debugger.py
