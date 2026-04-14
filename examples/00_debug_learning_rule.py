@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     agt = DebugLearningRuleAgt(
         1024 if torch.cuda.is_available() else 128,
-        "./saves/debug_lrn_agt")
+        "saves/debug_lrn_agt")
     agt.debug_init()
     for _ in (bar := tqdm(itertools.count(), desc="Running debug learning rule")):
         agt.step()

@@ -68,7 +68,7 @@ class SelectivityAgt(AgtBase):
 if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
-    agt = SelectivityAgt(128, "./saves/selectivity_agt")
+    agt = SelectivityAgt(128, "saves/selectivity_agt")
     agt.debug_init()
 
     MIN_ITER_SECS = 0.005

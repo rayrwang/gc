@@ -21,7 +21,7 @@ This should open a debugger GUI window. Closing the debugger will stop and save 
 
 To load and run a save:
 ```
-python main.py --load "./saves/main_agt"
+python main.py --load "saves/main_agt"
 ```
 
 Choose the size of the network:
@@ -31,7 +31,7 @@ python main.py --size 100
 
 To view a saved network without running it:
 ```
-python view_only.py "./saves/main_agt"
+python view_only.py "saves/main_agt"
 ```
 
 Run an example:

@@ -50,7 +50,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 200 if torch.cuda.is_available() else 50
-        AGT_PATH = "./saves/mnist_active_agt"
+        AGT_PATH = "saves/mnist_active_agt"
         agt = BareAgt(BareCfg(N_COLS, ispec, ospec), AGT_PATH)
     agt.debug_init()
 
