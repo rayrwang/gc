@@ -87,19 +87,6 @@ simple_nets.py
 - **Conjectures and Refutations: The Growth of Scientific Knowledge** (1963); K. Popper
 - **The Alberta Plan for AI Research** (2022); R. S. Sutton, M. Bowling, P. M. Pilarski
 
-## Roadmap
-
-Right now it kind of sucks, need to make it "actually be good":
-- Learn useful representations
-	- Of perceptual input, goals, and actions
-	- Models of self, other agents, and the world
-	- Language
-	- Abstract ideas
-- Interact intelligently with environments
-	- Explore and learn
-	- Plan and pursue goals
-- Think and be creative 😬
-
 ## Methods and Goals
 
 "Reinforcement learning without reward"
@@ -121,6 +108,19 @@ Right now it kind of sucks, need to make it "actually be good":
 | ❌ Fulfill specified objectives                                          | ✔️ Open ended improvement                                                                               |
 | ❌ AI safety by subservience to humans                                   | ✔️ AI safety by individual freedom                                                                      |
 | ❌ AIs that are tools                                                    | ✔️ AIs who are people                                                                                   |
+
+## Roadmap
+
+Right now it kind of sucks, need to make it "actually be good":
+- Learn useful representations
+	- Of perceptual input, goals, and actions
+	- Models of self, other agents, and the world
+	- Language
+	- Abstract ideas
+- Interact intelligently with environments
+	- Explore and learn
+	- Plan and pursue goals
+- Think and be creative 😬
 
 ---
 
