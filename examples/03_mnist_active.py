@@ -5,8 +5,7 @@ MNIST where agent's output determines next digit presented
 
 import os
 import sys
-project_root_path = os.path.dirname(os.path.dirname(__file__))
-sys.path.insert(0, project_root_path)
+sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
 import datetime
 import multiprocessing
