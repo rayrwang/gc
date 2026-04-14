@@ -55,9 +55,9 @@ def inhibit(x, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn(x, w, y, ss=1e-2, disable=False):
+def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     """
-    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, (), (), bool -> (d_x d_y)`
 
     (Discrete) learning rule
 
@@ -95,7 +95,7 @@ def lrn(x, w, y, ss=1e-2, disable=False):
     changes = spike(xr) * (excite + weaken + inhibit)
 
     # Scale changes for regulation
-    changes = changes * torch.exp(-(w / (0.1 * d_x**-0.5))**2)
+    changes = changes * torch.exp(-(w / (reg_width * d_x**-0.5))**2)
 
     return w + changes
 

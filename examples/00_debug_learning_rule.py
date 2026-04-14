@@ -127,7 +127,9 @@ class DebugLearningRuleAgt(AgtBase):
 if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
-    agt = DebugLearningRuleAgt(1024, "./saves/debug_lrn_agt")
+    agt = DebugLearningRuleAgt(
+        1024 if torch.cuda.is_available() else 128,
+        "./saves/debug_lrn_agt")
     agt.debug_init()
     for _ in (bar := tqdm(itertools.count(), desc="Running debug learning rule")):
         agt.step()
