@@ -5,7 +5,8 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+project_root_path = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, project_root_path)
 
 import multiprocessing
 import argparse
@@ -62,7 +63,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 20
-        AGT_PATH = "saves/mnist_repr_agt"
+        AGT_PATH = f"{project_root_path}/saves/mnist_repr_agt"
         agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
     agt.debug_init()
 

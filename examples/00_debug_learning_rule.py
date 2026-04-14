@@ -33,7 +33,8 @@ and output is all 0, see the connection from (4, 0) to (2, 2).
 
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+project_root_path = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, project_root_path)
 
 import itertools
 
@@ -131,7 +132,7 @@ if __name__ == "__main__":
 
     agt = DebugLearningRuleAgt(
         1024 if torch.cuda.is_available() else 128,
-        "saves/debug_lrn_agt")
+        f"{project_root_path}/saves/debug_lrn_agt")
     agt.debug_init()
     for _ in (bar := tqdm(itertools.count(), desc="Running debug learning rule")):
         agt.step()

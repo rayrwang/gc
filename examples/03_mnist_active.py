@@ -5,7 +5,8 @@ MNIST where agent's output determines next digit presented
 
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+project_root_path = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, project_root_path)
 
 import datetime
 import multiprocessing
@@ -50,7 +51,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 200 if torch.cuda.is_available() else 50
-        AGT_PATH = "saves/mnist_active_agt"
+        AGT_PATH = f"{project_root_path}/saves/mnist_active_agt"
         agt = BareAgt(BareCfg(N_COLS, ispec, ospec), AGT_PATH)
     agt.debug_init()
 
