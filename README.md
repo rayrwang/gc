@@ -102,6 +102,14 @@ Right now it kind of sucks, need to make it "actually be good":
 
 ## Methods and Goals
 
+"Reinforcement learning without reward"
+
+"Knowledge without authority"
+
+"Completely unsupervised learning"
+
+"Total freedom"
+
 | (nothing necessarily against these, just not the goals of this project) |                                                                                                         |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | ❌ Gradient descent                                                      | ✔️ Hebbian association                                                                                  |
