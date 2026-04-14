@@ -432,6 +432,16 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
 
 class AgtBase(ABC):
+    def create_directory(self):
+        # Reset or create save directory
+        if os.path.exists(self.path):
+            shutil.rmtree(self.path)
+        os.makedirs(self.path)
+
+        # Create directories for all cols
+        for col in self.cols.values():
+            os.mkdir(f"{self.path}/{col.loc}")
+
     def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
@@ -786,11 +796,6 @@ class Agt(AgtBase):  # Agent
         if not skip_init:
             print("\nInitializing new agent...")
 
-            # Reset or create save directory
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
             width = math.ceil(self.n_cols**(1/2))  # Side length
 
             # Initialize io columns
@@ -863,9 +868,7 @@ class Agt(AgtBase):  # Agent
                                 break  # Only at most one conn per target?
                 self.free_col(col)
 
-            # Create directories for all cols
-            for col in self.cols.values():
-                os.mkdir(f"{path}/{col.loc}")
+            self.create_directory()
 
             self.use_debug = False
 
@@ -934,11 +937,6 @@ class BareAgt(AgtBase):
 
         if not skip_init:
             print("\nInitializing new agent...")
-
-            # Reset or create save directory
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
 
             width = math.ceil(self.n_cols**(1/2))  # Side length
 
@@ -1011,9 +1009,7 @@ class BareAgt(AgtBase):
                                 break  # Only at most one conn per target?
                 self.free_col(col)
 
-            # Create directories for all cols
-            for col in self.cols.values():
-                os.mkdir(f"{path}/{col.loc}")
+            self.create_directory()
 
             self.use_debug = False
 
@@ -1051,11 +1047,6 @@ class MNISTAgt(AgtBase):
         if not skip_init:
             print("\nInitializing new agent...")
 
-            # Reset or create save directory
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
             # Cols
             col1 = I_VectorCol((0, 0), I_VectorColCfg(784))
             self.cols[col1.loc] = col1
@@ -1068,9 +1059,7 @@ class MNISTAgt(AgtBase):
             self.cols[col1.loc].conns[col2.loc, Dir.A] = \
                 conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 3)
 
-            # Create directories for all cols
-            for col in self.cols.values():
-                os.mkdir(f"{path}/{col.loc}")
+            self.create_directory()
 
             self.use_debug = False
 
