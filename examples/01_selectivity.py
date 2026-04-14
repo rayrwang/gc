@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import itertools
 import random
+import time
 
 import torch
 from tqdm import tqdm
@@ -68,9 +69,16 @@ if __name__ == "__main__":
 
     agt = SelectivityAgt(4, "./saves/selectivity_agt")
     agt.debug_init()
+
+    MIN_ITER_SECS = 0.005
+    t_prev = time.perf_counter()
     for _ in (bar := tqdm(itertools.count(), desc="Running learning selectivity")):
         agt.step()
 
         if agt.pipes["overview"][0].poll():
             bar.close()
             sys.exit()
+
+        while (time.perf_counter() - t_prev) < MIN_ITER_SECS:
+            pass
+        t_prev = time.perf_counter()
