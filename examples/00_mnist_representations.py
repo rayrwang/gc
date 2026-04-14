@@ -58,7 +58,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 20
-        AGT_PATH = "./saves/agt0"
+        AGT_PATH = "./saves/mnist_representations"
         agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
     agt.debug_init()
 
