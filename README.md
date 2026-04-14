@@ -78,6 +78,9 @@ simple_nets.py
 ## References
 
 - **Neuroscience: Exploring the Brain** (2016); M. F. Bear, B. W. Connors, M. A. Paradiso
+- **Theoretical Neuroscience: Computational And Mathematical Modeling of Neural Systems** (2001); P. Dayan, L. F. Abbot
+- **Beyond Reward and Punishment** (2019); D. Deutsch
+- **Diaspora** (1997); G. Egan
 - **A Path Towards Autonomous Machine Intelligence** (2022); Y. LeCun
 - **Active Inference: The Free Energy Principle in Mind, Brain, and Behavior** (2022); T. Parr, G. Pezzulo, K. J. Friston
 - **The Book of Why: The New Science of Cause and Effect** (2018); J. Pearl, D. Mackenzie
