@@ -1,6 +1,6 @@
 
 """
-Demonstrate learning of selectivity of output to one-hot input
+(WIP) Demonstrate learning of selectivity of output to one-hot input
 """
 
 import os
