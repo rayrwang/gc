@@ -27,6 +27,8 @@ See the effect of the learning rule on reference situations:
 
 For example to see what happens when input is all -1
 and output is all 0, see the connection from (4, 0) to (2, 2).
+
+(coordinates are in screen space: right then down) TODO change?
 """
 
 import os
