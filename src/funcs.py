@@ -9,7 +9,7 @@ disable_compile = (platform.system() == "Windows")  # Issues
 # atv returns change, while all others return new value,
 # since multiple atv's need to happen at the same time,
 # while the others don't have special requirements
-# and returning new value is easier to use
+# and returning new value is easier to use.
 
 
 def spike(x, threshold=1.0):

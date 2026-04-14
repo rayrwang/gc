@@ -18,6 +18,8 @@ from . import funcs as fc
 Loc = tuple[Number, Number]
 
 
+# This is a horribly inefficient way of doing it;
+# the idea is to use the same style as the main network.
 class Nrn:
     def __init__(self, loc):
         self.loc = loc
@@ -61,9 +63,10 @@ class NrnAgtBase:
             n = torch.linalg.vector_norm(x).item()
             m = torch.mean(x).item()
             s = torch.std(x).item()
-            h = None
+            
             # Histogram
                 # currently 43 bins: (-inf, -2.05), [-2.05, -1.95), ..., [-0.05, 0.05), ..., [1.95, 2.05), [2.05, inf)
+            h = None
             bins = torch.tensor([float("-inf")] + [0.1*i - 2.05 for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
             h, _ = torch.histogram(x, bins)  # NOTE issue if use lower float precision
             h = h.tolist()
