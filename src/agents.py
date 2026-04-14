@@ -558,6 +558,7 @@ class AgtBase(ABC):
             n = torch.linalg.vector_norm(x).item()
             m = torch.mean(x).item()
             s = torch.std(x).item()
+            
             # Histogram: The histogram displays approximately from -2 to +2 standard deviations,
             # with 43 bins in total, where each bin is 1/10 of a std wide.
             #
