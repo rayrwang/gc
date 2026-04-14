@@ -36,7 +36,7 @@ python view_only.py "./saves/main_agt"
 
 Run an example:
 ```
-python examples/00_mnist_representations.py
+python examples/00_debug_learning_rule.py
 ```
 
 Run the smaller testing network:
