@@ -81,8 +81,12 @@ def activs(d: int) -> Activs:
     """
     nr_<name>[0] : actual activations
     nr_<name>[1] : expectations
+    nr_<name>[2] : time average of activations for adaptive thresholds
+
+    TODO wrap in class?
     """
-    return [torch.randn(d), torch.zeros(d)]
+    activations = torch.randn(d)
+    return [activations, torch.zeros(d), activations]
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
