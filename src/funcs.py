@@ -33,7 +33,7 @@ def atv(x, w, y, threshold=1.0):
 inhibit_weights = {}
 def inhibit(x, disable=False):
     """
-    `d, bool -> d`
+    `Activs, bool -> Activs`
 
     Lateral inhibition for winner take all behavior,
     to have less (more) activity for (un)expected
@@ -51,7 +51,7 @@ def inhibit(x, disable=False):
     THRESHOLD = 0.8
     # Where both activations AND expectations are above threshold
     expected = spike(x[0]) * torch.where(x[1] < THRESHOLD, 0.0, 1.0)
-    return [x[0] + expected @ weights, x[1]]
+    return [x[0] + expected @ weights, x[1], x[2]]
 
 
 @torch.compile(disable=disable_compile)
