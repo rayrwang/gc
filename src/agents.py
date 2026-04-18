@@ -66,7 +66,7 @@ class Dir(Enum):  # Direction (kind) of connection
 
 # Type hints ##################################################################
 Loc = tuple[int, int]  # Location of col (module)
-Activs = Annotated[list[torch.Tensor], 2]  # 2 copies of activations (actual and expectations)
+Activs = Annotated[list[torch.Tensor], 3]  # 3 copies of activations (actual, expectations, average)
 Weights = torch.Tensor
 
 Input = torch.Tensor
