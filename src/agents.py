@@ -59,6 +59,7 @@ from tqdm import tqdm
 from . import iotypes as T
 from . import funcs as fc
 
+
 class Dir(Enum):  # Direction (kind) of connection
     A = 0  # Actual / "prediction errors" : connects actual to actual activations
     E = 1  # Expectations / "predictions" : connected actual to expectations activations
@@ -311,10 +312,14 @@ class BareCol(ColBase):  # 1 layer, no internal weights
         pass
 
     def update_activations(self):
+        # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
+
+        # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_1[2] = new_avg_1
 
+        # Reset new activations
         self.nr_1_[0] = fc.update(self.nr_1_[0])
         self.nr_1_[1] = fc.update_e(self.nr_1_[1])
 
@@ -322,7 +327,10 @@ class BareCol(ColBase):  # 1 layer, no internal weights
 I_VectorColCfg = BareColCfg
 class I_VectorCol(BareCol, I_ColBase):
     def update_activations(self):
+        # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
+
+        # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_1[2] = new_avg_1
 
@@ -419,19 +427,20 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         self.nr_5_[0] += fc.atv(self.nr_4[0], self.is_4_5, self.nr_5_[0])
 
     def update_activations(self):
-        # Compute new averages
+        # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
         new_avg_2 = ALPHA*self.nr_2_[0] + (1-ALPHA)*self.nr_2[2]
         new_avg_3 = ALPHA*self.nr_3_[0] + (1-ALPHA)*self.nr_3[2]
         new_avg_4 = ALPHA*self.nr_4_[0] + (1-ALPHA)*self.nr_4[2]
         new_avg_5 = ALPHA*self.nr_5_[0] + (1-ALPHA)*self.nr_5[2]
 
-        # Set current activations equal to new activations
+        # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_2 = self.nr_2_.copy()
         self.nr_3 = self.nr_3_.copy()
         self.nr_4 = self.nr_4_.copy()
         self.nr_5 = self.nr_5_.copy()
+
         self.nr_1[2] = new_avg_1
         self.nr_2[2] = new_avg_2
         self.nr_3[2] = new_avg_3
