@@ -44,15 +44,17 @@ class SelectivityAgt(AgtBase):
         loc2 = (1, 0)
 
         # Refresh input
-        self.cols[loc1].a_pre = torch.zeros(self.d)
-        self.cols[loc1].a_pre[random.randrange(self.d)] = 1
+        self.cols[loc1].a_pre_ = torch.zeros(self.d)
+        self.cols[loc1].a_pre_[random.randrange(self.d)] = 1
+        self.cols[loc1].update_activations()
 
         # Activity rule
-        self.cols[loc2].a_post = fc.atv(
+        self.cols[loc2].a_post_ = fc.atv(
             self.cols[loc1].a_pre,
             self.cols[loc1].conns[loc2, Dir.A],
             None
         )
+        self.cols[loc2].update_activations()
 
         # Learning rule
         self.cols[loc1].conns[loc2, Dir.A] = fc.lrn(
