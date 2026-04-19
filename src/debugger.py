@@ -584,14 +584,26 @@ def debugger(PATH, pipes):
 
                         # Draw activations grid
                         x = info["x"]
-                        WIDTH = 600 // (max(128, x.size)**0.5)
-                        GRID_WIDTH = 350 // WIDTH
-                        for i, xi in enumerate(x):
+                        x_avg = info["x_avg"]
+                        WIDTH = 600 // (max(128, x.size)**0.5)  # Width of each grid cell
+                        GRID_WIDTH = 350 // WIDTH  # Number of grid cells across
+                        for i, (xi, x_avg_i) in enumerate(zip(x, x_avg)):
                             # Fill from top to bottom, them left to right
                             px = i % GRID_WIDTH
                             py = i // GRID_WIDTH
+
+                            # Current value
                             color = get_color(xi)
-                            pg.draw.rect(window, color, (1125+WIDTH*px, 100+WIDTH*py, WIDTH, WIDTH))
+                            pg.draw.rect(window, color,
+                                (1125 + WIDTH*px, 100 + WIDTH*py, WIDTH, WIDTH))
+
+                            # Time average value
+                            OVERLAY = 0.3
+                            color = get_color(x_avg_i)
+                            pg.draw.rect(window, color,
+                                (1125 + WIDTH*(px + (1-OVERLAY)/2),
+                                    100 + WIDTH*(py + (1-OVERLAY)/2),
+                                    OVERLAY*WIDTH, OVERLAY*WIDTH))
 
                         # Draw grid border
                         """

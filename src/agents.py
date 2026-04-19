@@ -698,11 +698,12 @@ class AgtBase(ABC):
 
             loc, i = request
             if hasattr(self.cols[loc], f"nr_{i}"):
-                x = getattr(self.cols[loc], f"nr_{i}")[0]
+                x, _, x_avg = getattr(self.cols[loc], f"nr_{i}")
                 info = {}
                 info["timestamp"] = time.time()
                 info["request"] = request  # for debugger to verify info is up to date
-                info["x"] = x.detach().cpu().numpy()
+                info["x"] = x.cpu().numpy()
+                info["x_avg"] = x_avg.cpu().numpy()
                 pipe.send(info)
 
     def load_col(self, c: ColBase) -> None:
