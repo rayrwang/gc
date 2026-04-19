@@ -169,7 +169,7 @@ class ColBase(ABC):
             super().__setattr__(name, value)  # Default behavior
 
     @property
-    def count(self) -> tuple[int, int, int, int, int]:
+    def count(self) -> tuple[int, int, int]:
         """Count number of elements of each type of data"""
         nrns = 0  # Activations
         isyns = 0  # Internal (within this col) weights
@@ -654,6 +654,7 @@ class AgtBase(ABC):
 
             sum_density = 0
             for loc, col in self.cols.items():
+                # This doesn't use col.count since also need to calculate density
                 for name, x in vars(col).items():
                     # Only count current activations, not new
                     if name.startswith("nr_") and name[-1] != "_":
