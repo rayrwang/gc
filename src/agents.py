@@ -1,5 +1,17 @@
 
 """
+Naming conventions:
+
+nr_<name>  : Current activations
+nr_<name>_ : New activations
+is_<name>  : Weights
+
+TODO change?
+
+-------------------------------------------------------------------------------
+
+Order of operations:
+
 init or load from disk:
     env
     agt:
