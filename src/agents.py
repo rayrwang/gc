@@ -142,6 +142,7 @@ class ColBase(ABC):
 
     @abstractmethod
     def update_activations(self) -> None:
+        # Slight variations between subclasses
         ...
 
     # Maps
