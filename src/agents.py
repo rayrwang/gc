@@ -617,10 +617,10 @@ class AgtBase(ABC):
 
             info = {}
             info["timestamp"] = time.time()
-            nrns = 0
-            copies = 0
-            isyns = 0
-            esyns = 0
+            nrns = 0  # Activations
+            copies = 0  # Copies of activations (for additional info)
+            isyns = 0  # Internal weights (within each col)
+            esyns = 0  # External weights (between cols)
 
             sum_density = 0
             for loc, col in self.cols.items():
