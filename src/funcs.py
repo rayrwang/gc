@@ -27,6 +27,7 @@ def atv(x, w, y, threshold=1.0):
     
     Activity rule
     """
+    del y  # Currently unused
     return spike(x, threshold=threshold) @ w
 
 

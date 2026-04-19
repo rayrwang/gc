@@ -1,5 +1,17 @@
 
 """
+Naming conventions:
+
+nr_<name>  : Current activations
+nr_<name>_ : New activations
+is_<name>  : Weights
+
+TODO change?
+
+-------------------------------------------------------------------------------
+
+Order of operations:
+
 init or load from disk:
     env
     agt:
@@ -160,10 +172,8 @@ class ColBase(ABC):
     def count(self) -> tuple[int, int, int, int, int]:
         """Count number of elements of each type of data"""
         nrns = 0  # Activations
-        isyns = 0  # Internal (inside this col) weights
+        isyns = 0  # Internal (within this col) weights
         esyns = 0  # External (to other cols) weights
-        ihyps = 0  # Hyperparameters for internal weights
-        ehyps = 0  # Hyperparameters for external weights
         for name in vars(self):
             if name.startswith("nr_"):
                 nrns += getattr(self, name)[0].numel()
@@ -175,7 +185,7 @@ class ColBase(ABC):
         for weight in self.conns.values():
             esyns += weight.numel()
 
-        return nrns, isyns, esyns, ihyps, ehyps
+        return nrns, isyns, esyns
 
     def to(self, *args, **kwargs) -> None:
         """Move all tensors between cpu and gpu"""
@@ -637,10 +647,10 @@ class AgtBase(ABC):
 
             info = {}
             info["timestamp"] = time.time()
-            nrns = 0
-            copies = 0
-            isyns = 0
-            esyns = 0
+            nrns = 0  # Activations
+            copies = 0  # Copies of activations (for additional info)
+            isyns = 0  # Internal weights (within each col)
+            esyns = 0  # External weights (between cols)
 
             sum_density = 0
             for loc, col in self.cols.items():
@@ -677,7 +687,7 @@ class AgtBase(ABC):
             info = {}
             info["timestamp"] = time.time()
             info["loc"] = col.loc  # for debugger to verify info is up to date
-            info["nrns"], info["isyns"], info["esyns"], _, _ = col.count
+            info["nrns"], info["isyns"], info["esyns"] = col.count
             info["syns"] = info["isyns"] + info["esyns"]
             # Values of activations
             for name, x in vars(col).items():
