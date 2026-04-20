@@ -2,6 +2,7 @@
 import datetime
 import multiprocessing
 import argparse
+import itertools
 
 import torch
 
@@ -47,9 +48,9 @@ if __name__ == "__main__":
     agt.debug_init()
 
     t_start = datetime.datetime.now()
-    while True:
+    for step in itertools.count():
         t_now = datetime.datetime.now()
-        print(f"\n{t_now} (Elapsed: {t_now-t_start})")
+        print(f"\n{t_now} (Step {step}, Elapsed: {t_now-t_start})")
 
         # Receive percept from env
         i = None
