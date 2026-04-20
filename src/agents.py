@@ -4,7 +4,8 @@ Naming conventions:
 
 nr_<name>  : Current activations
 nr_<name>_ : New activations
-is_<name>  : Weights
+is_<name>  : Internal weights (within each col (module))
+conns      : External weights (connections between cols)
 
 TODO change?
 
