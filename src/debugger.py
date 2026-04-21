@@ -321,305 +321,299 @@ def debugger(PATH, pipes):
                     scale = h_new / H
         buttons = pg.mouse.get_pressed(num_buttons=3)
         keys = pg.key.get_pressed()
-        if buttons[0]:
-            # Get which col and conn mouse is clicking on #####################
-            screen_x, screen_y = pg.mouse.get_pos()
-            screen_x, screen_y = screen_x / scale, screen_y / scale
-            if keys[pg.K_LSHIFT] or keys[pg.K_RSHIFT] or buttons[2]:
-                # Try stay on same col and select conn or activation layer
-                if gui_state["loc"] is not None:
-                    loc = gui_state["loc"]
-                    conn_loc = screen2loc(screen_x, screen_y, COL_WIDTH)
-                    conn_dir = screen2dir(screen_x, screen_y, COL_WIDTH)
-                    if os.path.isdir(f"{PATH}/{conn_loc}"):  # Check if conn location is valid
-                        gui_state["atv"] = None
-                        gui_state["conn"] = (conn_loc, conn_dir)
-                    else:
-                        gui_state["conn"] = None
-                        if 1500 < screen_x < 2000:  # Try to select layer of activations
-                            if 250+0*LINE_HEIGHT < screen_y < 250+4*LINE_HEIGHT:  # nr_1
-                                gui_state["atv"] = 1
-                            elif 250+5*LINE_HEIGHT < screen_y < 250+9*LINE_HEIGHT:  # nr_2
-                                gui_state["atv"] = 2
-                            elif 250+10*LINE_HEIGHT < screen_y < 250+14*LINE_HEIGHT:  # nr_3
-                                gui_state["atv"] = 3
-                            elif 250+15*LINE_HEIGHT < screen_y < 250+19*LINE_HEIGHT:  # nr_4
-                                gui_state["atv"] = 4
-                            elif 250+20*LINE_HEIGHT < screen_y < 250+24*LINE_HEIGHT:  # nr_5
-                                gui_state["atv"] = 5
-                            elif 250+25*LINE_HEIGHT < screen_y < 250+29*LINE_HEIGHT:  # nr_6
-                                gui_state["atv"] = 6
-                            elif 250+30*LINE_HEIGHT < screen_y < 250+34*LINE_HEIGHT:  # nr_7
-                                gui_state["atv"] = 7
-                            else:
-                                gui_state["atv"] = None
+        
+        # Get which col and conn mouse is clicking on #####################
+        screen_x, screen_y = pg.mouse.get_pos()
+        screen_x, screen_y = screen_x / scale, screen_y / scale
+        if keys[pg.K_LSHIFT] or keys[pg.K_RSHIFT] or any(buttons):
+            # Try stay on same col and select conn or activation layer
+            if gui_state["loc"] is not None:
+                loc = gui_state["loc"]
+                conn_loc = screen2loc(screen_x, screen_y, COL_WIDTH)
+                conn_dir = screen2dir(screen_x, screen_y, COL_WIDTH)
+                if os.path.isdir(f"{PATH}/{conn_loc}"):  # Check if conn location is valid
+                    gui_state["atv"] = None
+                    gui_state["conn"] = (conn_loc, conn_dir)
+                else:
+                    gui_state["conn"] = None
+                    if 1500 < screen_x < 2000:  # Try to select layer of activations
+                        if 250+0*LINE_HEIGHT < screen_y < 250+4*LINE_HEIGHT:  # nr_1
+                            gui_state["atv"] = 1
+                        elif 250+5*LINE_HEIGHT < screen_y < 250+9*LINE_HEIGHT:  # nr_2
+                            gui_state["atv"] = 2
+                        elif 250+10*LINE_HEIGHT < screen_y < 250+14*LINE_HEIGHT:  # nr_3
+                            gui_state["atv"] = 3
+                        elif 250+15*LINE_HEIGHT < screen_y < 250+19*LINE_HEIGHT:  # nr_4
+                            gui_state["atv"] = 4
+                        elif 250+20*LINE_HEIGHT < screen_y < 250+24*LINE_HEIGHT:  # nr_5
+                            gui_state["atv"] = 5
+                        elif 250+25*LINE_HEIGHT < screen_y < 250+29*LINE_HEIGHT:  # nr_6
+                            gui_state["atv"] = 6
+                        elif 250+30*LINE_HEIGHT < screen_y < 250+34*LINE_HEIGHT:  # nr_7
+                            gui_state["atv"] = 7
                         else:
                             gui_state["atv"] = None
-                else:  # No col selected so ignore shift
-                    loc = screen2loc(screen_x, screen_y, COL_WIDTH)
-                    gui_state["loc"] = loc
-            else:  # Select col
+                    else:
+                        gui_state["atv"] = None
+            else:  # No col selected so ignore shift
                 loc = screen2loc(screen_x, screen_y, COL_WIDTH)
                 gui_state["loc"] = loc
-                gui_state["conn"] = None
+        else:  # Select col
+            loc = screen2loc(screen_x, screen_y, COL_WIDTH)
+            gui_state["loc"] = loc
+            gui_state["conn"] = None
 
-            # Draw debug info
-            if os.path.isdir(f"{PATH}/{loc}"):  # Check if col location is valid
-                # Draw col debug info #########################################
-                loc = gui_state["loc"]
-                draw_col(loc, "border")
+        # Draw debug info
+        if os.path.isdir(f"{PATH}/{loc}"):  # Check if col location is valid
+            # Draw col debug info #########################################
+            loc = gui_state["loc"]
+            draw_col(loc, "border")
 
+            # Send request
+            _, pipe = pipes["col"]
+            pipe.send(loc)
+
+            # Try to get new information
+            info = None
+            while pipe.poll():
+                new_info = pipe.recv()
+                if new_info["loc"] == loc:
+                    info = new_info
+                    cache["col"] = new_info
+
+            # If no new information, try to read from cache
+            if info is None and cache["col"] is not None:
+                if cache["col"]["loc"] == loc:
+                    info = cache["col"]
+
+            if info is None:
+                txt = fonts["debug"].render("waiting...", True, (0,0,0))
+                window.blit(txt, (1525, 25+0*LINE_HEIGHT))
+            else:
+                # Display debug info
+                loc = info["loc"]  # As a way to verify information is coming from correct col
+                txt = fonts["debug"].render(f"loc: {loc}", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(1525, 25)))
+
+                # Age of information
+                age = time.time() - info["timestamp"]
+                txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(1525, 25+LINE_HEIGHT)))
+
+                # Number of activations and weights
+                txt = fonts["debug"].render(f"activations: {info["nrns"]:,}", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(1700, 25+0*LINE_HEIGHT)))
+                txt = fonts["debug"].render(f"total weights: {info["syns"]:,}", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(1700, 25+1*LINE_HEIGHT)))
+                txt = fonts["debug"].render(f"|-- internal weights: {info["isyns"]:,}", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(1700, 25+2*LINE_HEIGHT)))
+                txt = fonts["debug"].render(f"|-- external weights: {info["esyns"]:,}", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(1700, 25+3*LINE_HEIGHT)))
+
+                # Ratios of numbers of weights to activations
+                txt = fonts["debug"].render(f"{info["syns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2075, 25+1*LINE_HEIGHT)))
+                txt = fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2075, 25+2*LINE_HEIGHT)))
+                txt = fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2075, 25+3*LINE_HEIGHT)))
+
+                # Legend for stats
+                txt = fonts["debug"].render("name: shape", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2325, 25+0*LINE_HEIGHT)))
+                txt = fonts["debug"].render("numel", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2325, 25+1*LINE_HEIGHT)))
+                txt = fonts["debug"].render("density, norm", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2325, 25+2*LINE_HEIGHT)))
+                txt = fonts["debug"].render("mean, std", True, (0,0,0))
+                window.blit(txt, txt.get_rect(topleft=(2325, 25+3*LINE_HEIGHT)))
+                pg.draw.rect(window, (0,0,0), (2310, 15, 175, 135), width=2)
+
+                # Draw activation and weight stats and histograms
+                activations = sorted([name for name in info if name.startswith("nr_")])
+                txt_line = 0
+                for name in activations:
+                    shape, d, n, m, s, (h, _), has_nan, all_nan = info[name][0]
+                    _, _, _, _, _, (h_e, _), has_nan_e, all_nan_e = info[name][1]
+                    txt = f"{name}: {shape}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+                    txt_line += 1
+                    txt = f"{math.prod(shape):,}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+                    txt_line += 1
+                    txt = f"{d:.4f}, {n:.4f}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+                    txt_line += 1
+                    txt = f"{m:.4f}, {s:.4f}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+
+                    txt_line -= 1
+                    histogram = get_histogram(h, 0.1, has_nan or has_nan_e, all_nan or all_nan_e, h_e=h_e)
+                    if histogram is not None:
+                        window.blit(histogram, histogram.get_rect(midright=(1975, 250+(txt_line)*LINE_HEIGHT)))
+                    txt_line += 3
+
+                weights = sorted([name for name in info if name.startswith("is_")])
+                txt_line = 0
+                for name in weights:
+                    shape, d, n, m, s, (h, bin_width), has_nan, all_nan = info[name]
+                    txt = f"{name}: {shape}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+                    txt_line += 1
+                    txt = f"{math.prod(shape):,}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+                    txt_line += 1
+                    txt = f"{d:.4f}, {n:.4f}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+                    txt_line += 1
+                    txt = f"{m:.4f}, {s:.4f}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+
+                    txt_line -= 1
+                    histogram = get_histogram(h, bin_width, has_nan, all_nan)
+                    if histogram is not None:
+                        window.blit(histogram, histogram.get_rect(midright=(2475, 250+(txt_line)*LINE_HEIGHT)))
+                    txt_line += 3
+
+                # Highlight outgoing connections
+                for (conn_loc, direction), _ in info["conns"].items():
+                    draw_col(conn_loc, dir2pos[direction])
+
+            # Draw conn debug info ########################################
+            if gui_state["conn"] is not None:
+                conn_loc, conn_dir = gui_state["conn"]
+                draw_col(conn_loc, highlight=f"border{dir2pos[conn_dir]}")
+                
                 # Send request
-                _, pipe = pipes["col"]
-                pipe.send(loc)
+                _, pipe = pipes["conn"]
+                pipe.send((loc, conn_loc, conn_dir))
 
                 # Try to get new information
                 info = None
                 while pipe.poll():
                     new_info = pipe.recv()
-                    if new_info["loc"] == loc:
+                    if new_info is not None and new_info["request"] == (loc, conn_loc, conn_dir):
                         info = new_info
-                        cache["col"] = new_info
+                        cache["conn"] = new_info
 
                 # If no new information, try to read from cache
-                if info is None and cache["col"] is not None:
-                    if cache["col"]["loc"] == loc:
-                        info = cache["col"]
+                if info is None and cache["conn"] is not None:
+                    if cache["conn"]["request"] == (loc, conn_loc, conn_dir):
+                        info = cache["conn"]
 
                 if info is None:
                     txt = fonts["debug"].render("waiting...", True, (0,0,0))
-                    window.blit(txt, (1525, 25+0*LINE_HEIGHT))
+                    window.blit(txt, (1125, 25))
+                elif not info["valid"]:
+                    txt = fonts["debug"].render("conn does not exist", True, (0,0,0))
+                    window.blit(txt, (1125, 25))
                 else:
                     # Display debug info
-                    loc = info["loc"]  # As a way to verify information is coming from correct col
-                    txt = fonts["debug"].render(f"loc: {loc}", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(1525, 25)))
+                    loc, conn_loc, conn_dir = info["request"]
+                    txt = fonts["debug"].render(f"from: {loc}", True, (0,0,0))
+                    window.blit(txt, (1125, 25))
+                    txt = fonts["debug"].render(f"to: {conn_loc}", True, (0,0,0))
+                    window.blit(txt, (1125, 25+LINE_HEIGHT))
+                    txt = fonts["debug"].render(f"direction: {conn_dir}", True, (0,0,0))
+                    window.blit(txt, (1125, 25+2*LINE_HEIGHT))
 
-                    # Age of information
-                    age = time.time() - info["timestamp"]
-                    txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(1525, 25+LINE_HEIGHT)))
+                    txt = fonts["debug"].render(f"age: {time.time()-info["timestamp"]:.3f}s", True, (0,0,0))
+                    window.blit(txt, (1125, 25+3*LINE_HEIGHT))
 
-                    # Number of activations and weights
-                    txt = fonts["debug"].render(f"activations: {info["nrns"]:,}", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(1700, 25+0*LINE_HEIGHT)))
-                    txt = fonts["debug"].render(f"total weights: {info["syns"]:,}", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(1700, 25+1*LINE_HEIGHT)))
-                    txt = fonts["debug"].render(f"|-- internal weights: {info["isyns"]:,}", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(1700, 25+2*LINE_HEIGHT)))
-                    txt = fonts["debug"].render(f"|-- external weights: {info["esyns"]:,}", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(1700, 25+3*LINE_HEIGHT)))
+                    # Weight values
+                    txt = fonts["debug"].render("name: shape, numel", True, (0,0,0))
+                    window.blit(txt, (1125, 25+5*LINE_HEIGHT))
+                    txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
+                    window.blit(txt, (1125, 25+6*LINE_HEIGHT))
 
-                    # Ratios of numbers of weights to activations
-                    txt = fonts["debug"].render(f"{info["syns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2075, 25+1*LINE_HEIGHT)))
-                    txt = fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2075, 25+2*LINE_HEIGHT)))
-                    txt = fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2075, 25+3*LINE_HEIGHT)))
+                    shape, d, n, m, s, (h, bin_width), has_nan, all_nan = info["stats"]
+                    txt = f"conn: {shape}, {math.prod(shape):,}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (1125, 25+8*LINE_HEIGHT))
+                    txt = f"{d:.4f}, {n:.4f}, {m:.4f}, {s:.4f}"
+                    txt = fonts["debug"].render(txt, True, (0,0,0))
+                    window.blit(txt, (1125, 25+9*LINE_HEIGHT))
 
-                    # Legend for stats
-                    txt = fonts["debug"].render("name: shape", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2325, 25+0*LINE_HEIGHT)))
-                    txt = fonts["debug"].render("numel", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2325, 25+1*LINE_HEIGHT)))
-                    txt = fonts["debug"].render("density, norm", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2325, 25+2*LINE_HEIGHT)))
-                    txt = fonts["debug"].render("mean, std", True, (0,0,0))
-                    window.blit(txt, txt.get_rect(topleft=(2325, 25+3*LINE_HEIGHT)))
-                    pg.draw.rect(window, (0,0,0), (2310, 15, 175, 135), width=2)
+                    histogram = get_histogram(h, bin_width, has_nan, all_nan)
+                    if histogram is not None:
+                        window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
 
-                    # Draw activation and weight stats and histograms
-                    activations = sorted([name for name in info if name.startswith("nr_")])
-                    txt_line = 0
-                    for name in activations:
-                        shape, d, n, m, s, (h, _), has_nan, all_nan = info[name][0]
-                        _, _, _, _, _, (h_e, _), has_nan_e, all_nan_e = info[name][1]
-                        txt = f"{name}: {shape}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
-                        txt_line += 1
-                        txt = f"{math.prod(shape):,}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
-                        txt_line += 1
-                        txt = f"{d:.4f}, {n:.4f}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
-                        txt_line += 1
-                        txt = f"{m:.4f}, {s:.4f}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+            # Draw activations ############################################
+            if gui_state["atv"] is not None:
+                # Send request
+                _, pipe = pipes["atv"]
+                request = (loc, gui_state["atv"])
+                pipe.send(request)
 
-                        txt_line -= 1
-                        histogram = get_histogram(h, 0.1, has_nan or has_nan_e, all_nan or all_nan_e, h_e=h_e)
-                        if histogram is not None:
-                            window.blit(histogram, histogram.get_rect(midright=(1975, 250+(txt_line)*LINE_HEIGHT)))
-                        txt_line += 3
+                # Try to get new information
+                info = None
+                while pipe.poll():
+                    new_info = pipe.recv()
+                    if new_info is not None and new_info["request"] == request:
+                        info = new_info
+                        cache["atv"] = new_info
 
-                    weights = sorted([name for name in info if name.startswith("is_")])
-                    txt_line = 0
-                    for name in weights:
-                        shape, d, n, m, s, (h, bin_width), has_nan, all_nan = info[name]
-                        txt = f"{name}: {shape}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
-                        txt_line += 1
-                        txt = f"{math.prod(shape):,}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
-                        txt_line += 1
-                        txt = f"{d:.4f}, {n:.4f}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
-                        txt_line += 1
-                        txt = f"{m:.4f}, {s:.4f}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+                # If no new information, try to read from cache
+                if info is None and cache["atv"] is not None:
+                    if cache["atv"]["request"] == request:
+                        info = cache["atv"]
 
-                        txt_line -= 1
-                        histogram = get_histogram(h, bin_width, has_nan, all_nan)
-                        if histogram is not None:
-                            window.blit(histogram, histogram.get_rect(midright=(2475, 250+(txt_line)*LINE_HEIGHT)))
-                        txt_line += 3
+                if info is None:
+                    txt = fonts["debug"].render("waiting...", True, (0,0,0))
+                    window.blit(txt, (1125, 25))
+                else:
+                    txt = fonts["debug"].render(f"loc: {info["request"][0]}, layer: nr_{info["request"][1]}", True, (0,0,0))
+                    window.blit(txt, (1125, 25))
+                    txt = fonts["debug"].render(f"age: {time.time()-info["timestamp"]:.3f}s", True, (0,0,0))
+                    window.blit(txt, (1125, 55))
 
-                    # Highlight outgoing connections
-                    for (conn_loc, direction), _ in info["conns"].items():
-                        draw_col(conn_loc, dir2pos[direction])
+                    # Draw pointer arrow
+                    arrow = pg.Surface((30, 20))
+                    arrow.fill((255, 255, 255))
+                    arrow.set_colorkey((255, 255, 255))
+                    pg.draw.polygon(arrow, (0, 181, 226), ((0, 0), (30, 10), (0, 20)))
+                    window.blit(arrow, arrow.get_rect(midright=(1515, 305+150*(info["request"][1]-1))))
 
-                # Draw conn debug info ########################################
-                if gui_state["conn"] is not None:
-                    conn_loc, conn_dir = gui_state["conn"]
-                    draw_col(conn_loc, highlight=f"border{dir2pos[conn_dir]}")
-                    
-                    # Send request
-                    _, pipe = pipes["conn"]
-                    pipe.send((loc, conn_loc, conn_dir))
+                    # Draw activations grid
+                    x = info["x"]
+                    WIDTH = 600 // (max(128, x.size)**0.5)
+                    GRID_WIDTH = 350 // WIDTH
+                    for i, xi in enumerate(x):
+                        # Fill from top to bottom, them left to right
+                        px = i % GRID_WIDTH
+                        py = i // GRID_WIDTH
+                        color = get_color(xi)
+                        pg.draw.rect(window, color, (1125+WIDTH*px, 100+WIDTH*py, WIDTH, WIDTH))
 
-                    # Try to get new information
-                    info = None
-                    while pipe.poll():
-                        new_info = pipe.recv()
-                        if new_info is not None and new_info["request"] == (loc, conn_loc, conn_dir):
-                            info = new_info
-                            cache["conn"] = new_info
-
-                    # If no new information, try to read from cache
-                    if info is None and cache["conn"] is not None:
-                        if cache["conn"]["request"] == (loc, conn_loc, conn_dir):
-                            info = cache["conn"]
-
-                    if info is None:
-                        txt = fonts["debug"].render("waiting...", True, (0,0,0))
-                        window.blit(txt, (1125, 25))
-                    elif not info["valid"]:
-                        txt = fonts["debug"].render("conn does not exist", True, (0,0,0))
-                        window.blit(txt, (1125, 25))
-                    else:
-                        # Display debug info
-                        loc, conn_loc, conn_dir = info["request"]
-                        txt = fonts["debug"].render(f"from: {loc}", True, (0,0,0))
-                        window.blit(txt, (1125, 25))
-                        txt = fonts["debug"].render(f"to: {conn_loc}", True, (0,0,0))
-                        window.blit(txt, (1125, 25+LINE_HEIGHT))
-                        txt = fonts["debug"].render(f"direction: {conn_dir}", True, (0,0,0))
-                        window.blit(txt, (1125, 25+2*LINE_HEIGHT))
-
-                        txt = fonts["debug"].render(f"age: {time.time()-info["timestamp"]:.3f}s", True, (0,0,0))
-                        window.blit(txt, (1125, 25+3*LINE_HEIGHT))
-
-                        # Weight values
-                        txt = fonts["debug"].render("name: shape, numel", True, (0,0,0))
-                        window.blit(txt, (1125, 25+5*LINE_HEIGHT))
-                        txt = fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
-                        window.blit(txt, (1125, 25+6*LINE_HEIGHT))
-
-                        shape, d, n, m, s, (h, bin_width), has_nan, all_nan = info["stats"]
-                        txt = f"conn: {shape}, {math.prod(shape):,}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (1125, 25+8*LINE_HEIGHT))
-                        txt = f"{d:.4f}, {n:.4f}, {m:.4f}, {s:.4f}"
-                        txt = fonts["debug"].render(txt, True, (0,0,0))
-                        window.blit(txt, (1125, 25+9*LINE_HEIGHT))
-
-                        histogram = get_histogram(h, bin_width, has_nan, all_nan)
-                        if histogram is not None:
-                            window.blit(histogram, histogram.get_rect(midtop=(1250, 25+10*LINE_HEIGHT)))
-
-                # Draw activations ############################################
-                if gui_state["atv"] is not None:
-                    # Send request
-                    _, pipe = pipes["atv"]
-                    request = (loc, gui_state["atv"])
-                    pipe.send(request)
-
-                    # Try to get new information
-                    info = None
-                    while pipe.poll():
-                        new_info = pipe.recv()
-                        if new_info is not None and new_info["request"] == request:
-                            info = new_info
-                            cache["atv"] = new_info
-
-                    # If no new information, try to read from cache
-                    if info is None and cache["atv"] is not None:
-                        if cache["atv"]["request"] == request:
-                            info = cache["atv"]
-
-                    if info is None:
-                        txt = fonts["debug"].render("waiting...", True, (0,0,0))
-                        window.blit(txt, (1125, 25))
-                    else:
-                        txt = fonts["debug"].render(f"loc: {info["request"][0]}, layer: nr_{info["request"][1]}", True, (0,0,0))
-                        window.blit(txt, (1125, 25))
-                        txt = fonts["debug"].render(f"age: {time.time()-info["timestamp"]:.3f}s", True, (0,0,0))
-                        window.blit(txt, (1125, 55))
-
-                        # Draw pointer arrow
-                        arrow = pg.Surface((30, 20))
-                        arrow.fill((255, 255, 255))
-                        arrow.set_colorkey((255, 255, 255))
-                        pg.draw.polygon(arrow, (0, 181, 226), ((0, 0), (30, 10), (0, 20)))
-                        window.blit(arrow, arrow.get_rect(midright=(1515, 305+150*(info["request"][1]-1))))
-
-                        # Draw activations grid
-                        x = info["x"]
-                        WIDTH = 600 // (max(128, x.size)**0.5)
-                        GRID_WIDTH = 350 // WIDTH
-                        for i, xi in enumerate(x):
-                            # Fill from top to bottom, them left to right
-                            px = i % GRID_WIDTH
-                            py = i // GRID_WIDTH
-                            color = get_color(xi)
-                            pg.draw.rect(window, color, (1125+WIDTH*px, 100+WIDTH*py, WIDTH, WIDTH))
-
-                        # Draw grid border
-                        """
-                        .-----------.
-                        |           |
-                        |           |
-                        |           |
-                        |           |
-                        |      .----.
-                        |      |
-                        .------.
-                        """
-                        top = min(x.size, GRID_WIDTH)
-                        left = x.size // GRID_WIDTH + (x.size % GRID_WIDTH != 0)
-                        right = max(x.size // GRID_WIDTH, 1)
-                        bottom = x.size % GRID_WIDTH
-                        pg.draw.aaline(window, (0, 0, 0), (1125, 100), (1125+WIDTH*top, 100))  # top
-                        pg.draw.aaline(window, (0, 0, 0), (1125, 100), (1125, 100+WIDTH*left))  # left
-                        pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*top, 100), (1125+WIDTH*top, 100+WIDTH*right))  # right
-                        pg.draw.aaline(window, (0, 0, 0), (1125, 100+WIDTH*left), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom left portion
-                        pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*top, 100+WIDTH*right))  # bottom right portion
-                        pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom vertical edge
-            else:
-                gui_state = {
-                    "loc": None,
-                    "conn": None,
-                    "atv": None,
-                }
+                    # Draw grid border
+                    """
+                    .-----------.
+                    |           |
+                    |           |
+                    |           |
+                    |           |
+                    |      .----.
+                    |      |
+                    .------.
+                    """
+                    top = min(x.size, GRID_WIDTH)
+                    left = x.size // GRID_WIDTH + (x.size % GRID_WIDTH != 0)
+                    right = max(x.size // GRID_WIDTH, 1)
+                    bottom = x.size % GRID_WIDTH
+                    pg.draw.aaline(window, (0, 0, 0), (1125, 100), (1125+WIDTH*top, 100))  # top
+                    pg.draw.aaline(window, (0, 0, 0), (1125, 100), (1125, 100+WIDTH*left))  # left
+                    pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*top, 100), (1125+WIDTH*top, 100+WIDTH*right))  # right
+                    pg.draw.aaline(window, (0, 0, 0), (1125, 100+WIDTH*left), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom left portion
+                    pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*top, 100+WIDTH*right))  # bottom right portion
+                    pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom vertical edge
         else:
             gui_state = {
                 "loc": None,
