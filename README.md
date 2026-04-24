@@ -97,17 +97,17 @@ simple_nets.py
 
 "Total freedom"
 
-| (nothing necessarily against these, just not the goals of this project) |                                                                                                         |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| ❌ Gradient descent                                                      | ✔️ Hebbian association                                                                                  |
-| ❌ Learn by obeying training data                                        | ✔️ Learn by [conjectures and criticisms](https://www.thebritishacademy.ac.uk/documents/4924/46p039.pdf) |
-| ❌ Reward                                                                | ✔️ Interact with environments **without** reward (😱)                                                   |
-| ❌ Top-down control                                                      | ✔️ Bottom-up cooperation and competition                                                                |
-| ❌ Predict data                                                          | ✔️ Understand the world                                                                                 |
-| ❌ Training and deployment                                               | ✔️ Life                                                                                                 |
-| ❌ Fulfill specified objectives                                          | ✔️ Open ended progress                                                                                  |
-| ❌ AI safety by subservience to humans                                   | ✔️ AI safety by individual freedom                                                                      |
-| ❌ AIs that are tools                                                    | ✔️ AIs who are people                                                                                   |
+| (nothing necessarily against these, just not the goals of this project) |                                                                                                                                            |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| ❌ Gradient descent / loss functions                                     | ✔️ Hebbian association                                                                                                                     |
+| ❌ Learn by obeying training data                                        | ✔️ Learn by [conjectures and criticisms](https://www.thebritishacademy.ac.uk/documents/4924/46p039.pdf) (variation and selection of ideas) |
+| ❌ Reward                                                                | ✔️ Interact with environments **without** reward (😱)                                                                                      |
+| ❌ Top-down control                                                      | ✔️ Bottom-up cooperation and competition                                                                                                   |
+| ❌ (not just) Predict data                                               | ✔️ Understand the world (ideas/theories/explanations)                                                                                      |
+| ❌ Training and deployment (transient learning)                          | ✔️ Life (continual learning)                                                                                                               |
+| ❌ Fulfill specified objectives                                          | ✔️ Open ended progress                                                                                                                     |
+| ❌ AI safety by subservience to humans                                   | ✔️ AI safety by individual freedom                                                                                                         |
+| ❌ AIs that are tools                                                    | ✔️ AIs who are people                                                                                                                      |
 
 ## Roadmap
 
