@@ -4,7 +4,8 @@ Naming conventions:
 
 nr_<name>  : Current activations
 nr_<name>_ : New activations
-is_<name>  : Weights
+is_<name>  : Internal weights (within each col (module))
+conns      : External weights (connections between cols)
 
 TODO change?
 
@@ -180,8 +181,6 @@ class ColBase(ABC):
                 nrns += getattr(self, name)[0].numel()
             elif name.startswith("is_"):
                 isyns += getattr(self, name).numel()
-            elif name.startswith("ih_"):
-                ihyps += getattr(self, name).numel()
 
         for weight in self.conns.values():
             esyns += weight.numel()
