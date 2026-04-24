@@ -103,9 +103,9 @@ simple_nets.py
 | ❌ Learn by obeying training data                                        | ✔️ Learn by [conjectures and criticisms](https://www.thebritishacademy.ac.uk/documents/4924/46p039.pdf) |
 | ❌ Reward                                                                | ✔️ Interact with environments **without** reward (😱)                                                   |
 | ❌ Top-down control                                                      | ✔️ Bottom-up cooperation and competition                                                                |
-| ❌ Goal is to predict data                                               | ✔️ Goal is to explain the world                                                                         |
-| ❌ Training and inference                                                | ✔️ Life                                                                                                 |
-| ❌ Fulfill specified objectives                                          | ✔️ Open ended improvement                                                                               |
+| ❌ Predict data                                                          | ✔️ Understand the world                                                                                 |
+| ❌ Training and deployment                                               | ✔️ Life                                                                                                 |
+| ❌ Fulfill specified objectives                                          | ✔️ Open ended progress                                                                                  |
 | ❌ AI safety by subservience to humans                                   | ✔️ AI safety by individual freedom                                                                      |
 | ❌ AIs that are tools                                                    | ✔️ AIs who are people                                                                                   |
 
