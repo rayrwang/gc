@@ -74,6 +74,10 @@ def lrn(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     >= 1, <= -1      -> -
     >= 1, (-1, 1)    -> towards 0
     >= 1, >= 1       -> +
+
+    TODO possible changes:
+    - Unify strengthening and decaying: e.g. one hyperparameter, consider adding vs. multiplying
+    - Less restrictive regulation: e.g. take into account more than just value of weight
     """
     if disable:
         return w
