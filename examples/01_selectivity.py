@@ -50,8 +50,7 @@ class SelectivityAgt(AgtBase):
         # Activity rule
         self.cols[loc2].a_post = fc.atv(
             self.cols[loc1].a_pre,
-            self.cols[loc1].conns[loc2, Dir.A],
-            None
+            self.cols[loc1].conns[loc2, Dir.A]
         )
 
         # Learning rule

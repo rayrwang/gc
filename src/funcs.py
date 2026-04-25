@@ -21,19 +21,20 @@ def spike(x, threshold=1.0):
     return torch.where(x < threshold, 0.0, 1.0)
 
 
-def atv(x, w, y, threshold=1.0):
+def atv(x, w, y=None, threshold=1.0):
     """
-    `d_x, (d_x d_y), d_y, () -> d_y` 
+    `d_x, (d_x d_y), d_y | None, () -> d_y` 
     
     Activity rule
     """
-    d_x, = x.shape
-    d_y, = y.shape
-    assert (d_x, d_y) == w.shape, (
-        f"Shape mismatch in activity rule:\n"
-        f"|-- Activations: {d_x} to {d_y}\n"
-        f"|-- Weights: {tuple(w.shape)}"
-    )
+    if y is not None:
+        d_x, = x.shape
+        d_y, = y.shape
+        assert (d_x, d_y) == w.shape, (
+            f"Shape mismatch in activity rule:\n"
+            f"|-- Activations: {d_x} to {d_y}\n"
+            f"|-- Weights: {tuple(w.shape)}"
+        )
     return spike(x, threshold=threshold) @ w
 
 

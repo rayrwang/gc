@@ -113,7 +113,7 @@ class DebugLearningRuleAgt(AgtBase):
             # Apply activation function
             func_output_loc = (loc_x, 4)
             weights = agt.cols[input_loc].conns[(func_output_loc, Dir.A)]
-            agt.cols[func_output_loc].nr_1[0] = fc.atv(input_layer, weights, None)
+            agt.cols[func_output_loc].nr_1[0] = fc.atv(input_layer, weights)
 
         # Apply learning rule
         for input_loc in self.input_locs:
