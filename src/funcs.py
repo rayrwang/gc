@@ -27,7 +27,13 @@ def atv(x, w, y, threshold=1.0):
     
     Activity rule
     """
-    del y  # Currently unused
+    d_x, = x.shape
+    d_y, = y.shape
+    assert (d_x, d_y) == w.shape, (
+        f"Shape mismatch in activity rule:\n"
+        f"|-- Activations: {d_x} to {d_y}\n"
+        f"|-- Weights: {tuple(w.shape)}"
+    )
     return spike(x, threshold=threshold) @ w
 
 
@@ -74,9 +80,12 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     d_x, = x.shape
     d_y, = y.shape
 
-    assert w.shape[0:] == (d_x, d_y), \
-        f"Expected weights of shape {(d_x, d_y)} but got shape {w.shape[0:]}!"
-
+    assert (d_x, d_y) == w.shape, (
+        f"Shape mismatch in learning rule:\n"
+        f"|-- Activations: {d_x} to {d_y}\n"
+        f"|-- Weights: {tuple(w.shape)}"
+    )
+    
     xr = x.repeat(d_y, 1).T  # (d_x d_y)
     yr = y.repeat(d_x, 1)    # (d_x d_y)
 
