@@ -71,8 +71,8 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
 
        x  y             Δw  
      < 1, any        -> 0  
-    >= 1, < -1       -> -
-    >= 1, [-1, 1)    -> towards 0
+    >= 1, <= -1      -> -
+    >= 1, (-1, 1)    -> towards 0
     >= 1, >= 1       -> +
     """
     if disable:
@@ -95,12 +95,12 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     # Case 1: y >= 1, add ss to weight
     excite = torch.where(yr >= 1, ss, 0)
 
-    # Case 2: -1 <= y < 1, decay weight
-    weaken = torch.where(torch.logical_and(-1 <= yr, yr < 1), 1.0, 0.0) \
+    # Case 2: -1 < y < 1, decay weight
+    weaken = torch.where(torch.logical_and(-1 < yr, yr < 1), 1.0, 0.0) \
         * (0.9*w - w)
 
-    # Case 3: y < -1, subtract ss from weight
-    inhibit = torch.where(yr < -1, -ss, 0.0)
+    # Case 3: y <= -1, subtract ss from weight
+    inhibit = torch.where(yr <= -1, -ss, 0.0)
 
     # Only change weights when x >= 1
     changes = spike(xr) * (excite + weaken + inhibit)
