@@ -51,8 +51,7 @@ class SelectivityAgt(AgtBase):
         # Activity rule
         self.cols[loc2].a_post_ = fc.atv(
             self.cols[loc1].a_pre,
-            self.cols[loc1].conns[loc2, Dir.A],
-            None
+            self.cols[loc1].conns[loc2, Dir.A]
         )
         self.cols[loc2].update_activations()
 
