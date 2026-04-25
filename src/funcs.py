@@ -26,6 +26,9 @@ def atv(x, w, y, threshold=1.0):
     `d_x, (d_x d_y), d_y, () -> d_y` 
     
     Activity rule
+
+    TODO possible changes:
+    - Adaptive thresholds by taking into account average values of activations
     """
     del y  # Currently unused
     return spike(x, threshold=threshold) @ w
@@ -99,6 +102,27 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     changes = changes * torch.exp(-(w / (reg_width * d_x**-0.5))**2)
 
     return w + changes
+
+
+def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
+    """
+    `Activs, (d_x d_y), Activs, (), bool -> (d_x d_y)`
+
+    Adaptive learning rule that takes into account average values of activations
+    """
+    if disable:
+        return w
+
+    d_x, = x[0].shape
+    d_y, = y[0].shape
+
+    assert (d_x, d_y) == w.shape, (
+        f"Shape mismatch in adaptive learning rule:\n"
+        f"|-- Activations: {d_x} to {d_y}\n"
+        f"|-- Weights: {tuple(w.shape)}"
+    )
+
+    return w  # TODO
 
 
 def update(x, threshold=1.0):
