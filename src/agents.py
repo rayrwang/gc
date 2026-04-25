@@ -72,6 +72,7 @@ from tqdm import tqdm
 from . import iotypes as T
 from . import funcs as fc
 
+
 class Dir(Enum):  # Direction (kind) of connection
     A = 0  # Actual / "prediction errors" : connects actual to actual activations
     E = 1  # Expectations / "predictions" : connected actual to expectations activations
@@ -79,7 +80,7 @@ class Dir(Enum):  # Direction (kind) of connection
 
 # Type hints ##################################################################
 Loc = tuple[int, int]  # Location of col (module)
-Activs = Annotated[list[torch.Tensor], 2]  # 2 copies of activations (actual and expectations)
+Activs = Annotated[list[torch.Tensor], 3]  # 3 copies of activations (actual, expectations, average)
 Weights = torch.Tensor
 
 Input = torch.Tensor
@@ -94,8 +95,12 @@ def activs(d: int) -> Activs:
     """
     nr_<name>[0] : actual activations
     nr_<name>[1] : expectations
+    nr_<name>[2] : time average of activations for adaptive thresholds
+
+    TODO wrap in class?
     """
-    return [torch.randn(d), torch.zeros(d)]
+    activations = torch.randn(d)
+    return [activations, torch.zeros(d), activations]
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
@@ -113,7 +118,8 @@ def conn(c1: ColBase, c2: ColBase, direction: Dir, scale: float = 2.0) -> Weight
     
 
 # Constants ###################################################################
-D_DEFAULT = 1024
+D_DEFAULT = 1024  # Layer dimensionality
+ALPHA = 0.2  # Decay factor for activations EMA
 
 
 # Classes #####################################################################
@@ -137,6 +143,7 @@ class ColBase(ABC):
 
     @abstractmethod
     def update_activations(self) -> None:
+        # Slight variations between subclasses
         ...
 
     # Maps
@@ -164,7 +171,7 @@ class ColBase(ABC):
             super().__setattr__(name, value)  # Default behavior
 
     @property
-    def count(self) -> tuple[int, int, int, int, int]:
+    def count(self) -> tuple[int, int, int]:
         """Count number of elements of each type of data"""
         nrns = 0  # Activations
         isyns = 0  # Internal (within this col) weights
@@ -315,8 +322,14 @@ class BareCol(ColBase):  # 1 layer, no internal weights
         pass
 
     def update_activations(self):
-        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
+        # Compute new activations averages
+        new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
 
+        # Move new activations to current
+        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
+        self.nr_1[2] = new_avg_1
+
+        # Reset new activations
         self.nr_1_[0] = fc.update(self.nr_1_[0])
         self.nr_1_[1] = fc.update_e(self.nr_1_[1])
 
@@ -324,7 +337,12 @@ class BareCol(ColBase):  # 1 layer, no internal weights
 I_VectorColCfg = BareColCfg
 class I_VectorCol(BareCol, I_ColBase):
     def update_activations(self):
+        # Compute new activations averages
+        new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
+
+        # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
+        self.nr_1[2] = new_avg_1
 
         # Receives perceptual input, don't reset
 
@@ -419,12 +437,25 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         self.nr_5_[0] += fc.atv(self.nr_4[0], self.is_4_5, self.nr_5_[0])
 
     def update_activations(self):
-        # Set current activations equal to new activations
+        # Compute new activations averages
+        new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
+        new_avg_2 = ALPHA*self.nr_2_[0] + (1-ALPHA)*self.nr_2[2]
+        new_avg_3 = ALPHA*self.nr_3_[0] + (1-ALPHA)*self.nr_3[2]
+        new_avg_4 = ALPHA*self.nr_4_[0] + (1-ALPHA)*self.nr_4[2]
+        new_avg_5 = ALPHA*self.nr_5_[0] + (1-ALPHA)*self.nr_5[2]
+
+        # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_2 = self.nr_2_.copy()
         self.nr_3 = self.nr_3_.copy()
         self.nr_4 = self.nr_4_.copy()
         self.nr_5 = self.nr_5_.copy()
+
+        self.nr_1[2] = new_avg_1
+        self.nr_2[2] = new_avg_2
+        self.nr_3[2] = new_avg_3
+        self.nr_4[2] = new_avg_4
+        self.nr_5[2] = new_avg_5
 
         # Reset new activations
         self.nr_1_[0] = fc.update(self.nr_1_[0])
@@ -623,6 +654,7 @@ class AgtBase(ABC):
 
             sum_density = 0
             for loc, col in self.cols.items():
+                # This doesn't use col.count since also need to calculate density
                 for name, x in vars(col).items():
                     # Only count current activations, not new
                     if name.startswith("nr_") and name[-1] != "_":
@@ -703,11 +735,12 @@ class AgtBase(ABC):
 
             loc, i = request
             if hasattr(self.cols[loc], f"nr_{i}"):
-                x = getattr(self.cols[loc], f"nr_{i}")[0]
+                x, _, x_avg = getattr(self.cols[loc], f"nr_{i}")
                 info = {}
                 info["timestamp"] = time.time()
                 info["request"] = request  # for debugger to verify info is up to date
-                info["x"] = x.detach().cpu().numpy()
+                info["x"] = x.cpu().numpy()
+                info["x_avg"] = x_avg.cpu().numpy()
                 pipe.send(info)
 
     def load_col(self, c: ColBase) -> None:

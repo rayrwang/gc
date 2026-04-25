@@ -98,7 +98,12 @@ class DebugLearningRuleAgt(AgtBase):
     def step(self):
         # Refresh randns
         for loc in ((0, 0), (0, 2)):
-            self.cols[loc].nr_1[0] = torch.randn(self.d)
+            self.cols[loc].nr_1_[0] = torch.randn(self.d)
+
+        # Preserve non changing
+        for loc_x in range(1, 4+1):
+            self.cols[(loc_x, 0)].nr_1_[0] = self.cols[(loc_x, 0)].nr_1[0]
+            self.cols[(loc_x, 2)].nr_1_[0] = self.cols[(loc_x, 2)].nr_1[0]
 
         # Compute new active outputs
         for loc_x in range(4+1):
@@ -108,12 +113,16 @@ class DebugLearningRuleAgt(AgtBase):
             # Don't apply activation function
             output_loc = (loc_x, 3)
             weights = agt.cols[input_loc].conns[(output_loc, Dir.A)]
-            agt.cols[output_loc].nr_1[0] = input_layer @ weights
+            agt.cols[output_loc].nr_1_[0] = input_layer @ weights
 
             # Apply activation function
             func_output_loc = (loc_x, 4)
             weights = agt.cols[input_loc].conns[(func_output_loc, Dir.A)]
-            agt.cols[func_output_loc].nr_1[0] = fc.atv(input_layer, weights, None)
+            agt.cols[func_output_loc].nr_1_[0] = fc.atv(input_layer, weights)
+
+        # Update activations
+        for col in self.cols.values():
+            col.update_activations()
 
         # Apply learning rule
         for input_loc in self.input_locs:

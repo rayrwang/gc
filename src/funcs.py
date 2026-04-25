@@ -21,20 +21,30 @@ def spike(x, threshold=1.0):
     return torch.where(x < threshold, 0.0, 1.0)
 
 
-def atv(x, w, y, threshold=1.0):
+def atv(x, w, y=None, threshold=1.0):
     """
-    `d_x, (d_x d_y), d_y, () -> d_y` 
+    `d_x, (d_x d_y), d_y | None, () -> d_y` 
     
     Activity rule
+
+    TODO possible changes:
+    - Adaptive thresholds by taking into account average values of activations
     """
-    del y  # Currently unused
+    if y is not None:
+        d_x, = x.shape
+        d_y, = y.shape
+        assert (d_x, d_y) == w.shape, (
+            f"Shape mismatch in activity rule:\n"
+            f"|-- Activations: {d_x} to {d_y}\n"
+            f"|-- Weights: {tuple(w.shape)}"
+        )
     return spike(x, threshold=threshold) @ w
 
 
 inhibit_weights = {}
 def inhibit(x, disable=False):
     """
-    `d, bool -> d`
+    `Activs, bool -> Activs`
 
     Lateral inhibition for winner take all behavior,
     to have less (more) activity for (un)expected
@@ -52,21 +62,25 @@ def inhibit(x, disable=False):
     THRESHOLD = 0.8
     # Where both activations AND expectations are above threshold
     expected = spike(x[0]) * torch.where(x[1] < THRESHOLD, 0.0, 1.0)
-    return [x[0] + expected @ weights, x[1]]
+    return [x[0] + expected @ weights, x[1], x[2]]
 
 
 @torch.compile(disable=disable_compile)
-def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
+def lrn(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     """
-    `d_x, (d_x d_y), d_y, (), (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, (), (), (), bool -> (d_x d_y)`
 
     (Discrete) learning rule
 
        x  y             Δw  
      < 1, any        -> 0  
-    >= 1, < -1       -> -
-    >= 1, [-1, 1)    -> towards 0
+    >= 1, <= -1      -> -
+    >= 1, (-1, 1)    -> towards 0
     >= 1, >= 1       -> +
+
+    TODO possible changes:
+    - Unify strengthening and decaying: e.g. one hyperparameter, consider adding vs. multiplying
+    - Less restrictive regulation: e.g. take into account more than just value of weight
     """
     if disable:
         return w
@@ -74,9 +88,12 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     d_x, = x.shape
     d_y, = y.shape
 
-    assert w.shape[0:] == (d_x, d_y), \
-        f"Expected weights of shape {(d_x, d_y)} but got shape {w.shape[0:]}!"
-
+    assert (d_x, d_y) == w.shape, (
+        f"Shape mismatch in learning rule:\n"
+        f"|-- Activations: {d_x} to {d_y}\n"
+        f"|-- Weights: {tuple(w.shape)}"
+    )
+    
     xr = x.repeat(d_y, 1).T  # (d_x d_y)
     yr = y.repeat(d_x, 1)    # (d_x d_y)
 
@@ -85,12 +102,12 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     # Case 1: y >= 1, add ss to weight
     excite = torch.where(yr >= 1, ss, 0)
 
-    # Case 2: -1 <= y < 1, decay weight
-    weaken = torch.where(torch.logical_and(-1 <= yr, yr < 1), 1.0, 0.0) \
-        * (0.9*w - w)
+    # Case 2: -1 < y < 1, decay weight
+    weaken = torch.where(torch.logical_and(-1 < yr, yr < 1), 1.0, 0.0) \
+        * (decay*w - w)
 
-    # Case 3: y < -1, subtract ss from weight
-    inhibit = torch.where(yr < -1, -ss, 0.0)
+    # Case 3: y <= -1, subtract ss from weight
+    inhibit = torch.where(yr <= -1, -ss, 0.0)
 
     # Only change weights when x >= 1
     changes = spike(xr) * (excite + weaken + inhibit)
@@ -99,6 +116,27 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
     changes = changes * torch.exp(-(w / (reg_width * d_x**-0.5))**2)
 
     return w + changes
+
+
+def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
+    """
+    `Activs, (d_x d_y), Activs, (), bool -> (d_x d_y)`
+
+    Adaptive learning rule that takes into account average values of activations
+    """
+    if disable:
+        return w
+
+    d_x, = x[0].shape
+    d_y, = y[0].shape
+
+    assert (d_x, d_y) == w.shape, (
+        f"Shape mismatch in adaptive learning rule:\n"
+        f"|-- Activations: {d_x} to {d_y}\n"
+        f"|-- Weights: {tuple(w.shape)}"
+    )
+
+    return w  # TODO
 
 
 def update(x, threshold=1.0):
