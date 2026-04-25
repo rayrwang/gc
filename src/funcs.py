@@ -63,9 +63,9 @@ def inhibit(x, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
+def lrn(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     """
-    `d_x, (d_x d_y), d_y, (), (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, (), (), (), bool -> (d_x d_y)`
 
     (Discrete) learning rule
 
@@ -97,7 +97,7 @@ def lrn(x, w, y, ss=1e-2, reg_width=0.1, disable=False):
 
     # Case 2: -1 < y < 1, decay weight
     weaken = torch.where(torch.logical_and(-1 < yr, yr < 1), 1.0, 0.0) \
-        * (0.9*w - w)
+        * (decay*w - w)
 
     # Case 3: y <= -1, subtract ss from weight
     inhibit = torch.where(yr <= -1, -ss, 0.0)
