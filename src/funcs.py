@@ -1,6 +1,7 @@
 
 import math
 import platform
+import inspect
 
 import torch
 
@@ -10,6 +11,21 @@ disable_compile = (platform.system() == "Windows")  # Issues
 # since multiple atv's need to happen at the same time,
 # while the others don't have special requirements
 # and returning new value is easier to use.
+
+
+def check_shapes(
+        x_shape: int,
+        w_shape: tuple[int, int],
+        y_shape: int,
+        desc: str | None = None) -> None:
+    if desc is None:
+        # Fallback to function name
+        desc = f"`{inspect.currentframe().f_back.f_code.co_name}`"
+    assert (x_shape, y_shape) == w_shape, (
+        f"Shape mismatch in {desc}:\n"
+        f"|-- Activations: {x_shape} to {y_shape}\n"
+        f"|-- Weights: {w_shape}"
+    )
 
 
 def spike(x, threshold=1.0):
@@ -31,13 +47,7 @@ def atv(x, w, y=None, threshold=1.0):
     - Adaptive thresholds by taking into account average values of activations
     """
     if y is not None:
-        d_x, = x.shape
-        d_y, = y.shape
-        assert (d_x, d_y) == w.shape, (
-            f"Shape mismatch in activity rule:\n"
-            f"|-- Activations: {d_x} to {d_y}\n"
-            f"|-- Weights: {tuple(w.shape)}"
-        )
+        check_shapes(x.shape[0], tuple(w.shape), y.shape[0], "activity rule")
     return spike(x, threshold=threshold) @ w
 
 
@@ -88,11 +98,7 @@ def lrn(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     d_x, = x.shape
     d_y, = y.shape
 
-    assert (d_x, d_y) == w.shape, (
-        f"Shape mismatch in learning rule:\n"
-        f"|-- Activations: {d_x} to {d_y}\n"
-        f"|-- Weights: {tuple(w.shape)}"
-    )
+    check_shapes(d_x, tuple(w.shape), d_y, "learning rule")
     
     xr = x.repeat(d_y, 1).T  # (d_x d_y)
     yr = y.repeat(d_x, 1)    # (d_x d_y)
@@ -130,11 +136,7 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
     d_x, = x[0].shape
     d_y, = y[0].shape
 
-    assert (d_x, d_y) == w.shape, (
-        f"Shape mismatch in adaptive learning rule:\n"
-        f"|-- Activations: {d_x} to {d_y}\n"
-        f"|-- Weights: {tuple(w.shape)}"
-    )
+    check_shapes(d_x, tuple(w.shape), d_y, "adaptive learning rule")
 
     return w  # TODO
 
