@@ -92,14 +92,10 @@ class NrnAgtBase:
                     syns.append(syn)
 
             # Activations stats and histogram
-            nrns = torch.tensor(nrns)
-            nrn_stats = stats(nrns)
-            info["nrn_stats"] = nrn_stats
+            info["nrn_stats"] = stats(torch.tensor(nrns))
 
             # Weights stats and histogram
-            syns = torch.tensor(syns)
-            syn_stats = stats(syns)
-            info["syn_stats"] = syn_stats
+            info["syn_stats"] = stats(torch.tensor(syns))
 
             pipe.send(info)
 
