@@ -139,7 +139,7 @@ def lrn_basic(x, w, y, ss=1e-4, disable=False):
     d_x, = x.shape
     d_y, = y.shape
 
-    check_shapes(d_x, w.shape, d_y)
+    check_shapes(d_x, w.shape, d_y, "basic learning rule")
 
     xr = x.repeat(d_y, 1).T  # (d_x d_y)
     yr = y.repeat(d_x, 1)    # (d_x d_y)
