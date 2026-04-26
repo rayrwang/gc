@@ -159,7 +159,9 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
     """
     `Activs, (d_x d_y), Activs, (), bool -> (d_x d_y)`
 
-    Adaptive learning rule that takes into account average values of activations
+    BCM learning rule which takes into account average values of activations
+
+    Δw ∝ x * y * (y-y_avg)
     """
     if disable:
         return w
@@ -169,7 +171,15 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
 
     check_shapes(d_x, tuple(w.shape), d_y, "adaptive learning rule")
 
-    return w  # TODO
+    xr = x[0].repeat(d_y, 1).T     # (d_x d_y)
+    yr = y[0].repeat(d_x, 1)       # (d_x d_y)
+    y_avg_r = y[2].repeat(d_x, 1)  # (d_x d_y)
+
+    return w + ss * xr * yr * (yr-y_avg_r)
+
+
+def lrn_adaptive_d(x, w, y, ss=1e-2, disable=False):
+    return lrn_adaptive(spike(x), w, y, ss=ss, disable=disable)
 
 
 def update(x, threshold=1.0):
