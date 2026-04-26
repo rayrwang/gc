@@ -17,12 +17,12 @@ def check_shapes(
         x_shape: int,
         w_shape: tuple[int, int],
         y_shape: int,
-        desc: str | None = None) -> None:
-    if desc is None:
+        name: str | None = None) -> None:
+    if name is None:
         # Fallback to function name
-        desc = f"`{inspect.currentframe().f_back.f_code.co_name}`"
+        name = f"`{inspect.currentframe().f_back.f_code.co_name}`"
     assert (x_shape, y_shape) == w_shape, (
-        f"Shape mismatch in {desc}:\n"
+        f"Shape mismatch in {name}:\n"
         f"|-- Activations: {x_shape} to {y_shape}\n"
         f"|-- Weights: {w_shape}"
     )
