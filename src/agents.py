@@ -492,7 +492,7 @@ class AgtBase(ABC):
         # First pass: compute new weights and activations
         for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
             # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():
+            if self.use_debug and self.pipes["overview"][0].poll():
                 bar.close()
                 self.save()
                 sys.exit()
@@ -532,7 +532,7 @@ class AgtBase(ABC):
         # Second pass: set current activations equal to new, and reset new
         for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
             # Used to communicate debugger exited
-            if self.pipes["overview"][0].poll():  # TODO not here?
+            if self.use_debug and self.pipes["overview"][0].poll():  # TODO not here?
                 bar.close()
                 self.save()
                 sys.exit()
@@ -1134,7 +1134,7 @@ class MNISTAgt(AgtBase):
             col2.a_post
         )
 
-        if self.pipes["overview"][0].poll():
+        if self.use_debug and self.pipes["overview"][0].poll():
             self.save()
             sys.exit()
         self.debug_update()
