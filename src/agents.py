@@ -474,6 +474,10 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
 class AgtBase(ABC):
     def __init__(self):
+        self.I_cols: list[I_ColBase] = []
+        self.O_cols: list[O_ColBase] = []
+        self.cols: dict[Loc, ColBase] = {}  # location : col
+
         self.use_debug = False
         atexit.register(self.cleanup)
 
@@ -842,10 +846,6 @@ class Agt(AgtBase):  # Agent
         self.ispec  = cfg.ispec  # Input specification
         self.ospec  = cfg.ospec  # Output specification
 
-        self.I_cols: list[I_ColBase] = []
-        self.O_cols: list[O_ColBase] = []
-        self.cols: dict[Loc, ColBase] = {}  # location : col
-
         if not skip_init:
             print("\nInitializing new agent...")
 
@@ -984,10 +984,6 @@ class BareAgt(AgtBase):
         self.ispec  = cfg.ispec  # Input specification
         self.ospec  = cfg.ospec  # Output specification
 
-        self.I_cols: list[I_ColBase] = []
-        self.O_cols: list[O_ColBase] = []
-        self.cols: dict[Loc, ColBase] = {}  # location : col
-
         if not skip_init:
             print("\nInitializing new agent...")
 
@@ -1092,10 +1088,6 @@ class MNISTAgt(AgtBase):
         assert len(ospec) == 1
         assert type(ospec[0]) is T.O_Vector
         assert ospec[0].d == 10
-
-        self.I_cols: list[I_ColBase] = []
-        self.O_cols: list[O_ColBase] = []
-        self.cols: dict[Loc, ColBase] = {}  # location : col
 
         if not skip_init:
             print("\nInitializing new agent...")
