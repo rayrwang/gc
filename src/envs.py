@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 import random
 from typing import Any, Literal
 import time
+import sys
+import signal
 
 import cv2
 import torch
@@ -62,6 +64,10 @@ def run_env(
         percept_queue,
         action_queue,
         show: bool):
+    signal.signal(signal.SIGINT, lambda _, __: sys.exit())
+    signal.signal(signal.SIGTERM, lambda _, __: sys.exit())
+    signal.signal(signal.SIGHUP, lambda _, __: sys.exit())
+
     env_instance = env(cfg)
     _, ospec = env.get_specs(cfg)
 

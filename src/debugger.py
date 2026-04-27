@@ -21,6 +21,7 @@ import os
 import time
 import math
 import sys
+import signal
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
@@ -28,6 +29,10 @@ import pygame as pg
 from .agents import Dir
 
 def debugger(PATH, pipes):
+    signal.signal(signal.SIGINT, lambda _, __: sys.exit())
+    signal.signal(signal.SIGTERM, lambda _, __: sys.exit())
+    signal.signal(signal.SIGHUP, lambda _, __: sys.exit())
+
     def screen2loc(x, y, width):
         """Convert screen coordinates to col coordinates (loc)"""
         return int(x/width), int(y/width)

@@ -65,6 +65,7 @@ import multiprocessing
 import shutil
 import sys
 import atexit
+import signal
 
 import torch
 import numpy as np
@@ -483,6 +484,9 @@ class AgtBase(ABC):
 
         self.use_debug = False
         atexit.register(self.cleanup)
+        signal.signal(signal.SIGINT, lambda _, __: sys.exit())
+        signal.signal(signal.SIGTERM, lambda _, __: sys.exit())
+        signal.signal(signal.SIGHUP, lambda _, __: sys.exit())
 
     def create_directory(self):
         # Reset or create save directory
