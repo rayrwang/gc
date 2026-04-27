@@ -316,23 +316,27 @@ def nrn_debugger(PATH, pipes):
                     conn_loc = gui_state["conn"]
                     draw_col(conn_loc, highlight="borderconn")
 
-                    conn = cache["nrn"]["conns"].get(conn_loc)
-                    if conn is not None:
-                        # Display debug info
-                        txt = fonts["regular"].render(f"from: {gui_state["loc"]}", True, (0,0,0))
-                        window.blit(txt, (2050, 950))
-                        txt = fonts["regular"].render(f"to: {gui_state["conn"]}", True, (0,0,0))
-                        window.blit(txt, (2050, 1010))
+                    if cache["nrn"] is not None and cache["nrn"]["loc"] == loc:
+                        conn = cache["nrn"]["conns"].get(conn_loc)
+                        if conn is not None:
+                            # Display debug info
+                            txt = fonts["regular"].render(f"from: {gui_state["loc"]}", True, (0,0,0))
+                            window.blit(txt, (2050, 950))
+                            txt = fonts["regular"].render(f"to: {gui_state["conn"]}", True, (0,0,0))
+                            window.blit(txt, (2050, 1010))
 
-                        # Weight value
-                        txt = fonts["regular"].render(f"{conn:.3f}", True, (0,0,0))
-                        window.blit(txt, (2050, 1130))
+                            # Weight value
+                            txt = fonts["regular"].render(f"{conn:.3f}", True, (0,0,0))
+                            window.blit(txt, (2050, 1130))
 
-                        sq = square["small"]
-                        sq.fill(get_color(conn))
-                        window.blit(sq, sq.get_rect(midleft=(2300, 1160)))
+                            sq = square["small"]
+                            sq.fill(get_color(conn))
+                            window.blit(sq, sq.get_rect(midleft=(2300, 1160)))
+                        else:
+                            txt = fonts["regular"].render("conn does not exist", True, (0,0,0))
+                            window.blit(txt, (2050, 950))
                     else:
-                        txt = fonts["regular"].render("conn does not exist", True, (0,0,0))
+                        txt = fonts["regular"].render("waiting...", True, (0,0,0))
                         window.blit(txt, (2050, 950))
         else:
             gui_state = {
