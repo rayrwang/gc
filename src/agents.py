@@ -476,7 +476,7 @@ class AgtBase(ABC):
     def __init__(self):
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
-        self.cols: dict[Loc, ColBase] = {}  # location : col
+        self.cols: dict[Loc, ColBase] = {}
 
         self.use_debug = False
         atexit.register(self.cleanup)
