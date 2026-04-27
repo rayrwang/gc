@@ -11,5 +11,5 @@ venv/
 saves/
 data/
 
-# Scratchpad
-_.py
+# Scratchpads
+_*.py
