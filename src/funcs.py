@@ -155,6 +155,7 @@ def lrn_basic_d(x, w, y, ss=1e-4, disable=False):
     return lrn_basic(spike(x), w, y, ss=ss, disable=disable)
 
 
+@torch.compile(disable=disable_compile)
 def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
     """
     `Activs, (d_x d_y), Activs, (), bool -> (d_x d_y)`
@@ -178,6 +179,7 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
     return w + ss * xr * yr * (yr-y_avg_r)
 
 
+@torch.compile(disable=disable_compile)
 def lrn_adaptive_d(x, w, y, ss=1e-2, disable=False):
     return lrn_adaptive(spike(x), w, y, ss=ss, disable=disable)
 
