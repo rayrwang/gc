@@ -64,6 +64,7 @@ from abc import ABC, abstractmethod
 import multiprocessing
 import shutil
 import sys
+import atexit
 
 import torch
 import numpy as np
@@ -482,6 +483,11 @@ class AgtBase(ABC):
         for col in self.cols.values():
             os.mkdir(f"{self.path}/{col.loc}")
 
+    def cleanup(self):
+        if hasattr(self, "bar"):  # tqdm progress bar
+            getattr(self, "bar").close()
+        self.save()
+
     def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
@@ -490,11 +496,10 @@ class AgtBase(ABC):
             col.ipt(x)
 
         # First pass: compute new weights and activations
-        for col in (bar := tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)):
+        self.bar = tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)
+        for col in self.bar:
             # Used to communicate debugger exited
             if self.use_debug and self.pipes["overview"][0].poll():
-                bar.close()
-                self.save()
                 sys.exit()
 
             self.load_col(col)
@@ -530,11 +535,10 @@ class AgtBase(ABC):
                 self.debug_update()
 
         # Second pass: set current activations equal to new, and reset new
-        for col in (bar := tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)):
+        self.bar = tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)
+        for col in self.bar:
             # Used to communicate debugger exited
             if self.use_debug and self.pipes["overview"][0].poll():  # TODO not here?
-                bar.close()
-                self.save()
                 sys.exit()
 
             # Use lateral inhibition to combine actual and expected activations
@@ -838,6 +842,8 @@ class Agt(AgtBase):  # Agent
 
         self.use_debug = False
 
+        atexit.register(self.cleanup)
+
         if not skip_init:
             print("\nInitializing new agent...")
 
@@ -979,6 +985,8 @@ class BareAgt(AgtBase):
         self.cols: dict[Loc, ColBase] = {}  # location : col
 
         self.use_debug = False
+        
+        atexit.register(self.cleanup)
 
         if not skip_init:
             print("\nInitializing new agent...")
@@ -1089,6 +1097,8 @@ class MNISTAgt(AgtBase):
 
         self.use_debug = False
 
+        atexit.register(self.cleanup)
+
         if not skip_init:
             print("\nInitializing new agent...")
 
@@ -1135,7 +1145,6 @@ class MNISTAgt(AgtBase):
         )
 
         if self.use_debug and self.pipes["overview"][0].poll():
-            self.save()
             sys.exit()
         self.debug_update()
 
