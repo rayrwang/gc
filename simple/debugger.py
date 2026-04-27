@@ -228,7 +228,7 @@ def nrn_debugger(PATH, pipes):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pipes["overview"][1].send(None)
-                sys.exit()
+                sys.exit(0)
             elif event.type == pg.VIDEORESIZE:
                 w_new, h_new = event.size
                 if w_new/h_new < W/H:

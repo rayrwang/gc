@@ -147,4 +147,4 @@ if __name__ == "__main__":
 
         if agt.pipes["overview"][0].poll():
             bar.close()
-            sys.exit()
+            sys.exit(0)

@@ -29,9 +29,9 @@ import pygame as pg
 from .agents import Dir
 
 def debugger(PATH, pipes):
-    signal.signal(signal.SIGINT, lambda _, __: sys.exit())
-    signal.signal(signal.SIGTERM, lambda _, __: sys.exit())
-    signal.signal(signal.SIGHUP, lambda _, __: sys.exit())
+    signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
+    signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
+    signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     def screen2loc(x, y, width):
         """Convert screen coordinates to col coordinates (loc)"""
@@ -317,7 +317,7 @@ def debugger(PATH, pipes):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pipes["overview"][1].send(None)
-                sys.exit()
+                sys.exit(0)
             elif event.type == pg.VIDEORESIZE:
                 w_new, h_new = event.size
                 if w_new/h_new < W/H:

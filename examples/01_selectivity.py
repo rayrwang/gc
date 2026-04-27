@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
         if agt.pipes["overview"][0].poll():
             bar.close()
-            sys.exit()
+            sys.exit(0)
 
         while (time.perf_counter() - t_prev) < MIN_ITER_SECS:
             pass

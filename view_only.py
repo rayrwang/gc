@@ -10,4 +10,4 @@ if __name__ == "__main__":
     while True:
         server.debug_update()
         if server.pipes["overview"][0].poll():
-            sys.exit()
+            sys.exit(0)

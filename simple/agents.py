@@ -149,7 +149,7 @@ class Ising(NrnAgtBase):
 
     def step(self):
         if self.pipes["overview"][0].poll():
-            sys.exit()
+            sys.exit(0)
             
         for nrn in tqdm(self.nrns.values(), disable=True):
             delta_h = 0
@@ -192,7 +192,7 @@ class Oscillator(NrnAgtBase):
 
     def step(self):
         if self.pipes["overview"][0].poll():
-            sys.exit()
+            sys.exit(0)
 
         self.nrns[(0,0)].x += 2
         for nrn in tqdm(self.nrns.values(), disable=True):
@@ -241,7 +241,7 @@ class NrnAgt(NrnAgtBase):
 
     def step(self):
         if self.pipes["overview"][0].poll():
-            sys.exit()
+            sys.exit(0)
 
         # If have low enough weights, need constantly active nrs,
             # otherwise activity would die out

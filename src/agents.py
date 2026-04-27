@@ -484,9 +484,9 @@ class AgtBase(ABC):
 
         self.use_debug = False
         atexit.register(self.cleanup)
-        signal.signal(signal.SIGINT, lambda _, __: sys.exit())
-        signal.signal(signal.SIGTERM, lambda _, __: sys.exit())
-        signal.signal(signal.SIGHUP, lambda _, __: sys.exit())
+        signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
+        signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
+        signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     def create_directory(self):
         # Reset or create save directory
@@ -515,7 +515,7 @@ class AgtBase(ABC):
         for col in self.bar:
             # Used to communicate debugger exited
             if self.use_debug and self.pipes["overview"][0].poll():
-                sys.exit()
+                sys.exit(0)
 
             self.load_col(col)
 
@@ -554,7 +554,7 @@ class AgtBase(ABC):
         for col in self.bar:
             # Used to communicate debugger exited
             if self.use_debug and self.pipes["overview"][0].poll():  # TODO not here?
-                sys.exit()
+                sys.exit(0)
 
             # Use lateral inhibition to combine actual and expected activations
             if hasattr(col, "inhibit"):
@@ -1133,7 +1133,7 @@ class MNISTAgt(AgtBase):
         )
 
         if self.use_debug and self.pipes["overview"][0].poll():
-            sys.exit()
+            sys.exit(0)
         self.debug_update()
 
         return [torch.zeros(10)]
