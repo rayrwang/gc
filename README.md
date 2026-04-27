@@ -17,7 +17,7 @@ Run the main network:
 ```
 python main.py
 ```
-This should open a debugger GUI window. Closing the debugger will stop and save the network.
+This should open a debugger GUI window. Closing the debugger (or Ctrl + C) will stop and save the network.
 
 To load and run a save:
 ```
