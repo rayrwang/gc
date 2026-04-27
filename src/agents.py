@@ -599,7 +599,10 @@ class AgtBase(ABC):
         self.pipes["atv"] = ctx.Pipe()
 
         # Start debug process
-        self.debug_process = ctx.Process(target=debugger, args=(self.path, self.pipes))
+        self.debug_process = ctx.Process(
+            target=debugger,
+            args=(self.path, self.pipes),
+            daemon=True)
         self.debug_process.start()
 
         # Timestamps of most recent updates, to calculate cooldowns
