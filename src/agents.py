@@ -971,7 +971,7 @@ class BareCfg:
     ospec: list[T.O_Base]
 class BareAgt(AgtBase):
     def __init__(self,
-            cfg: Cfg,
+            cfg: BareCfg,
             path: str,
             skip_init: bool=False):  # For loading from save
 
@@ -1069,7 +1069,7 @@ class MNISTCfg:
     ospec: list[T.O_Base]
 class MNISTAgt(AgtBase):
     def __init__(self,
-            cfg: Cfg,
+            cfg: MNISTCfg,
             path: str,
             skip_init: bool=False):  # For loading from save
 
