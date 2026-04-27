@@ -473,7 +473,10 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
 
 class AgtBase(ABC):
-    def __init__(self):
+    def __init__(self, cfg, path: str, skip_init: bool = False):
+        self.cfg = cfg
+        self.path = path
+
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}
@@ -837,10 +840,7 @@ class Agt(AgtBase):  # Agent
             path: str,
             skip_init: bool=False):  # For loading from save
 
-        super().__init__()
-
-        self.cfg = cfg
-        self.path = path
+        super().__init__(cfg, path, skip_init)
 
         self.n_cols = cfg.n_cols  # Number of columns
         self.ispec  = cfg.ispec  # Input specification
@@ -975,10 +975,7 @@ class BareAgt(AgtBase):
             path: str,
             skip_init: bool=False):  # For loading from save
 
-        super().__init__()
-
-        self.cfg = cfg
-        self.path = path
+        super().__init__(cfg, path, skip_init)
 
         self.n_cols = cfg.n_cols  # Number of columns
         self.ispec  = cfg.ispec  # Input specification
@@ -1073,10 +1070,7 @@ class MNISTAgt(AgtBase):
             path: str,
             skip_init: bool=False):  # For loading from save
 
-        super().__init__()
-
-        self.cfg = cfg
-        self.path = path
+        super().__init__(cfg, path, skip_init)
 
         self.ispec = ispec = cfg.ispec  # Input specification
         self.ospec = ospec = cfg.ospec  # Output specification
