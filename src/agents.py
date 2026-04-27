@@ -836,6 +836,8 @@ class Agt(AgtBase):  # Agent
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
 
+        self.use_debug = False
+
         if not skip_init:
             print("\nInitializing new agent...")
 
@@ -913,8 +915,6 @@ class Agt(AgtBase):  # Agent
 
             self.create_directory()
 
-            self.use_debug = False
-
             print("done init.")
 
     def verify(self) -> None:
@@ -977,6 +977,8 @@ class BareAgt(AgtBase):
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
+
+        self.use_debug = False
 
         if not skip_init:
             print("\nInitializing new agent...")
@@ -1054,8 +1056,6 @@ class BareAgt(AgtBase):
 
             self.create_directory()
 
-            self.use_debug = False
-
             print("done init.")
 
 
@@ -1087,6 +1087,8 @@ class MNISTAgt(AgtBase):
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
 
+        self.use_debug = False
+
         if not skip_init:
             print("\nInitializing new agent...")
 
@@ -1103,8 +1105,6 @@ class MNISTAgt(AgtBase):
                 conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 3)
 
             self.create_directory()
-
-            self.use_debug = False
 
             print("done init.")
 
