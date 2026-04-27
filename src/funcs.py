@@ -76,7 +76,7 @@ def inhibit(x, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
+def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     """
     `d_x, (d_x d_y), d_y, (), (), (), bool -> (d_x d_y)`
 
@@ -180,6 +180,10 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
 
 def lrn_adaptive_d(x, w, y, ss=1e-2, disable=False):
     return lrn_adaptive(spike(x), w, y, ss=ss, disable=disable)
+
+
+# Default learning rule to expose
+lrn = lrn_discrete
 
 
 def update(x, threshold=1.0):
