@@ -76,6 +76,37 @@ def inhibit(x, disable=False):
 
 
 @torch.compile(disable=disable_compile)
+def lrn_basic(x, w, y, ss=1e-4, disable=False):
+    """
+    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
+
+    Simplest possible learning rule
+
+    Δw ∝ xy
+    """
+    if disable:
+        return w
+
+    d_x, = x.shape
+    d_y, = y.shape
+
+    check_shapes(d_x, w.shape, d_y, "basic learning rule")
+
+    xr = x.repeat(d_y, 1).T  # (d_x d_y)
+    yr = y.repeat(d_x, 1)    # (d_x d_y)
+
+    return w + ss*xr*yr
+
+
+@torch.compile(disable=disable_compile)
+def lrn_basic_d(x, w, y, ss=1e-4, disable=False):
+    """
+    Same as above but discrete in inputs
+    """
+    return lrn_basic(spike(x), w, y, ss=ss, disable=disable)
+
+
+@torch.compile(disable=disable_compile)
 def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     """
     `d_x, (d_x d_y), d_y, (), (), (), bool -> (d_x d_y)`
@@ -122,37 +153,6 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     changes = changes * torch.exp(-(w / (reg_width * d_x**-0.5))**2)
 
     return w + changes
-
-
-@torch.compile(disable=disable_compile)
-def lrn_basic(x, w, y, ss=1e-4, disable=False):
-    """
-    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
-
-    Simplest possible learning rule
-
-    Δw ∝ xy
-    """
-    if disable:
-        return w
-
-    d_x, = x.shape
-    d_y, = y.shape
-
-    check_shapes(d_x, w.shape, d_y, "basic learning rule")
-
-    xr = x.repeat(d_y, 1).T  # (d_x d_y)
-    yr = y.repeat(d_x, 1)    # (d_x d_y)
-
-    return w + ss*xr*yr
-
-
-@torch.compile(disable=disable_compile)
-def lrn_basic_d(x, w, y, ss=1e-4, disable=False):
-    """
-    Same as above but discrete in inputs
-    """
-    return lrn_basic(spike(x), w, y, ss=ss, disable=disable)
 
 
 @torch.compile(disable=disable_compile)
