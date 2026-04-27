@@ -65,7 +65,7 @@ def run_env(
         action_queue,
         show: bool):
     signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
-    signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
+    # signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
     signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     env_instance = env(cfg)
