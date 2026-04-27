@@ -46,7 +46,10 @@ class NrnAgtBase:
         self.pipes["nrn"] = multiprocessing.Pipe()
 
         # Start debug process
-        self.debug_process = multiprocessing.Process(target=nrn_debugger, args=(self.path, self.pipes))
+        self.debug_process = multiprocessing.Process(
+            target=nrn_debugger,
+            args=(self.path, self.pipes),
+            daemon=True)
         self.debug_process.start()
 
         # Timestamps of most recent updates, to calculate cooldowns
