@@ -291,7 +291,7 @@ class O_ColBase(ColBase):
 class BareColCfg(ColCfgBase):
     d: int = D_DEFAULT
 class BareCol(ColBase):  # 1 layer, no internal weights
-    def __init__(self, loc, cfg, skip_init=False):
+    def __init__(self, loc: Loc, cfg: BareColCfg, skip_init: bool = False):
         self.loc = loc
 
         self.cfg = cfg
@@ -838,7 +838,7 @@ class Agt(AgtBase):  # Agent
     def __init__(self,
             cfg: Cfg,
             path: str,
-            skip_init: bool=False):  # For loading from save
+            skip_init: bool = False):  # For loading from save
 
         super().__init__(cfg, path, skip_init)
 
@@ -973,7 +973,7 @@ class BareAgt(AgtBase):
     def __init__(self,
             cfg: BareCfg,
             path: str,
-            skip_init: bool=False):  # For loading from save
+            skip_init: bool = False):  # For loading from save
 
         super().__init__(cfg, path, skip_init)
 
@@ -1068,7 +1068,7 @@ class MNISTAgt(AgtBase):
     def __init__(self,
             cfg: MNISTCfg,
             path: str,
-            skip_init: bool=False):  # For loading from save
+            skip_init: bool = False):  # For loading from save
 
         super().__init__(cfg, path, skip_init)
 
