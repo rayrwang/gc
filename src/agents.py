@@ -473,6 +473,10 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
 
 class AgtBase(ABC):
+    def __init__(self):
+        self.use_debug = False
+        atexit.register(self.cleanup)
+
     def create_directory(self):
         # Reset or create save directory
         if os.path.exists(self.path):
@@ -829,6 +833,8 @@ class Agt(AgtBase):  # Agent
             path: str,
             skip_init: bool=False):  # For loading from save
 
+        super().__init__()
+
         self.cfg = cfg
         self.path = path
 
@@ -839,10 +845,6 @@ class Agt(AgtBase):  # Agent
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
-
-        self.use_debug = False
-
-        atexit.register(self.cleanup)
 
         if not skip_init:
             print("\nInitializing new agent...")
@@ -973,6 +975,8 @@ class BareAgt(AgtBase):
             path: str,
             skip_init: bool=False):  # For loading from save
 
+        super().__init__()
+
         self.cfg = cfg
         self.path = path
 
@@ -983,10 +987,6 @@ class BareAgt(AgtBase):
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
-
-        self.use_debug = False
-        
-        atexit.register(self.cleanup)
 
         if not skip_init:
             print("\nInitializing new agent...")
@@ -1077,6 +1077,8 @@ class MNISTAgt(AgtBase):
             path: str,
             skip_init: bool=False):  # For loading from save
 
+        super().__init__()
+
         self.cfg = cfg
         self.path = path
 
@@ -1094,10 +1096,6 @@ class MNISTAgt(AgtBase):
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}  # location : col
-
-        self.use_debug = False
-
-        atexit.register(self.cleanup)
 
         if not skip_init:
             print("\nInitializing new agent...")
