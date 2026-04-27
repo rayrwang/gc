@@ -749,9 +749,9 @@ class AgtBase(ABC):
             while torch.cuda.memory.mem_get_info()[0] \
                     < 0.05*torch.cuda.memory.mem_get_info()[1]:
                 to_evict = random.choice(list(self.cols.values()))
-                to_evict.to("cpu")
+                to_evict.to("cpu", non_blocking=True)
                 torch.cuda.memory.empty_cache()
-            c.to("cuda")
+            c.to("cuda", non_blocking=True)
 
     def free_col(self, c: ColBase) -> None:
         if torch.cuda.is_available():
@@ -761,7 +761,7 @@ class AgtBase(ABC):
             # Use stronger threahold so that newly loaded cols
             # are not immediately freed
             if available < 0.04*total:
-                c.to("cpu")
+                c.to("cpu", non_blocking=True)
 
     def save(self, keep_weights: bool = True) -> None:
         print(f"\nSaving agent to \"{self.path}\":")
