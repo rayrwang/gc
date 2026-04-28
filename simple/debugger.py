@@ -11,8 +11,6 @@ import pygame as pg
 
 def nrn_debugger(PATH, pipes):
     signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
-    signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
-    signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     def screen2loc(x, y, width):  # Convert screen coordinates to col coordinates (loc)
         return int(x/width), int(y/width)

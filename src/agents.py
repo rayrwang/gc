@@ -493,8 +493,6 @@ class AgtBase(ABC):
         self.use_debug = False
         atexit.register(self.cleanup)
         signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
-        signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
-        signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     def create_directory(self):
         # Reset or create save directory

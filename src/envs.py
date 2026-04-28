@@ -66,8 +66,6 @@ def run_env(
         show: bool):
     # Suppress keyboard interrupt traceback
     signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
-    # signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))  # Issues on exit
-    signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     env_instance = env(cfg)
     _, ospec = env.get_specs(cfg)

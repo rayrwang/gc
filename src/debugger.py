@@ -31,8 +31,6 @@ from .agents import Dir
 def debugger(PATH, pipes):
     # Suppress keyboard interrupt traceback
     signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
-    signal.signal(signal.SIGTERM, lambda _, __: sys.exit(0))
-    signal.signal(signal.SIGHUP, lambda _, __: sys.exit(0))
 
     def screen2loc(x, y, width):
         """Convert screen coordinates to col coordinates (loc)"""
