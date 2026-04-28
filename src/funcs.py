@@ -153,7 +153,7 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn_instar(x, w, y, ss=1e-4, disable=False):
+def lrn_instar(x, w, y, ss=1e-2, disable=False):
     """
     `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
 
@@ -176,10 +176,7 @@ def lrn_instar(x, w, y, ss=1e-4, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn_instar_d(x, w, y, ss=1e-4, disable=False):
-    """
-    Same as above but discrete in inputs
-    """
+def lrn_instar_d(x, w, y, ss=1e-2, disable=False):
     return lrn_instar(spike(x), w, y, ss=ss, disable=disable)
 
 
