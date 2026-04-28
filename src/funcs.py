@@ -92,8 +92,8 @@ def lrn_basic(x, w, y, ss=1e-4, disable=False):
 
     check_shapes(d_x, w.shape, d_y, "basic learning rule")
 
-    xr = x.repeat(d_y, 1).T  # (d_x d_y)
-    yr = y.repeat(d_x, 1)    # (d_x d_y)
+    xr = x[:, None]  # (d_x 1)
+    yr = y[None, :]  # (1 d_y)
 
     return w + ss*xr*yr
 
@@ -131,8 +131,8 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
 
     check_shapes(d_x, tuple(w.shape), d_y, "learning rule")
     
-    xr = x.repeat(d_y, 1).T  # (d_x d_y)
-    yr = y.repeat(d_x, 1)    # (d_x d_y)
+    xr = x[:, None]  # (d_x 1)
+    yr = y[None, :]  # (1 d_y)
 
     # Calculate the changes to the weights in the 3 cases
 
@@ -172,9 +172,9 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
 
     check_shapes(d_x, tuple(w.shape), d_y, "adaptive learning rule")
 
-    xr = x[0].repeat(d_y, 1).T     # (d_x d_y)
-    yr = y[0].repeat(d_x, 1)       # (d_x d_y)
-    y_avg_r = y[2].repeat(d_x, 1)  # (d_x d_y)
+    xr = x[0][:, None]       # (d_x 1)
+    yr = y[0][None, :]       # (1 d_y)
+    y_avg_r = y[2][None, :]  # (1 d_y)
 
     return w + ss * xr * yr * (yr-y_avg_r)
 
