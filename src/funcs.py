@@ -57,10 +57,10 @@ def inhibit(x, disable=False):
     `Activs, bool -> Activs`
 
     Lateral inhibition for winner take all behavior,
-    to have less (more) activity for (un)expected
+    to have less (more) activity & change for (un)expected
 
     TODO possible changes:
-    - Other ways of integrating expectations e.g. Outstar
+    - Other ways of integrating expectations e.g. Outstar, predictive coding
     """
     if disable:
         return x
