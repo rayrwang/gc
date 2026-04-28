@@ -58,6 +58,9 @@ def inhibit(x, disable=False):
 
     Lateral inhibition for winner take all behavior,
     to have less (more) activity for (un)expected
+
+    TODO possible changes:
+    - Other ways of integrating expectations e.g. Outstar
     """
     if disable:
         return x
