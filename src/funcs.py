@@ -128,23 +128,23 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
 
     check_shapes(d_x, tuple(w.shape), d_y, "learning rule")
     
-    xr = x[:, None]  # (d_x 1)
-    yr = y[None, :]  # (1 d_y)
+    xu = x[:, None]  # (d_x 1)
+    yu = y[None, :]  # (1 d_y)
 
     # Calculate the changes to the weights in the 3 cases
 
     # Case 1: y >= 1, add ss to weight
-    excite = torch.where(yr >= 1, ss, 0)
+    excite = torch.where(yu >= 1, ss, 0)
 
     # Case 2: -1 < y < 1, decay weight
-    weaken = torch.where(torch.logical_and(-1 < yr, yr < 1), 1.0, 0.0) \
+    weaken = torch.where(torch.logical_and(-1 < yu, yu < 1), 1.0, 0.0) \
         * (decay*w - w)
 
     # Case 3: y <= -1, subtract ss from weight
-    inhibit = torch.where(yr <= -1, -ss, 0.0)
+    inhibit = torch.where(yu <= -1, -ss, 0.0)
 
     # Only change weights when x >= 1
-    changes = spike(xr) * (excite + weaken + inhibit)
+    changes = spike(xu) * (excite + weaken + inhibit)
 
     # Scale changes for regulation
     changes = changes * torch.exp(-(w / (reg_width * d_x**-0.5))**2)
@@ -169,11 +169,11 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
 
     check_shapes(d_x, tuple(w.shape), d_y, "adaptive learning rule")
 
-    xr = x[0][:, None]       # (d_x 1)
-    yr = y[0][None, :]       # (1 d_y)
-    y_avg_r = y[2][None, :]  # (1 d_y)
+    xu = x[0][:, None]       # (d_x 1)
+    yu = y[0][None, :]       # (1 d_y)
+    y_avg_u = y[2][None, :]  # (1 d_y)
 
-    return w + ss * xr * yr * (yr-y_avg_r)
+    return w + ss * xu * yu * (yu-y_avg_u)
 
 
 @torch.compile(disable=disable_compile)
