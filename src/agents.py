@@ -220,7 +220,6 @@ class ColBase(ABC):
 
         # Only save weights if they're loaded, otherwise would save None's
         if self.weights_loaded:
-            self.to("cpu")  # To avoid issues when loading
             if not keep_weights:
                 self.weights_loaded = False
 
@@ -232,6 +231,11 @@ class ColBase(ABC):
                         setattr(self, name, None)
 
             # Save conns
+            self.to("cpu")  # Move to cpu before saving:
+                            # This doesn't matter for others since
+                            # can specify map_location in torch.load,
+                            # but conns are currently saved as one file,
+                            # so need to be on cpu.
             with open(f"{agt_path}/{self.loc}/conns", "wb") as f:
                 pickle.dump(self.conns, f)
             if not keep_weights:
@@ -264,13 +268,17 @@ class ColBase(ABC):
         if load_activations:
             for name in vars(self):
                 if name.startswith("nr_"):
-                    setattr(self, name, torch.load(f"{agt_path}/{self.loc}/{name}"))
+                    setattr(self, name,
+                        torch.load(f"{agt_path}/{self.loc}/{name}",
+                            map_location=torch.get_default_device()))
 
         # Load weights
         if load_weights:
             for name in vars(self):
                 if name.startswith("is_"):
-                    setattr(self, name, torch.load(f"{agt_path}/{self.loc}/{name}"))
+                    setattr(self, name,
+                        torch.load(f"{agt_path}/{self.loc}/{name}",
+                            map_location=torch.get_default_device()))
 
             with open(f"{agt_path}/{self.loc}/conns", "rb") as f:
                 self.conns = pickle.load(f)
@@ -766,7 +774,7 @@ class AgtBase(ABC):
                 pipe.send(info)
 
     def load_col(self, c: ColBase) -> None:
-        if torch.cuda.is_available():
+        if torch.get_default_device() == "cuda":
             # While available memory is less than 5% of total
             while torch.cuda.memory.mem_get_info()[0] \
                     < 0.05*torch.cuda.memory.mem_get_info()[1]:
@@ -776,7 +784,7 @@ class AgtBase(ABC):
             c.to("cuda", non_blocking=True)
 
     def free_col(self, c: ColBase) -> None:
-        if torch.cuda.is_available():
+        if torch.get_default_device() == "cuda":
             # Should only be necessary during large inits,
             # since loading while running already frees memory
             available, total = torch.cuda.memory.mem_get_info()
