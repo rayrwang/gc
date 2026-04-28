@@ -19,7 +19,7 @@ Loc = tuple[Number, Number]
 
 
 # This is a horribly inefficient way of doing it;
-# the idea is to use the same style as the main network.
+# the point is to use the same style as the main network.
 class Nrn:
     def __init__(self, loc):
         self.loc = loc
