@@ -92,10 +92,7 @@ def lrn_basic(x, w, y, ss=1e-4, disable=False):
 
     check_shapes(d_x, w.shape, d_y, "basic learning rule")
 
-    xr = x[:, None]  # (d_x 1)
-    yr = y[None, :]  # (1 d_y)
-
-    return w + ss*xr*yr
+    return w + ss*torch.outer(x, y)
 
 
 @torch.compile(disable=disable_compile)
