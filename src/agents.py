@@ -774,7 +774,7 @@ class AgtBase(ABC):
                 pipe.send(info)
 
     def load_col(self, c: ColBase) -> None:
-        if torch.get_default_device() == "cuda":
+        if torch.get_default_device().type == "cuda":
             # While available memory is less than 5% of total
             while torch.cuda.memory.mem_get_info()[0] \
                     < 0.05*torch.cuda.memory.mem_get_info()[1]:
@@ -784,7 +784,7 @@ class AgtBase(ABC):
             c.to("cuda", non_blocking=True)
 
     def free_col(self, c: ColBase) -> None:
-        if torch.get_default_device() == "cuda":
+        if torch.get_default_device().type == "cuda":
             # Should only be necessary during large inits,
             # since loading while running already frees memory
             available, total = torch.cuda.memory.mem_get_info()
