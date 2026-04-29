@@ -75,7 +75,7 @@ simple/
 simple_nets.py
 ```
 
-# Memory
+## Memory
 
 Intended for scalability, currently:
 - **12 bytes** per activation (can be much more generous),
