@@ -1,6 +1,8 @@
 
 import math
 
+from src.funcs import dist
+
 THRESHOLD = 1
 
 def spike(x):
@@ -24,7 +26,3 @@ def lrn(x, w, y, ss=0.1):
 
     correl = 2*x*y - x
     return w + ss*correl
-
-def dist(x, y, /):
-    assert len(x) == len(y)
-    return math.sqrt(sum([(x_i-y_i)**2 for x_i, y_i in zip(x,y)]))
