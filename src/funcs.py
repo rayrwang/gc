@@ -239,3 +239,7 @@ def dist(x, y, /):
     assert len(x) == len(y)
     return math.sqrt(sum([(x_i-y_i)**2 for x_i, y_i in zip(x,y)]))
 
+
+def density(x: torch.Tensor, threshold: float = 1.0, /) -> int:
+    """Proportion of elements of x over threshold"""
+    return (torch.sum(torch.where(x < threshold, 0.0, 1.0)) / x.numel()).item()

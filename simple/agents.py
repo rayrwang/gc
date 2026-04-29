@@ -62,7 +62,7 @@ class NrnAgtBase:
             x = x.cpu().to(torch.float64)
             shape = tuple(x.shape)
             threshold = 1.0
-            d = (torch.sum(torch.where(x < threshold, 0.0, 1.0)) / x.numel()).item()
+            d = fc.density(x)
             n = torch.linalg.vector_norm(x).item()
             m = torch.mean(x).item()
             s = torch.std(x).item()
