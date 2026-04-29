@@ -96,8 +96,6 @@ def lrn_basic(x, w, y, ss=1e-4, disable=False):
     check_shapes(d_x, tuple(w.shape), d_y, "basic learning rule")
 
     return w + ss*torch.outer(x, y)
-
-
 @torch.compile(disable=disable_compile)
 def lrn_basic_d(x, w, y, ss=1e-4, disable=False):
     """
@@ -176,8 +174,6 @@ def lrn_instar(x, w, y, ss=1e-2, disable=False):
     yu = y[None, :]  # (1 d_y)
 
     return w + ss * (xu-w) * yu
-
-
 @torch.compile(disable=disable_compile)
 def lrn_instar_d(x, w, y, ss=1e-2, disable=False):
     return lrn_instar(spike(x), w, y, ss=ss, disable=disable)
@@ -205,8 +201,6 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
     y_avg_u = y[2][None, :]  # (1 d_y)
 
     return w + ss * xu * yu * (yu-y_avg_u)
-
-
 @torch.compile(disable=disable_compile)
 def lrn_adaptive_d(x, w, y, ss=1e-2, disable=False):
     return lrn_adaptive(spike(x), w, y, ss=ss, disable=disable)
