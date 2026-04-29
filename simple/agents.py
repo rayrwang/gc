@@ -61,7 +61,6 @@ class NrnAgtBase:
         def stats(x):
             x = x.cpu().to(torch.float64)
             shape = tuple(x.shape)
-            threshold = 1.0
             d = fc.density(x)
             n = torch.linalg.vector_norm(x).item()
             m = torch.mean(x).item()

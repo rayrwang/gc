@@ -1,7 +1,9 @@
 
 import math
 
-from src.funcs import dist, density
+import src.funcs as fc
+dist = fc.dist
+density = fc.density
 
 THRESHOLD = 1
 
