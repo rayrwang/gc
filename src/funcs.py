@@ -198,7 +198,7 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
 
     xu = x[0][:, None]       # (d_x 1)
     yu = y[0][None, :]       # (1 d_y)
-    y_avg_u = y[2][None, :]  # (1 d_y)
+    y_avg_u = y[3][None, :]  # (1 d_y)
 
     return w + ss * xu * yu * (yu-y_avg_u)
 @torch.compile(disable=disable_compile)
