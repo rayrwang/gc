@@ -93,7 +93,7 @@ def lrn_basic(x, w, y, ss=1e-4, disable=False):
     d_x, = x.shape
     d_y, = y.shape
 
-    check_shapes(d_x, w.shape, d_y, "basic learning rule")
+    check_shapes(d_x, tuple(w.shape), d_y, "basic learning rule")
 
     return w + ss*torch.outer(x, y)
 
@@ -170,7 +170,7 @@ def lrn_instar(x, w, y, ss=1e-2, disable=False):
     d_x, = x.shape
     d_y, = y.shape
 
-    check_shapes(d_x, w.shape, d_y, "instar learning rule")
+    check_shapes(d_x, tuple(w.shape), d_y, "instar learning rule")
 
     xu = x[:, None]  # (d_x 1)
     yu = y[None, :]  # (1 d_y)
