@@ -180,6 +180,32 @@ def lrn_instar_d(x, w, y, ss=1e-2, disable=False):
 
 
 @torch.compile(disable=disable_compile)
+def lrn_oja(x, w, y, ss=1e-2, disable=False):
+    """
+    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
+
+    Oja rule
+
+    Δw ∝ (x-wy)y
+    """
+    if disable:
+        return w
+
+    d_x, = x.shape
+    d_y, = y.shape
+
+    check_shapes(d_x, tuple(w.shape), d_y, "oja learning rule")
+
+    xu = x[:, None]  # (d_x 1)
+    yu = y[None, :]  # (1 d_y)
+
+    return w + ss * (xu-w*y) * yu
+@torch.compile(disable=disable_compile)
+def lrn_oja_d(x, w, y, ss=1e-2, disable=False):
+    return lrn_oja(spike(x), w, y, ss=ss, disable=disable)
+
+
+@torch.compile(disable=disable_compile)
 def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
     """
     `Activs, (d_x d_y), Activs, (), bool -> (d_x d_y)`
