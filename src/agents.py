@@ -179,7 +179,7 @@ class ColBase(ABC):
         isyns = 0  # Internal (within this col) weights
         esyns = 0  # External (to other cols) weights
         for name in vars(self):
-            if name.startswith("nr_"):
+            if name.startswith("nr_") and name[-1] != "_":
                 nrns += getattr(self, name)[0].numel()
             elif name.startswith("is_"):
                 isyns += getattr(self, name).numel()
