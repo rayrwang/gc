@@ -341,19 +341,19 @@ def debugger(PATH, pipes):
                     else:
                         gui_state["conn"] = None
                         if 1500 < screen_x < 2000:  # Try to select layer of activations
-                            if 250+0*LINE_HEIGHT < screen_y < 250+4*LINE_HEIGHT:  # nr_1
+                            if 250+0*LINE_HEIGHT <= screen_y < 250+4.5*LINE_HEIGHT:  # nr_1
                                 gui_state["atv"] = 1
-                            elif 250+5*LINE_HEIGHT < screen_y < 250+9*LINE_HEIGHT:  # nr_2
+                            elif 250+4.5*LINE_HEIGHT <= screen_y < 250+9.5*LINE_HEIGHT:  # nr_2
                                 gui_state["atv"] = 2
-                            elif 250+10*LINE_HEIGHT < screen_y < 250+14*LINE_HEIGHT:  # nr_3
+                            elif 250+9.5*LINE_HEIGHT <= screen_y < 250+14.5*LINE_HEIGHT:  # nr_3
                                 gui_state["atv"] = 3
-                            elif 250+15*LINE_HEIGHT < screen_y < 250+19*LINE_HEIGHT:  # nr_4
+                            elif 250+14.5*LINE_HEIGHT <= screen_y < 250+19.5*LINE_HEIGHT:  # nr_4
                                 gui_state["atv"] = 4
-                            elif 250+20*LINE_HEIGHT < screen_y < 250+24*LINE_HEIGHT:  # nr_5
+                            elif 250+19.5*LINE_HEIGHT <= screen_y < 250+24.5*LINE_HEIGHT:  # nr_5
                                 gui_state["atv"] = 5
-                            elif 250+25*LINE_HEIGHT < screen_y < 250+29*LINE_HEIGHT:  # nr_6
+                            elif 250+24.5*LINE_HEIGHT <= screen_y < 250+29.5*LINE_HEIGHT:  # nr_6
                                 gui_state["atv"] = 6
-                            elif 250+30*LINE_HEIGHT < screen_y < 250+34*LINE_HEIGHT:  # nr_7
+                            elif 250+29.5*LINE_HEIGHT <= screen_y < 250+34.5*LINE_HEIGHT:  # nr_7
                                 gui_state["atv"] = 7
                             else:
                                 gui_state["atv"] = None
