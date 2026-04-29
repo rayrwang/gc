@@ -143,7 +143,7 @@ if __name__ == "__main__":
             control_accuracy = 100*control_correct/total
             print(f"Accuracy: {accuracy:.2f}%")
             print(f"Control accuracy: {control_accuracy:.2f}%\n")
-            with SummaryWriter("runs/02_mnist_representations") as writer:
+            with SummaryWriter("runs/mnist_representations") as writer:
                 writer.add_scalars("Accuracy", {
                     "accuracy": accuracy,
                     "control accuracy": control_accuracy
