@@ -97,12 +97,13 @@ def activs(d: int) -> Activs:
     """
     nr_<name>[0] : actual activations
     nr_<name>[1] : expectations
-    nr_<name>[2] : time average of activations for adaptive thresholds
+    nr_<name>[2] : time average of activations
+    nr_<name>[3] : time average of squares of activations
 
     TODO wrap in class?
     """
     activations = torch.randn(d)
-    return [activations, torch.zeros(d), activations]
+    return [activations, torch.zeros(d), activations, activations**2]
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
@@ -334,10 +335,12 @@ class BareCol(ColBase):  # 1 layer, no internal weights
     def update_activations(self):
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
+        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[2]**2
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_1[2] = new_avg_1
+        self.nr_1[3] = new_avg_sq_1
 
         # Reset new activations
         self.nr_1_[0] = fc.update(self.nr_1_[0])
@@ -349,10 +352,12 @@ class I_VectorCol(BareCol, I_ColBase):
     def update_activations(self):
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
+        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[2]**2
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_1[2] = new_avg_1
+        self.nr_1[3] = new_avg_sq_1
 
         # Receives perceptual input, don't reset
 
@@ -453,6 +458,11 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         new_avg_3 = ALPHA*self.nr_3_[0] + (1-ALPHA)*self.nr_3[2]
         new_avg_4 = ALPHA*self.nr_4_[0] + (1-ALPHA)*self.nr_4[2]
         new_avg_5 = ALPHA*self.nr_5_[0] + (1-ALPHA)*self.nr_5[2]
+        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[2]**2
+        new_avg_sq_2 = ALPHA*self.nr_2_[0]**2 + (1-ALPHA)*self.nr_2[2]**2
+        new_avg_sq_3 = ALPHA*self.nr_3_[0]**2 + (1-ALPHA)*self.nr_3[2]**2
+        new_avg_sq_4 = ALPHA*self.nr_4_[0]**2 + (1-ALPHA)*self.nr_4[2]**2
+        new_avg_sq_5 = ALPHA*self.nr_5_[0]**2 + (1-ALPHA)*self.nr_5[2]**2
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
@@ -466,6 +476,11 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         self.nr_3[2] = new_avg_3
         self.nr_4[2] = new_avg_4
         self.nr_5[2] = new_avg_5
+        self.nr_1[3] = new_avg_sq_1
+        self.nr_2[3] = new_avg_sq_2
+        self.nr_3[3] = new_avg_sq_3
+        self.nr_4[3] = new_avg_sq_4
+        self.nr_5[3] = new_avg_sq_5
 
         # Reset new activations
         self.nr_1_[0] = fc.update(self.nr_1_[0])
