@@ -15,6 +15,7 @@ import random
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.utils.tensorboard import SummaryWriter
 
 from src.agents import MNISTCfg, MNISTAgt
 from src.envs import run_env
@@ -137,5 +138,13 @@ if __name__ == "__main__":
                     if torch.argmax(control_pred) == torch.argmax(label):
                         control_correct += 1
                     total += 1
-            print(f"Accuracy: {100*correct/total:.2f}%")
-            print(f"Control accuracy: {100*control_correct/total:.2f}%\n")
+
+            accuracy = 100*correct/total
+            control_accuracy = 100*control_correct/total
+            print(f"Accuracy: {accuracy:.2f}%")
+            print(f"Control accuracy: {control_accuracy:.2f}%\n")
+            with SummaryWriter("runs/02_mnist_representations") as writer:
+                writer.add_scalars("Accuracy", {
+                    "accuracy": accuracy,
+                    "control accuracy": control_accuracy
+                }, global_step=step)
