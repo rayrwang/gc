@@ -75,6 +75,12 @@ simple/
 simple_nets.py
 ```
 
+# Memory
+
+Intended for scalability, currently:
+- **12 bytes** per activation (can be much more generous),
+- and the standard **2 bytes** per weight.
+
 ## References
 
 - **Neuroscience: Exploring the Brain** (2016); M. F. Bear, B. W. Connors, M. A. Paradiso
