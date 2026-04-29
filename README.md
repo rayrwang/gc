@@ -2,7 +2,7 @@
 # gc
 
 <p align="center">
-	<img width="500" alt="Screenshot of network debugger GUI" src="https://github.com/user-attachments/assets/e6d4e96f-d313-4874-94ad-3622909efea4">
+	<img width="500" alt="Screenshot of network debugger GUI" src="https://github.com/user-attachments/assets/a659f157-7901-4f97-9d77-c16b6a6718eb">
 </p>
 
 Objective-free, modular, feedback neural networks that learn via association.
