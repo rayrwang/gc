@@ -777,7 +777,7 @@ class AgtBase(ABC):
 
             loc, i = request
             if hasattr(self.cols[loc], f"nr_{i}"):
-                x, _, x_avg = getattr(self.cols[loc], f"nr_{i}")
+                x, _, x_avg, *_ = getattr(self.cols[loc], f"nr_{i}")
                 info = {}
                 info["timestamp"] = time.time()
                 info["request"] = request  # for debugger to verify info is up to date
