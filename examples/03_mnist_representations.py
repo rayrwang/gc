@@ -72,8 +72,8 @@ if __name__ == "__main__":
     optim = torch.optim.SGD(classifier.parameters(), lr=1e-1)
 
     # Control classifier: Takes in the image
-    control_classifier = nn.Linear(784, 10)
-    control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-1)
+    control_classifier = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
+    control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-2)
 
     mnist_test = MNISTDataset(train=False)
 
