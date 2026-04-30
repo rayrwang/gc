@@ -1119,7 +1119,7 @@ class MNISTAgt(AgtBase):
             self.cols[col1.loc] = col1
             self.I_cols.append(col1)
 
-            col2 = BareCol((1, 0), BareColCfg(32))
+            col2 = BareCol((1, 0), BareColCfg(128))
             self.cols[col2.loc] = col2
 
             # Conns
