@@ -52,9 +52,9 @@ def atv(x, w, y=None, threshold=1.0):
 
 
 inhibit_weights = {}
-def inhibit(x, disable=False):
+def inhibit(x):
     """
-    `Activs, bool -> Activs`
+    `Activs -> Activs`
 
     Lateral inhibition for winner take all behavior,
     to have less (more) activity & change for (un)expected
@@ -62,8 +62,6 @@ def inhibit(x, disable=False):
     TODO possible changes:
     - Other ways of integrating expectations e.g. Outstar, predictive coding
     """
-    if disable:
-        return x
 
     d = x[0].shape[0]
     weights = inhibit_weights.get(d)
@@ -79,16 +77,14 @@ def inhibit(x, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn_basic(x, w, y, ss=1e-4, disable=False):
+def lrn_basic(x, w, y, ss=1e-4):
     """
-    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
 
     Simplest possible learning rule
 
     Δw ∝ xy
     """
-    if disable:
-        return w
 
     d_x, = x.shape
     d_y, = y.shape
@@ -97,17 +93,17 @@ def lrn_basic(x, w, y, ss=1e-4, disable=False):
 
     return w + ss*torch.outer(x, y)
 @torch.compile(disable=disable_compile)
-def lrn_basic_d(x, w, y, ss=1e-4, disable=False):
+def lrn_basic_d(x, w, y, ss=1e-4):
     """
     Same as above but discrete in inputs
     """
-    return lrn_basic(spike(x), w, y, ss=ss, disable=disable)
+    return lrn_basic(spike(x), w, y, ss=ss)
 
 
 @torch.compile(disable=disable_compile)
-def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
+def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     """
-    `d_x, (d_x d_y), d_y, (), (), (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, (), (), () -> (d_x d_y)`
 
     (Discrete) learning rule
 
@@ -121,8 +117,6 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
     - Unify strengthening and decaying: e.g. one hyperparameter, consider adding vs. multiplying
     - Less restrictive regulation: e.g. take into account more than just value of weight
     """
-    if disable:
-        return w
 
     d_x, = x.shape
     d_y, = y.shape
@@ -154,16 +148,14 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1, disable=False):
 
 
 @torch.compile(disable=disable_compile)
-def lrn_instar(x, w, y, ss=1e-2, disable=False):
+def lrn_instar(x, w, y, ss=1e-2):
     """
-    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
 
     Grossberg's Instar rule
 
     Δw ∝ (x-w)y
     """
-    if disable:
-        return w
 
     d_x, = x.shape
     d_y, = y.shape
@@ -175,21 +167,19 @@ def lrn_instar(x, w, y, ss=1e-2, disable=False):
 
     return w + ss * (xu-w) * yu
 @torch.compile(disable=disable_compile)
-def lrn_instar_d(x, w, y, ss=1e-2, disable=False):
-    return lrn_instar(spike(x), w, y, ss=ss, disable=disable)
+def lrn_instar_d(x, w, y, ss=1e-2):
+    return lrn_instar(spike(x), w, y, ss=ss)
 
 
 @torch.compile(disable=disable_compile)
-def lrn_oja(x, w, y, ss=1e-2, disable=False):
+def lrn_oja(x, w, y, ss=1e-2):
     """
-    `d_x, (d_x d_y), d_y, (), bool -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
 
     Oja rule
 
     Δw ∝ (x-wy)y
     """
-    if disable:
-        return w
 
     d_x, = x.shape
     d_y, = y.shape
@@ -201,21 +191,19 @@ def lrn_oja(x, w, y, ss=1e-2, disable=False):
 
     return w + ss * (xu-w*y) * yu
 @torch.compile(disable=disable_compile)
-def lrn_oja_d(x, w, y, ss=1e-2, disable=False):
-    return lrn_oja(spike(x), w, y, ss=ss, disable=disable)
+def lrn_oja_d(x, w, y, ss=1e-2):
+    return lrn_oja(spike(x), w, y, ss=ss)
 
 
 @torch.compile(disable=disable_compile)
-def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
+def lrn_adaptive(x, w, y, ss=1e-2):
     """
-    `Activs, (d_x d_y), Activs, (), bool -> (d_x d_y)`
+    `Activs, (d_x d_y), Activs, () -> (d_x d_y)`
 
     BCM learning rule which takes into account average values of activations
 
     Δw ∝ x * y * (y-y_avg)
     """
-    if disable:
-        return w
 
     d_x, = x[0].shape
     d_y, = y[0].shape
@@ -228,8 +216,8 @@ def lrn_adaptive(x, w, y, ss=1e-2, disable=False):
 
     return w + ss * xu * yu * (yu-y_avg_u)
 @torch.compile(disable=disable_compile)
-def lrn_adaptive_d(x, w, y, ss=1e-2, disable=False):
-    return lrn_adaptive(spike(x), w, y, ss=ss, disable=disable)
+def lrn_adaptive_d(x, w, y, ss=1e-2):
+    return lrn_adaptive(spike(x), w, y, ss=ss)
 
 
 # Default learning rule to expose
