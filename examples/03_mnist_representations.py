@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
     # Classifier: Takes in agent's internal representations
     classifier = nn.Linear(get_representations(agt).shape[0], 10)
-    optim = torch.optim.SGD(classifier.parameters(), lr=1e-1)
+    optim = torch.optim.SGD(classifier.parameters(), lr=1e-2)
 
     # Control classifier: Takes in the image
     control_classifier = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
