@@ -336,7 +336,7 @@ class BareCol(ColBase):  # 1 layer, no internal weights
     def update_activations(self):
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
-        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[2]**2
+        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
@@ -353,7 +353,7 @@ class I_VectorCol(BareCol, I_ColBase):
     def update_activations(self):
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
-        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[2]**2
+        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
@@ -459,11 +459,11 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         new_avg_3 = ALPHA*self.nr_3_[0] + (1-ALPHA)*self.nr_3[2]
         new_avg_4 = ALPHA*self.nr_4_[0] + (1-ALPHA)*self.nr_4[2]
         new_avg_5 = ALPHA*self.nr_5_[0] + (1-ALPHA)*self.nr_5[2]
-        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[2]**2
-        new_avg_sq_2 = ALPHA*self.nr_2_[0]**2 + (1-ALPHA)*self.nr_2[2]**2
-        new_avg_sq_3 = ALPHA*self.nr_3_[0]**2 + (1-ALPHA)*self.nr_3[2]**2
-        new_avg_sq_4 = ALPHA*self.nr_4_[0]**2 + (1-ALPHA)*self.nr_4[2]**2
-        new_avg_sq_5 = ALPHA*self.nr_5_[0]**2 + (1-ALPHA)*self.nr_5[2]**2
+        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
+        new_avg_sq_2 = ALPHA*self.nr_2_[0]**2 + (1-ALPHA)*self.nr_2[3]
+        new_avg_sq_3 = ALPHA*self.nr_3_[0]**2 + (1-ALPHA)*self.nr_3[3]
+        new_avg_sq_4 = ALPHA*self.nr_4_[0]**2 + (1-ALPHA)*self.nr_4[3]
+        new_avg_sq_5 = ALPHA*self.nr_5_[0]**2 + (1-ALPHA)*self.nr_5[3]
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
