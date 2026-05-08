@@ -1102,7 +1102,7 @@ class MNISTAgt(AgtBase):
 
             print("done init.")
 
-    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
+    def step(self, ipt: Inputs, use_lrn: bool = True, disable_print: bool = False) -> Outputs:
         """
         Override default `step`, since using default results in
         mismatched learning, with new input and old representations.
@@ -1122,11 +1122,12 @@ class MNISTAgt(AgtBase):
         col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]
         col2.update_activations()
 
-        col1.conns[col2.loc, Dir.A] = fc.lrn(
-            col1.a_pre,
-            col1.conns[col2.loc, Dir.A],
-            col2.a_post
-        )
+        if use_lrn:
+            col1.conns[col2.loc, Dir.A] = fc.lrn(
+                col1.a_pre,
+                col1.conns[col2.loc, Dir.A],
+                col2.a_post
+            )
 
         if self.use_debug:
             if self.pipes["overview"][0].poll():

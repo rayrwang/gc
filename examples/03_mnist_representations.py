@@ -67,11 +67,16 @@ if __name__ == "__main__":
         agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
     agt.debug_init()
 
-    # Classifier: Takes in agent's internal representations
+    # Actual (experimental): Takes in agent's internal representations
     classifier = nn.Linear(get_representations(agt).shape[0], 10)
     optim = torch.optim.SGD(classifier.parameters(), lr=1e-2)
 
-    # Control classifier: Takes in the image
+    # No learning control: Above but with static weights
+    no_lrn_agt = MNISTAgt(MNISTCfg(ispec, ospec), f"{project_root_path}/saves/mnist_repr_no_lrn_agt")
+    no_lrn_classifier = nn.Linear(get_representations(no_lrn_agt).shape[0], 10)
+    no_lrn_optim = torch.optim.SGD(no_lrn_classifier.parameters(), lr=1e-2)
+
+    # Regular control: Takes in the image
     control_classifier = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-2)
 
@@ -95,7 +100,7 @@ if __name__ == "__main__":
 
         # Train classifiers ###################################################
         # Actual classifier
-        agt.step(i, True)
+        agt.step(i, disable_print=True)
         representations = get_representations(agt)
         representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
         label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
@@ -104,6 +109,17 @@ if __name__ == "__main__":
         optim.zero_grad()
         loss.backward()
         optim.step()
+
+        # No learning control classifier
+        no_lrn_agt.step(i, use_lrn=False, disable_print=True)
+        representations = get_representations(no_lrn_agt)
+        representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
+        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
+        pred = no_lrn_classifier(representations)
+        loss = F.cross_entropy(pred, label)
+        no_lrn_optim.zero_grad()
+        loss.backward()
+        no_lrn_optim.step()
 
         # Control classifier
         img, = i
@@ -119,6 +135,7 @@ if __name__ == "__main__":
         if step % TEST_INTERVAL == 0:
             print(f"\nTesting on step {step}...")
             correct = 0
+            no_lrn_correct = 0
             control_correct = 0
             total = 0
             with torch.no_grad():
@@ -127,11 +144,18 @@ if __name__ == "__main__":
                     img, label = img.to(torch.get_default_device()), label.to(torch.get_default_device())
 
                     # Actual classifier
-                    agt.step([img], True)
+                    agt.step([img], disable_print=True)
                     representations = get_representations(agt)
                     pred = classifier(representations)
                     if torch.argmax(pred) == torch.argmax(label):
                         correct += 1
+
+                    # No lrn control classifier
+                    no_lrn_agt.step([img], use_lrn=False, disable_print=True)
+                    representations = get_representations(no_lrn_agt)
+                    pred = no_lrn_classifier(representations)
+                    if torch.argmax(pred) == torch.argmax(label):
+                        no_lrn_correct += 1
 
                     # Control classifier
                     control_pred = control_classifier(img)
@@ -140,11 +164,14 @@ if __name__ == "__main__":
                     total += 1
 
             accuracy = 100*correct/total
+            no_lrn_accuracy = 100*no_lrn_correct/total
             control_accuracy = 100*control_correct/total
             print(f"Accuracy: {accuracy:.2f}%")
+            print(f"No lrn control accuracy: {no_lrn_accuracy:.2f}%")
             print(f"Control accuracy: {control_accuracy:.2f}%\n")
             with SummaryWriter("runs/mnist_representations") as writer:
                 writer.add_scalars("Accuracy", {
                     "accuracy": accuracy,
+                    "no lrn control accuracy": no_lrn_accuracy,
                     "control accuracy": control_accuracy
                 }, global_step=step)
