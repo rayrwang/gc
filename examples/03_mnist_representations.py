@@ -99,7 +99,7 @@ if __name__ == "__main__":
                 break
 
         # Train classifiers ###################################################
-        # Actual classifier
+        # Actual
         agt.step(i, disable_print=True)
         representations = get_representations(agt)
         representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         loss.backward()
         optim.step()
 
-        # No learning control classifier
+        # No learning control
         no_lrn_agt.step(i, use_lrn=False, disable_print=True)
         representations = get_representations(no_lrn_agt)
         representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         loss.backward()
         no_lrn_optim.step()
 
-        # Control classifier
+        # Regular control
         img, = i
         img = img.to(torch.get_default_device()).to(torch.get_default_dtype())
         label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
@@ -143,21 +143,21 @@ if __name__ == "__main__":
                     img, label = random.choice(mnist_test)
                     img, label = img.to(torch.get_default_device()), label.to(torch.get_default_device())
 
-                    # Actual classifier
+                    # Actual
                     agt.step([img], disable_print=True)
                     representations = get_representations(agt)
                     pred = classifier(representations)
                     if torch.argmax(pred) == torch.argmax(label):
                         correct += 1
 
-                    # No lrn control classifier
+                    # No lrn control
                     no_lrn_agt.step([img], use_lrn=False, disable_print=True)
                     representations = get_representations(no_lrn_agt)
                     pred = no_lrn_classifier(representations)
                     if torch.argmax(pred) == torch.argmax(label):
                         no_lrn_correct += 1
 
-                    # Control classifier
+                    # Regular control
                     control_pred = control_classifier(img)
                     if torch.argmax(control_pred) == torch.argmax(label):
                         control_correct += 1
