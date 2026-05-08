@@ -80,6 +80,15 @@ if __name__ == "__main__":
     control_classifier = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-2)
 
+    def training_step(x, classifier, label, optimizer):
+        x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
+        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
+        pred = classifier(x)
+        loss = F.cross_entropy(pred, label)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
     mnist_test = MNISTDataset(train=False)
 
     REPORT_INTERVAL = 10
@@ -101,35 +110,15 @@ if __name__ == "__main__":
         # Train classifiers ###################################################
         # Actual
         agt.step(i, disable_print=True)
-        representations = get_representations(agt)
-        representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
-        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-        pred = classifier(representations)
-        loss = F.cross_entropy(pred, label)
-        optim.zero_grad()
-        loss.backward()
-        optim.step()
+        training_step(get_representations(agt), classifier, label, optim)
 
         # No learning control
         no_lrn_agt.step(i, use_lrn=False, disable_print=True)
-        representations = get_representations(no_lrn_agt)
-        representations = representations.to(torch.get_default_device()).to(torch.get_default_dtype())
-        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-        pred = no_lrn_classifier(representations)
-        loss = F.cross_entropy(pred, label)
-        no_lrn_optim.zero_grad()
-        loss.backward()
-        no_lrn_optim.step()
+        training_step(get_representations(no_lrn_agt), no_lrn_classifier, label, no_lrn_optim)
 
         # Regular control
         img, = i
-        img = img.to(torch.get_default_device()).to(torch.get_default_dtype())
-        label = label.to(torch.get_default_device()).to(torch.get_default_dtype())
-        pred = control_classifier(img)
-        loss = F.cross_entropy(pred, label)
-        control_optim.zero_grad()
-        loss.backward()
-        control_optim.step()
+        training_step(img, control_classifier, label, control_optim)
 
         # Test classifiers ####################################################
         if step % TEST_INTERVAL == 0:
