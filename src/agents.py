@@ -1128,9 +1128,10 @@ class MNISTAgt(AgtBase):
             col2.a_post
         )
 
-        if self.use_debug and self.pipes["overview"][0].poll():
-            sys.exit(0)
-        self.debug_update()
+        if self.use_debug:
+            if self.pipes["overview"][0].poll():
+                sys.exit(0)
+            self.debug_update()
 
         return [torch.zeros(10)]
         
