@@ -62,7 +62,6 @@ def inhibit(x):
     TODO possible changes:
     - Other ways of integrating expectations e.g. Outstar, predictive coding
     """
-
     d = x[0].shape[0]
     weights = inhibit_weights.get(d)
     if weights is None:

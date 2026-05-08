@@ -421,7 +421,7 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         # Lateral inhibition for winner take all, by combining actual and expected
         for new in (self.nr_1_, self.nr_2_, self.nr_3_, self.nr_4_, self.nr_5_):
             new[:] = fc.inhibit(new)
-            
+
     conn_layer_dict = {
         "a_pre": ("nr_4", 0),
         "a_pre_": ("nr_4_", 0),
@@ -458,7 +458,7 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             new_avg_sq = ALPHA*new[0]**2 + (1-ALPHA)*curr[3]
 
             # Move new activations to current
-            curr[:] = new.copy()  # Intentional shallow copy
+            curr[:] = new  # Intentional shallow copy
             curr[2] = new_avg
             curr[3] = new_avg_sq
 
