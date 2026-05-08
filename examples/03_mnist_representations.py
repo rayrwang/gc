@@ -128,8 +128,8 @@ if __name__ == "__main__":
             control_correct = 0
             total = 0
             with torch.no_grad():
-                for _ in range(TEST_SIZE):
-                    img, label = random.choice(mnist_test)
+                for i in random.sample(range(len(mnist_test)), k=TEST_SIZE):
+                    img, label = mnist_test[i]
                     img, label = img.to(torch.get_default_device()), label.to(torch.get_default_device())
 
                     # Actual
@@ -150,6 +150,7 @@ if __name__ == "__main__":
                     control_pred = control_classifier(img)
                     if torch.argmax(control_pred) == torch.argmax(label):
                         control_correct += 1
+                        
                     total += 1
 
             accuracy = 100*correct/total
