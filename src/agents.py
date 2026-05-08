@@ -419,12 +419,9 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
     def inhibit(self):
         # Lateral inhibition for winner take all, by combining actual and expected
-        self.nr_1_ = fc.inhibit(self.nr_1_)
-        self.nr_2_ = fc.inhibit(self.nr_2_)
-        self.nr_3_ = fc.inhibit(self.nr_3_)
-        self.nr_4_ = fc.inhibit(self.nr_4_)
-        self.nr_5_ = fc.inhibit(self.nr_5_)
-
+        for new in (self.nr_1_, self.nr_2_, self.nr_3_, self.nr_4_, self.nr_5_):
+            new[:] = fc.inhibit(new)
+            
     conn_layer_dict = {
         "a_pre": ("nr_4", 0),
         "a_pre_": ("nr_4_", 0),
