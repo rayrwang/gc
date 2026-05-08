@@ -762,8 +762,10 @@ class AgtBase(ABC):
     def load_col(self, c: ColBase) -> None:
         if torch.get_default_device().type == "cuda":
             # While available memory is less than 5% of total
-            while torch.cuda.memory.mem_get_info()[0] \
-                    < 0.05*torch.cuda.memory.mem_get_info()[1]:
+            while True:
+                avail, tot = torch.cuda.memory.mem_get_info()
+                if avail >= 0.05*tot:
+                    break
                 to_evict = random.choice(list(self.cols.values()))
                 to_evict.to("cpu", non_blocking=True)
                 torch.cuda.memory.empty_cache()
