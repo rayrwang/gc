@@ -84,7 +84,6 @@ def lrn_basic(x, w, y, ss=1e-4):
 
     Δw ∝ xy
     """
-
     d_x, = x.shape
     d_y, = y.shape
 
@@ -116,7 +115,6 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     - Unify strengthening and decaying: e.g. one hyperparameter, consider adding vs. multiplying
     - Less restrictive regulation: e.g. take into account more than just value of weight
     """
-
     d_x, = x.shape
     d_y, = y.shape
 
@@ -155,7 +153,6 @@ def lrn_instar(x, w, y, ss=1e-2):
 
     Δw ∝ (x-w)y
     """
-
     d_x, = x.shape
     d_y, = y.shape
 
@@ -179,7 +176,6 @@ def lrn_oja(x, w, y, ss=1e-2):
 
     Δw ∝ (x-wy)y
     """
-
     d_x, = x.shape
     d_y, = y.shape
 
@@ -203,7 +199,6 @@ def lrn_adaptive(x, w, y, ss=1e-2):
 
     Δw ∝ x * y * (y-y_avg)
     """
-
     d_x, = x[0].shape
     d_y, = y[0].shape
 
@@ -220,6 +215,7 @@ def lrn_adaptive_d(x, w, y, ss=1e-2):
 
 
 # Default learning rule to expose
+# TODO remove?
 lrn = lrn_discrete
 
 

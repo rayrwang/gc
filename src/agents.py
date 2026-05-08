@@ -101,7 +101,7 @@ def activs(d: int) -> Activs:
     nr_<name>[2] : time average of activations
     nr_<name>[3] : time average of squares of activations
 
-    TODO wrap in class?
+    TODO use dataclass?
     """
     activations = torch.randn(d)
     return [activations, torch.zeros(d), activations, activations**2]
