@@ -159,6 +159,7 @@ class ColBase(ABC):
     conn_layer_dict: dict[str, tuple[str, Literal[0, 1]]]
         # to                         ^ name of activation layer and 
         #                                 ^ kind (actual or expectations)
+    # TODO allow for whole activations list not just single tensor
 
     def __getattr__(self, name):
         if name in self.conn_layer_dict:

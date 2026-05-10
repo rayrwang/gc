@@ -33,6 +33,9 @@ def spike(x, threshold=1.0):
     `d, () -> d`
 
     Activation function
+
+    TODO possible changes:
+    - Consider normalization & how interacts with learning rule
     """
     return torch.where(x < threshold, 0.0, 1.0)
 
@@ -45,6 +48,7 @@ def atv(x, w, y=None, threshold=1.0):
 
     TODO possible changes:
     - Adaptive thresholds by taking into account average values of activations
+    - Consider normalization & how interacts with learning rule
     """
     if y is not None:
         check_shapes(x.shape[0], tuple(w.shape), y.shape[0], "activity rule")
