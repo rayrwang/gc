@@ -36,6 +36,9 @@ def spike(x, threshold=1.0):
 
     TODO possible changes:
     - Consider normalization & how interacts with learning rule
+    - Distributions & which function to use
+        - Preprocess inputs?
+        - Discrete vs. continuous
     """
     return torch.where(x < threshold, 0.0, 1.0)
 
