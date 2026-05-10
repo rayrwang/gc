@@ -1123,10 +1123,10 @@ class MNISTAgt(AgtBase):
         col2.update_activations()
 
         if use_lrn:
-            col1.conns[col2.loc, Dir.A] = fc.lrn(
-                col1.a_pre,
+            col1.conns[col2.loc, Dir.A] = fc.lrn_adaptive(
+                col1.nr_1,
                 col1.conns[col2.loc, Dir.A],
-                col2.a_post
+                col2.nr_1
             )
 
         if self.use_debug:

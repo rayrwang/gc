@@ -191,7 +191,7 @@ def lrn_oja_d(x, w, y, ss=1e-2):
 
 
 @torch.compile(disable=disable_compile)
-def lrn_adaptive(x, w, y, ss=1e-2):
+def lrn_adaptive(x, w, y, ss=1e-3):
     """
     `Activs, (d_x d_y), Activs, () -> (d_x d_y)`
 
