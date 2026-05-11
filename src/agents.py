@@ -100,11 +100,12 @@ def activs(d: int) -> Activs:
     nr_<name>[1] : expectations
     nr_<name>[2] : time average of activations
     nr_<name>[3] : time average of squares of activations
+    nr_<name>[4] : derivative (current minus previous)
 
     TODO use dataclass?
     """
     activations = torch.randn(d)
-    return [activations, torch.zeros(d), activations, activations**2]
+    return [activations, torch.zeros(d), activations, activations**2, torch.zeros(d)]
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
@@ -337,11 +338,13 @@ class BareCol(ColBase):  # 1 layer, no internal weights
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
         new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
+        derivative = self.nr_1_[0] - self.nr_1[0]
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_1[2] = new_avg_1
         self.nr_1[3] = new_avg_sq_1
+        self.nr_1[4] = derivative
 
         # Reset new activations
         self.nr_1_[0] = fc.update(self.nr_1_[0])
@@ -354,11 +357,13 @@ class I_VectorCol(BareCol, I_ColBase):
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
         new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
+        derivative = self.nr_1_[0] - self.nr_1[0]
 
         # Move new activations to current
         self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
         self.nr_1[2] = new_avg_1
         self.nr_1[3] = new_avg_sq_1
+        self.nr_1[4] = derivative
 
         # Receives perceptual input, don't reset
 
@@ -456,11 +461,13 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             # Compute new activations averages
             new_avg = ALPHA*new[0] + (1-ALPHA)*curr[2]
             new_avg_sq = ALPHA*new[0]**2 + (1-ALPHA)*curr[3]
+            derivative = new[0] - curr[0]
 
             # Move new activations to current
             curr[:] = new  # Intentional shallow copy
             curr[2] = new_avg
             curr[3] = new_avg_sq
+            curr[4] = derivative
 
             # Reset new activations
             new[0] = fc.update(new[0])

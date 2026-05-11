@@ -78,7 +78,7 @@ simple_nets.py
 ## Memory
 
 Intended for scalability, currently:
-- **16 bytes** per activation (can be much more generous),
+- **20 bytes** per activation (can be much more generous),
 - and the standard **2 bytes** per weight.
 
 ## References
