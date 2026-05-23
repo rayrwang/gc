@@ -66,6 +66,7 @@ import shutil
 import sys
 import atexit
 import signal
+import ast
 
 import torch
 import numpy as np
@@ -249,7 +250,7 @@ class ColBase(ABC):
             name: str, 
             load_activations: bool, 
             load_weights: bool) -> ColBase:
-        loc = eval(name)
+        loc = ast.literal_eval(name)
         with open(f"{agt_path}/{name}/type", "rb") as f:
             col_type = pickle.load(f)
         with open(f"{agt_path}/{name}/cfg", "rb") as f:
@@ -819,7 +820,7 @@ class AgtBase(ABC):
             if name not in ["type", "cfg"]:
                 col = Col.init_and_load(path, name, load_activations, load_weights)
 
-                loc = eval(name)
+                loc = ast.literal_eval(name)
                 agt.cols[loc] = col
                 if isinstance(col, I_ColBase):
                     agt.I_cols.append(col)

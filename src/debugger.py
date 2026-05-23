@@ -22,6 +22,7 @@ import time
 import math
 import sys
 import signal
+import ast
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
@@ -170,7 +171,7 @@ def debugger(PATH, pipes):
     y_min, y_max = float("inf"), float("-inf")
     for name in os.listdir(PATH):
         if name not in ["type", "cfg"]:
-            x, y = eval(name)
+            x, y = ast.literal_eval(name)
             if x < x_min:
                 x_min = x
             if x > x_max:
@@ -250,7 +251,7 @@ def debugger(PATH, pipes):
         # Display cols
         for name in os.listdir(PATH):
             if name not in ["type", "cfg"]:
-                draw_col(eval(name))
+                draw_col(ast.literal_eval(name))
 
         # Display overview info ###############################################
         if pipes is not None:

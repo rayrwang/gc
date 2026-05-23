@@ -4,6 +4,7 @@ import os
 import time
 import sys
 import signal
+import ast
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
@@ -224,8 +225,8 @@ def nrn_debugger(PATH, pipes):
                 # Display cols
                 for name in os.listdir(PATH):
                     if name != "cfg":
-                        x = info[eval(name)]
-                        draw_col(eval(name), color=get_color(x))
+                        x = info[ast.literal_eval(name)]
+                        draw_col(ast.literal_eval(name), color=get_color(x))
 
         # Handle col and conn debug ###########################################
         for event in pg.event.get():
