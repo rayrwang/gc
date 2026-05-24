@@ -160,6 +160,8 @@ class ColBase(ABC):
         # to                         ^ name of activation layer and 
         #                                 ^ kind (actual or expectations)
     # TODO allow for whole activations list not just single tensor
+    # TODO or instead abolish the lookup table,
+        # and attach source and target info to each conn
 
     def __getattr__(self, name):
         if name in self.conn_layer_dict:

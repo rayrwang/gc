@@ -39,6 +39,7 @@ def spike(x, threshold=1.0):
     - Distributions & which function to use
         - Preprocess inputs?
         - Discrete vs. continuous
+        - e.g. use relu since this is really firing rate not spiking nn
     """
     return torch.where(x < threshold, 0.0, 1.0)
 
