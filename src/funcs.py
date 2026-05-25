@@ -54,7 +54,7 @@ def atv(x, w, y=None, threshold=1.0):
 inhibit_weights = {}
 def inhibit(x):
     """
-    `Activs -> Activs`
+    `Activs d -> Activs d`
 
     Lateral inhibition for winner take all behavior,
     to have less (more) activity & change for (un)expected
@@ -193,7 +193,7 @@ def lrn_oja_d(x, w, y, ss=1e-2):
 @torch.compile(disable=disable_compile)
 def lrn_adaptive(x, w, y, ss=1e-2):
     """
-    `Activs, (d_x d_y), Activs, () -> (d_x d_y)`
+    `Activs d_x, (d_x d_y), Activs d_y, () -> (d_x d_y)`
 
     BCM learning rule which takes into account average values of activations
 
