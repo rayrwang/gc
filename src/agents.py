@@ -128,9 +128,15 @@ ALPHA = 0.2  # Decay factor for activations EMA
 
 
 # Classes #####################################################################
+COL_REGISTRY = {}
 class ColCfgBase(ABC):
     ...
 class ColBase(ABC):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            COL_REGISTRY[cls.__name__] = cls
+
     def __init__(self):  # Type hints
         self.loc: Loc
         self.cfg: ColCfgBase
@@ -209,8 +215,8 @@ class ColBase(ABC):
             os.makedirs(f"{agt_path}/{self.loc}")
 
         # Save type of col
-        with open(f"{agt_path}/{self.loc}/type", "wb") as f:
-            pickle.dump(type(self), f)
+        with open(f"{agt_path}/{self.loc}/type", "w") as f:
+            f.write(type(self).__name__)
 
         # Save cfg
         with open(f"{agt_path}/{self.loc}/cfg", "wb") as f:
@@ -251,8 +257,8 @@ class ColBase(ABC):
             load_activations: bool, 
             load_weights: bool) -> ColBase:
         loc = ast.literal_eval(name)
-        with open(f"{agt_path}/{name}/type", "rb") as f:
-            col_type = pickle.load(f)
+        with open(f"{agt_path}/{name}/type", "r") as f:
+            col_type = COL_REGISTRY[f.read().strip()]
         with open(f"{agt_path}/{name}/cfg", "rb") as f:
             cfg = pickle.load(f)
         col = col_type(loc, cfg, skip_init=True)
