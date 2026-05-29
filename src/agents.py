@@ -79,6 +79,7 @@ from . import funcs as fc
 class Dir(Enum):  # Direction (kind) of connection
     A = 0  # Actual / "prediction errors" : connects actual to actual activations
     E = 1  # Expectations / "predictions" : connected actual to expectations activations
+torch.serialization.add_safe_globals([Dir])
 
 
 # Type hints ##################################################################
@@ -240,13 +241,8 @@ class ColBase(ABC):
                         setattr(self, name, None)
 
             # Save conns
-            self.to("cpu")  # Move to cpu before saving:
-                            # This doesn't matter for others since
-                            # can specify map_location in torch.load,
-                            # but conns are currently saved as one file,
-                            # so need to be on cpu.
-            with open(f"{agt_path}/{self.loc}/conns", "wb") as f:
-                pickle.dump(self.conns, f)
+            torch.save(self.conns, f"{agt_path}/{self.loc}/conns")
+            
             if not keep_weights:
                 self.conns = None
 
@@ -289,8 +285,8 @@ class ColBase(ABC):
                         torch.load(f"{agt_path}/{self.loc}/{name}",
                             map_location=torch.get_default_device()))
 
-            with open(f"{agt_path}/{self.loc}/conns", "rb") as f:
-                self.conns = pickle.load(f)
+            self.conns = torch.load(f"{agt_path}/{self.loc}/conns",
+                map_location=torch.get_default_device())
 
             self.weights_loaded = True
 
