@@ -181,11 +181,11 @@ class ColBase(ABC):
         nrns = 0  # Activations
         isyns = 0  # Internal (within this col) weights
         esyns = 0  # External (to other cols) weights
-        for name in vars(self):
+        for name, value in vars(self).items():
             if name.startswith("nr_") and name[-1] != "_":
-                nrns += getattr(self, name)[0].numel()
+                nrns += value[0].numel()
             elif name.startswith("is_"):
-                isyns += getattr(self, name).numel()
+                isyns += value.numel()
 
         for weight in self.conns.values():
             esyns += weight.numel()
@@ -217,9 +217,9 @@ class ColBase(ABC):
             pickle.dump(self.cfg, f)
 
         # Save activations
-        for name in vars(self):
+        for name, activations in vars(self).items():
             if name.startswith("nr_"):
-                torch.save(getattr(self, name), f"{agt_path}/{self.loc}/{name}")
+                torch.save(activations, f"{agt_path}/{self.loc}/{name}")
 
         # Only save weights if they're loaded, otherwise would save None's
         if self.weights_loaded:
@@ -227,9 +227,9 @@ class ColBase(ABC):
                 self.weights_loaded = False
 
             # Save internal weights
-            for name in vars(self):
+            for name, weights in vars(self).items():
                 if name.startswith("is_"):
-                    torch.save(getattr(self, name), f"{agt_path}/{self.loc}/{name}")
+                    torch.save(weights, f"{agt_path}/{self.loc}/{name}")
                     if not keep_weights:
                         setattr(self, name, None)
 
