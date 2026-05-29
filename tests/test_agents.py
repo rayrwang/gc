@@ -21,9 +21,11 @@ def test_agent_save_and_load(tmp_path):
     agt1 = Agt(Cfg(N_COLS, [], []), tmp_path)
     agt1.save()
     agt2 = Agt.load(tmp_path)
+    assert len(agt1.cols) == len(agt2.cols)
     for loc1, col1 in agt1.cols.items():
         assert loc1 in agt2.cols
         col2 = agt2.cols[loc1]
+        assert len(vars(col1)) == len(vars(col2))
         for name1, value1 in vars(col1).items():
             assert name1 in vars(col2)
             if name1.startswith("nr_"):
@@ -31,3 +33,7 @@ def test_agent_save_and_load(tmp_path):
                     assert torch.allclose(a1, a2)
             elif name1.startswith("is_"):
                 assert torch.allclose(value1, getattr(col2, name1))
+        assert len(col1.conns) == len(col2.conns)
+        for address, weight in col1.conns.items():
+            assert address in col2.conns
+            assert torch.allclose(weight, col2.conns[address])
