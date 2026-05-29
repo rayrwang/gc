@@ -3,21 +3,43 @@ import os
 import sys
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
+import pytest
+
 import torch
 
-from src.agents import Cfg, Agt
+from src.iotypes import I_Vector, O_Vector
+from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt
 
 N_COLS = 4
 
-def test_agent_init(tmp_path):
-    agt = Agt(Cfg(N_COLS, [], []), tmp_path)
-    agt.verify()
 
-def test_agent_step(tmp_path):
+@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", [
+    (Cfg, (N_COLS, [], []), Agt),
+    (BareCfg, (N_COLS, [], []), BareAgt),
+    (MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt),
+])
+def test_agent_init(tmp_path, cfg_cls, cfg_args, agt_cls):
+    agt = agt_cls(cfg_cls(*cfg_args), tmp_path)
+    if hasattr(agt, "verify"):
+        agt.verify()
+
+
+@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", [
+    (Cfg, (N_COLS, [], []), Agt),
+    (BareCfg, (N_COLS, [], []), BareAgt),
+    (MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt),
+])
+def test_agent_step(tmp_path, cfg_cls, cfg_args, agt_cls):
     agt = Agt(Cfg(N_COLS, [], []), tmp_path)
     agt.step([])
 
-def test_agent_save_and_load(tmp_path):
+
+@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", [
+    (Cfg, (N_COLS, [], []), Agt),
+    (BareCfg, (N_COLS, [], []), BareAgt),
+    (MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt),
+])
+def test_agent_save_and_load(tmp_path, cfg_cls, cfg_args, agt_cls):
     agt1 = Agt(Cfg(N_COLS, [], []), tmp_path)
     agt1.save()
     agt2 = Agt.load(tmp_path)
