@@ -474,7 +474,13 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             new[1] = fc.update_e(new[1])
 
 
+AGT_REGISTRY = {}
 class AgtBase(ABC):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            AGT_REGISTRY[cls.__name__] = cls
+
     def __init__(self, cfg, path: str, skip_init: bool = False):
         self.cfg = cfg
         self.path = path
@@ -791,8 +797,8 @@ class AgtBase(ABC):
             os.makedirs(self.path)
 
         # Save type of agt
-        with open(f"{self.path}/type", "wb") as f:
-            pickle.dump(type(self), f)
+        with open(f"{self.path}/type", "w") as f:
+            f.write(type(self).__name__)
 
         # Save cfg
         print("Saving cfg...")
@@ -811,8 +817,8 @@ class AgtBase(ABC):
         print(f"\nLoading agent from \"{path}\":")
 
         # Load type of agt
-        with open(f"{path}/type", "rb") as f:
-            agt_type = pickle.load(f)
+        with open(f"{path}/type", "r") as f:
+            agt_type = AGT_REGISTRY[f.read().strip()]
 
         # Load cfg
         print("Loading cfg...")
