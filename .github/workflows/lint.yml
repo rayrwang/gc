@@ -12,4 +12,4 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Run Ruff
-        uses: astral-sh/ruff-action@v4  # `ruff check`
+        uses: astral-sh/ruff-action@v4.0.0  # `ruff check`
