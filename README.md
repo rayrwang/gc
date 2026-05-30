@@ -57,21 +57,21 @@ python simple_nets.py
 ```
 # Main networks
 src/
-|-- funcs.py     # Functions used in agents
-|-- agents.py    # Main neural nets file
-|-- iotypes.py   # Input and output types
-|-- envs.py      # Virtual environments or software interfaces to the real world
-|-- debugger.py  # Debugger GUI
+├── funcs.py     # Functions used in agents
+├── agents.py    # Main neural nets file
+├── iotypes.py   # Input and output types
+├── envs.py      # Virtual environments or software interfaces to the real world
+└── debugger.py  # Debugger GUI
 main.py
 view_only.py
 examples/
-|-- XX_<name>.py
+└── XX_<name>.py
 
-# Snaller neural nets for testing
+# Smaller neural nets for testing
 simple/          
-|-- funcs.py
-|-- agents.py
-|-- debugger.py
+├── funcs.py
+├── agents.py
+└── debugger.py
 simple_nets.py
 ```
 
