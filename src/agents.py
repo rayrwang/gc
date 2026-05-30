@@ -52,7 +52,6 @@ save to disk
 
 from __future__ import annotations
 
-import pickle
 import os
 from typing import Annotated, Literal
 from dataclasses import dataclass, asdict
@@ -131,13 +130,13 @@ ALPHA = 0.2  # Decay factor for activations EMA
 
 
 # Classes #####################################################################
-COL_REGISTRY = {}
 COLCFG_REGISTRY = {}
 class ColCfgBase(ABC):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         if not getattr(cls, "__abstractmethods__", None):
             COLCFG_REGISTRY[cls.__name__] = cls
+COL_REGISTRY = {}
 class ColBase(ABC):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -479,6 +478,12 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             new[1] = fc.update_e(new[1])
 
 
+CFG_REGISTRY = {}
+class CfgBase(ABC):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            CFG_REGISTRY[cls.__name__] = cls
 AGT_REGISTRY = {}
 class AgtBase(ABC):
     def __init_subclass__(cls, **kwargs):
@@ -805,10 +810,14 @@ class AgtBase(ABC):
         with open(f"{self.path}/type", "w") as f:
             f.write(type(self).__name__)
 
+        # Save type of cfg
+        with open(f"{self.path}/cfg_type", "w") as f:
+            f.write(type(self.cfg).__name__)
+
         # Save cfg
         print("Saving cfg...")
-        with open(f"{self.path}/cfg", "wb") as f:
-            pickle.dump(self.cfg, f)
+        with open(f"{self.path}/cfg", "w") as f:
+            json.dump(asdict(self.cfg), f)
 
         # Save cols
         for loc, col in tqdm(self.cols.items(), desc="Saving cols"):
@@ -825,10 +834,14 @@ class AgtBase(ABC):
         with open(f"{path}/type", "r") as f:
             agt_type = AGT_REGISTRY[f.read().strip()]
 
+        # Load type of cfg
+        with open(f"{path}/cfg_type", "r") as f:
+            cfg_type = CFG_REGISTRY[f.read().strip()]
+
         # Load cfg
         print("Loading cfg...")
-        with open(f"{path}/cfg", "rb") as f:
-            cfg = pickle.load(f)
+        with open(f"{path}/cfg", "r") as f:
+            cfg = dacite.from_dict(cfg_type, json.load(f))
 
         agt = agt_type(cfg, path, skip_init=True)
 
@@ -848,7 +861,7 @@ class AgtBase(ABC):
 
 
 @dataclass
-class Cfg:
+class Cfg(CfgBase):
     n_cols: int            # Number of columns (modules)
     ispec: list[T.I_Base]  # Input specification
     ospec: list[T.O_Base]  # Output specification
@@ -983,7 +996,7 @@ class Agt(AgtBase):  # Agent
 
 
 @dataclass
-class BareCfg:
+class BareCfg(CfgBase):
     n_cols: int
     ispec: list[T.I_Base]
     ospec: list[T.O_Base]
@@ -1079,7 +1092,7 @@ class BareAgt(AgtBase):
 
 
 @dataclass
-class MNISTCfg:
+class MNISTCfg(CfgBase):
     ispec: list[T.I_Base]
     ospec: list[T.O_Base]
 class MNISTAgt(AgtBase):
