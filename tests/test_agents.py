@@ -11,34 +11,27 @@ from src.iotypes import I_Vector, O_Vector
 from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt
 
 N_COLS = 4
+cases = [
+    pytest.param(Cfg, (N_COLS, [], []), Agt, id=Agt.__name__),
+    pytest.param(BareCfg, (N_COLS, [], []), BareAgt, id=BareAgt.__name__),
+    pytest.param(MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt, id=MNISTAgt.__name__),
+]
 
 
-@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", [
-    (Cfg, (N_COLS, [], []), Agt),
-    (BareCfg, (N_COLS, [], []), BareAgt),
-    (MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt),
-])
+@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", cases)
 def test_agent_init(tmp_path, cfg_cls, cfg_args, agt_cls):
     agt = agt_cls(cfg_cls(*cfg_args), tmp_path)
     if hasattr(agt, "verify"):
         agt.verify()
 
 
-@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", [
-    (Cfg, (N_COLS, [], []), Agt),
-    (BareCfg, (N_COLS, [], []), BareAgt),
-    (MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt),
-])
+@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", cases)
 def test_agent_step(tmp_path, cfg_cls, cfg_args, agt_cls):
     agt = Agt(Cfg(N_COLS, [], []), tmp_path)
     agt.step([])
 
 
-@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", [
-    (Cfg, (N_COLS, [], []), Agt),
-    (BareCfg, (N_COLS, [], []), BareAgt),
-    (MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt),
-])
+@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", cases)
 def test_agent_save_and_load(tmp_path, cfg_cls, cfg_args, agt_cls):
     agt1 = Agt(Cfg(N_COLS, [], []), tmp_path)
     agt1.save()
