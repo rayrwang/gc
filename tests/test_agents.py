@@ -41,6 +41,7 @@ def test_agent_save_and_load(tmp_path, cfg_cls, cfg_args, agt_cls):
         assert loc1 in agt2.cols
         col2 = agt2.cols[loc1]
         assert len(vars(col1)) == len(vars(col2))
+        assert col1.cfg == col2.cfg
         for name1, value1 in vars(col1).items():
             assert name1 in vars(col2)
             if name1.startswith("nr_"):

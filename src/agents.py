@@ -55,7 +55,7 @@ from __future__ import annotations
 import pickle
 import os
 from typing import Annotated, Literal
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import time
 import random
 import math
@@ -67,10 +67,12 @@ import sys
 import atexit
 import signal
 import ast
+import json
 
 import torch
 import numpy as np
 from tqdm import tqdm
+import dacite
 
 from . import iotypes as T
 from . import funcs as fc
@@ -130,8 +132,12 @@ ALPHA = 0.2  # Decay factor for activations EMA
 
 # Classes #####################################################################
 COL_REGISTRY = {}
+COLCFG_REGISTRY = {}
 class ColCfgBase(ABC):
-    ...
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if not getattr(cls, "__abstractmethods__", None):
+            COLCFG_REGISTRY[cls.__name__] = cls
 class ColBase(ABC):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -219,9 +225,13 @@ class ColBase(ABC):
         with open(f"{agt_path}/{self.loc}/type", "w") as f:
             f.write(type(self).__name__)
 
+        # Save type of cfg
+        with open(f"{agt_path}/{self.loc}/cfg_type", "w") as f:
+            f.write(type(self.cfg).__name__)
+
         # Save cfg
-        with open(f"{agt_path}/{self.loc}/cfg", "wb") as f:
-            pickle.dump(self.cfg, f)
+        with open(f"{agt_path}/{self.loc}/cfg", "w") as f:
+            json.dump(asdict(self.cfg), f)
 
         # Save activations
         for name, activations in vars(self).items():
@@ -255,8 +265,11 @@ class ColBase(ABC):
         loc = ast.literal_eval(name)
         with open(f"{agt_path}/{name}/type", "r") as f:
             col_type = COL_REGISTRY[f.read().strip()]
-        with open(f"{agt_path}/{name}/cfg", "rb") as f:
-            cfg = pickle.load(f)
+            
+        with open(f"{agt_path}/{name}/cfg_type", "r") as f:
+            cfg_type = COLCFG_REGISTRY[f.read().strip()]
+        with open(f"{agt_path}/{name}/cfg", "r") as f:
+            cfg = dacite.from_dict(cfg_type, json.load(f))
         col = col_type(loc, cfg, skip_init=True)
         col.load(agt_path=agt_path, load_activations=load_activations, load_weights=load_weights)
         return col
@@ -265,10 +278,6 @@ class ColBase(ABC):
             agt_path: str,
             load_activations: bool,
             load_weights: bool) -> None:
-        # Load cfg
-        with open(f"{agt_path}/{self.loc}/cfg", "rb") as f:
-            self.cfg = pickle.load(f)
-
         # Load activations
         if load_activations:
             for name in vars(self):
