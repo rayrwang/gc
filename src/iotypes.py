@@ -117,4 +117,5 @@ SPEC_REGISTRY = {c.__name__: c for base in (I_Base, O_Base) for c in _all_subcla
 def spec2dict(obj):
     return {"spec_type": type(obj).__name__, **asdict(obj)}
 def dict2spec(d):
+    d = dict(d)
     return dacite.from_dict(SPEC_REGISTRY[d.pop("spec_type")], d)
