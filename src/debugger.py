@@ -170,7 +170,7 @@ def debugger(PATH, pipes):
     x_min, x_max = float("inf"), float("-inf")
     y_min, y_max = float("inf"), float("-inf")
     for name in os.listdir(PATH):
-        if name not in ["type", "cfg"]:
+        if name not in ["type", "cfg", "cfg_type"]:
             x, y = ast.literal_eval(name)
             if x < x_min:
                 x_min = x
@@ -250,7 +250,7 @@ def debugger(PATH, pipes):
 
         # Display cols
         for name in os.listdir(PATH):
-            if name not in ["type", "cfg"]:
+            if name not in ["type", "cfg", "cfg_type"]:
                 draw_col(ast.literal_eval(name))
 
         # Display overview info ###############################################

@@ -6,9 +6,11 @@ The actual inputs and outputs are simply lists of tensors.
 
 from functools import reduce
 import operator
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Sequence, Literal
 from abc import ABC
+
+import dacite
 
 class I_Base(ABC):
     pass
@@ -105,3 +107,16 @@ class O_Tool(O_Base):
 @dataclass
 class O_Str(O_Base):  # Text
     ...
+
+def _all_subclasses(cls):
+    for sub in cls.__subclasses__():
+        yield sub
+        yield from _all_subclasses(sub)
+SPEC_REGISTRY = {c.__name__: c for base in (I_Base, O_Base) for c in _all_subclasses(base)}
+
+def spec2dict(obj):
+    return {"spec_type": type(obj).__name__, **asdict(obj)}
+def dict2spec(d):
+    d = dict(d)
+    cls = SPEC_REGISTRY[d.pop("spec_type")]
+    return dacite.from_dict(cls, d)

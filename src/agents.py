@@ -54,7 +54,7 @@ from __future__ import annotations
 
 import os
 from typing import Annotated, Literal
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 import time
 import random
 import math
@@ -74,6 +74,7 @@ from tqdm import tqdm
 import dacite
 
 from . import iotypes as T
+from .iotypes import spec2dict, dict2spec
 from . import funcs as fc
 
 
@@ -816,8 +817,13 @@ class AgtBase(ABC):
 
         # Save cfg
         print("Saving cfg...")
+        cfg_data = {}
+        for f in fields(self.cfg):
+            val = getattr(self.cfg, f.name)
+            cfg_data[f.name] = [spec2dict(s) for s in val] \
+                if f.name in ("ispec", "ospec") else val
         with open(f"{self.path}/cfg", "w") as f:
-            json.dump(asdict(self.cfg), f)
+            json.dump(cfg_data, f)
 
         # Save cols
         for loc, col in tqdm(self.cols.items(), desc="Saving cols"):
@@ -841,13 +847,20 @@ class AgtBase(ABC):
         # Load cfg
         print("Loading cfg...")
         with open(f"{path}/cfg", "r") as f:
-            cfg = dacite.from_dict(cfg_type, json.load(f))
+            cfg_data = json.load(f)
+            spec_names = {"ispec", "ospec"}
+            kwargs = {}
+            for f in fields(cfg_type):
+                assert f.name in cfg_data
+                kwargs[f.name] = ([dict2spec(s) for s in cfg_data[f.name]]
+                                if f.name in spec_names else cfg_data[f.name])
+            cfg = cfg_type(**kwargs)
 
         agt = agt_type(cfg, path, skip_init=True)
 
         # Load cols
         for name in tqdm(os.listdir(path), desc="Loading cols"):
-            if name not in ["type", "cfg"]:
+            if name not in ["type", "cfg", "cfg_type"]:
                 col = Col.init_and_load(path, name, load_activations, load_weights)
 
                 loc = ast.literal_eval(name)
