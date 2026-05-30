@@ -1,8 +1,4 @@
 
-import os
-import sys
-sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
-
 import pytest
 from dataclasses import dataclass
 

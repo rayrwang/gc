@@ -11,7 +11,7 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 ## Install and Run
 
-Install `requirements.txt`.
+Install `pyproject.toml`.
 
 Run the main network:
 ```

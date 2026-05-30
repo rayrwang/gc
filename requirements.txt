@@ -1,9 +1,0 @@
-numpy
-torch
-tensorboard
-torchvision
-opencv-python==4.12.*  # Font issue on newer versions
-pygame-ce
-tqdm
-dacite
-pytest

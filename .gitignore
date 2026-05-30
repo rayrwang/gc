@@ -2,6 +2,7 @@
 __pycache__/
 env/
 venv/
+*.egg-info/
 
 .vscode/
 .obsidian/
