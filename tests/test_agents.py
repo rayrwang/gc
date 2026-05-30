@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
 import pytest
+from dataclasses import dataclass
 
 import torch
 
@@ -11,31 +12,38 @@ from src.iotypes import I_Vector, O_Vector
 from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt
 
 N_COLS = 4
+
+@dataclass
+class Case:
+    cfg_cls: type
+    cfg_args: tuple
+    agt_cls: type
+    step_input: list
 cases = [
-    pytest.param(Cfg, (N_COLS, [], []), Agt, id=Agt.__name__),
-    pytest.param(BareCfg, (N_COLS, [], []), BareAgt, id=BareAgt.__name__),
-    pytest.param(MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt, id=MNISTAgt.__name__),
+    pytest.param(Case(Cfg,      (N_COLS, [], []),                  Agt,      []),                 id="Agt"),
+    pytest.param(Case(BareCfg,  (N_COLS, [], []),                  BareAgt,  []),                 id="BareAgt"),
+    pytest.param(Case(MNISTCfg, ([I_Vector(784)], [O_Vector(10)]), MNISTAgt, [torch.randn(784)]), id="MNISTAgt"),
 ]
 
 
-@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", cases)
-def test_agent_init(tmp_path, cfg_cls, cfg_args, agt_cls):
-    agt = agt_cls(cfg_cls(*cfg_args), tmp_path)
+@pytest.mark.parametrize("case", cases)
+def test_agent_init(tmp_path, case):
+    agt = case.agt_cls(case.cfg_cls(*case.cfg_args), tmp_path)
     if hasattr(agt, "verify"):
         agt.verify()
 
 
-@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", cases)
-def test_agent_step(tmp_path, cfg_cls, cfg_args, agt_cls):
-    agt = Agt(Cfg(N_COLS, [], []), tmp_path)
-    agt.step([])
+@pytest.mark.parametrize("case", cases)
+def test_agent_step(tmp_path, case):
+    agt = case.agt_cls(case.cfg_cls(*case.cfg_args), tmp_path)
+    agt.step(case.step_input)
 
 
-@pytest.mark.parametrize("cfg_cls, cfg_args, agt_cls", cases)
-def test_agent_save_and_load(tmp_path, cfg_cls, cfg_args, agt_cls):
-    agt1 = Agt(Cfg(N_COLS, [], []), tmp_path)
+@pytest.mark.parametrize("case", cases)
+def test_agent_save_and_load(tmp_path, case):
+    agt1 = case.agt_cls(case.cfg_cls(*case.cfg_args), tmp_path)
     agt1.save()
-    agt2 = Agt.load(tmp_path)
+    agt2 = case.agt_cls.load(tmp_path)
     assert len(agt1.cols) == len(agt2.cols)
     for loc1, col1 in agt1.cols.items():
         assert loc1 in agt2.cols
@@ -45,6 +53,7 @@ def test_agent_save_and_load(tmp_path, cfg_cls, cfg_args, agt_cls):
         for name1, value1 in vars(col1).items():
             assert name1 in vars(col2)
             if name1.startswith("nr_"):
+                assert len(value1) == len(getattr(col2, name1))
                 for a1, a2 in zip(value1, getattr(col2, name1)):
                     assert torch.allclose(a1, a2)
             elif name1.startswith("is_"):
