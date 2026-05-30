@@ -211,7 +211,7 @@ def lrn_adaptive(x, w, y, ss=1e-2):
     return w + ss * xu * yu * (yu-y_avg_u)
 @torch.compile(disable=disable_compile)
 def lrn_adaptive_d(x, w, y, ss=1e-2):
-    return lrn_adaptive(spike(x), w, y, ss=ss)
+    return lrn_adaptive([spike(x[0]), *x[1:]], w, y, ss=ss)
 
 
 # Default learning rule to expose
