@@ -324,11 +324,11 @@ def debugger(PATH, pipes):
                 else:
                     scale = h_new / H
         buttons = pg.mouse.get_pressed(num_buttons=3)
+        screen_x, screen_y = pg.mouse.get_pos()
+        screen_x, screen_y = screen_x / scale, screen_y / scale
         keys = pg.key.get_pressed()
         if buttons[0]:  # Left click
             # Get which col and conn mouse is clicking on
-            screen_x, screen_y = pg.mouse.get_pos()
-            screen_x, screen_y = screen_x / scale, screen_y / scale
             # Select col
             loc = screen2loc(screen_x, screen_y, COL_WIDTH)
             gui_state["loc"] = loc
@@ -342,8 +342,6 @@ def debugger(PATH, pipes):
         if gui_state["loc"]:  # Selected a col
             if buttons[2]:  # Right click
                 # Try to stay on same col and select conn or activation layer
-                screen_x, screen_y = pg.mouse.get_pos()
-                screen_x, screen_y = screen_x / scale, screen_y / scale
                 loc = gui_state["loc"]
                 conn_loc = screen2loc(screen_x, screen_y, COL_WIDTH)
                 conn_dir = screen2dir(screen_x, screen_y, COL_WIDTH)
