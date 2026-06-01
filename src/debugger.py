@@ -217,7 +217,7 @@ def debugger(PATH, pipes):
     }
     LINE_HEIGHT = 30
 
-    # Cache of which item user clicked on
+    # Cache of which items user selected
     gui_state = {
         "loc": None,
         "conn": None,
@@ -254,66 +254,65 @@ def debugger(PATH, pipes):
                 draw_col(ast.literal_eval(name))
 
         # Display overview info ###############################################
-        if pipes is not None:
-            _, pipe = pipes["overview"]
-            # Try to get new info
-            info = None
-            while pipe.poll():
-                new_info = pipe.recv()
-                info = new_info
-                cache["overview"] = new_info
+        _, pipe = pipes["overview"]
+        # Try to get new info
+        info = None
+        while pipe.poll():
+            new_info = pipe.recv()
+            info = new_info
+            cache["overview"] = new_info
 
-            # If no new info, try to read from cache
-            if info is None and cache["overview"] is not None:
-                info = cache["overview"]
+        # If no new info, try to read from cache
+        if info is None and cache["overview"] is not None:
+            info = cache["overview"]
 
-            if info is None:
-                txt = fonts["debug"].render("waiting...", True, (0,0,0))
-                window.blit(txt, (25, 1125))
-            else:
-                txt = fonts["debug"].render("Active", True, (0,0,0))
-                window.blit(txt, (25, 1125))
+        if info is None:
+            txt = fonts["debug"].render("waiting...", True, (0,0,0))
+            window.blit(txt, (25, 1125))
+        else:
+            txt = fonts["debug"].render("Active", True, (0,0,0))
+            window.blit(txt, (25, 1125))
 
-                # Age of information
-                age = time.time() - info["timestamp"]
-                txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
-                window.blit(txt, (25, 1125+1*LINE_HEIGHT))
+            # Age of information
+            age = time.time() - info["timestamp"]
+            txt = fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
+            window.blit(txt, (25, 1125+1*LINE_HEIGHT))
 
-                memory = 2 * (2*info["copies"]*info["nrns"] + info["syns"])
-                #        ^ 2 bytes per element
-                #             ^ current and new versions of activations
-                #               ^ "copies" copies of activations for each version
-                memory_gb = memory / 1e9
-                txt = fonts["debug"].render("Memory:", True, (0,0,0))
-                window.blit(txt, (25, 1125+3*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"{memory_gb:.2f} GB", True, (0,0,0))
-                window.blit(txt, (25, 1125+4*LINE_HEIGHT))
+            memory = 2 * (2*info["copies"]*info["nrns"] + info["syns"])
+            #        ^ 2 bytes per element
+            #             ^ current and new versions of activations
+            #               ^ "copies" copies of activations for each version
+            memory_gb = memory / 1e9
+            txt = fonts["debug"].render("Memory:", True, (0,0,0))
+            window.blit(txt, (25, 1125+3*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"{memory_gb:.2f} GB", True, (0,0,0))
+            window.blit(txt, (25, 1125+4*LINE_HEIGHT))
 
-                # Total number of activations and weights
-                txt = fonts["debug"].render("# of:", True, (0,0,0))
-                window.blit(txt, (200, 1125+0*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"    activations: {info["nrns"]:,} ({info["copies"]} copies)", True, (0,0,0))
-                window.blit(txt, (200, 1125+1*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"    total weights: {info["syns"]:,}", True, (0,0,0))
-                window.blit(txt, (200, 1125+2*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"    |-- internal weights: {info["isyns"]:,}", True, (0,0,0))
-                window.blit(txt, (200, 1125+3*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"    |-- external weights: {info["esyns"]:,}", True, (0,0,0))
-                window.blit(txt, (200, 1125+4*LINE_HEIGHT))
+            # Total number of activations and weights
+            txt = fonts["debug"].render("# of:", True, (0,0,0))
+            window.blit(txt, (200, 1125+0*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"    activations: {info["nrns"]:,} ({info["copies"]} copies)", True, (0,0,0))
+            window.blit(txt, (200, 1125+1*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"    total weights: {info["syns"]:,}", True, (0,0,0))
+            window.blit(txt, (200, 1125+2*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"    |-- internal weights: {info["isyns"]:,}", True, (0,0,0))
+            window.blit(txt, (200, 1125+3*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"    |-- external weights: {info["esyns"]:,}", True, (0,0,0))
+            window.blit(txt, (200, 1125+4*LINE_HEIGHT))
 
-                txt = fonts["debug"].render("ratios:", True, (0,0,0))
-                window.blit(txt, (650, 1125+0*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"{info["syns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-                window.blit(txt, (650, 1125+2*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-                window.blit(txt, (650, 1125+3*LINE_HEIGHT))
-                txt = fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-                window.blit(txt, (650, 1125+4*LINE_HEIGHT))
+            txt = fonts["debug"].render("ratios:", True, (0,0,0))
+            window.blit(txt, (650, 1125+0*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"{info["syns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
+            window.blit(txt, (650, 1125+2*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
+            window.blit(txt, (650, 1125+3*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
+            window.blit(txt, (650, 1125+4*LINE_HEIGHT))
 
-                txt = fonts["debug"].render(f"density: {info["density"]*100:.2f}%", True, (0,0,0))
-                window.blit(txt, (875, 1125+0*LINE_HEIGHT))
+            txt = fonts["debug"].render(f"density: {info["density"]*100:.2f}%", True, (0,0,0))
+            window.blit(txt, (875, 1125+0*LINE_HEIGHT))
 
-        # Handle gui changes ##################################################
+        # Handle GUI changes ##################################################
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pipes["overview"][1].send(None)
@@ -326,47 +325,52 @@ def debugger(PATH, pipes):
                     scale = h_new / H
         buttons = pg.mouse.get_pressed(num_buttons=3)
         keys = pg.key.get_pressed()
-        if buttons[0]:
-            # Get which col and conn mouse is clicking on #####################
+        if buttons[0]:  # Left click
+            # Get which col and conn mouse is clicking on
             screen_x, screen_y = pg.mouse.get_pos()
             screen_x, screen_y = screen_x / scale, screen_y / scale
-            if keys[pg.K_LSHIFT] or keys[pg.K_RSHIFT] or buttons[2]:
-                # Try stay on same col and select conn or activation layer
-                if gui_state["loc"] is not None:
-                    loc = gui_state["loc"]
-                    conn_loc = screen2loc(screen_x, screen_y, COL_WIDTH)
-                    conn_dir = screen2dir(screen_x, screen_y, COL_WIDTH)
-                    if os.path.isdir(f"{PATH}/{conn_loc}"):  # Check if conn location is valid
-                        gui_state["atv"] = None
-                        gui_state["conn"] = (conn_loc, conn_dir)
-                    else:
-                        gui_state["conn"] = None
-                        if 1500 < screen_x < 2000:  # Try to select layer of activations
-                            if 250+0*LINE_HEIGHT <= screen_y < 250+4.5*LINE_HEIGHT:  # nr_1
-                                gui_state["atv"] = 1
-                            elif 250+4.5*LINE_HEIGHT <= screen_y < 250+9.5*LINE_HEIGHT:  # nr_2
-                                gui_state["atv"] = 2
-                            elif 250+9.5*LINE_HEIGHT <= screen_y < 250+14.5*LINE_HEIGHT:  # nr_3
-                                gui_state["atv"] = 3
-                            elif 250+14.5*LINE_HEIGHT <= screen_y < 250+19.5*LINE_HEIGHT:  # nr_4
-                                gui_state["atv"] = 4
-                            elif 250+19.5*LINE_HEIGHT <= screen_y < 250+24.5*LINE_HEIGHT:  # nr_5
-                                gui_state["atv"] = 5
-                            elif 250+24.5*LINE_HEIGHT <= screen_y < 250+29.5*LINE_HEIGHT:  # nr_6
-                                gui_state["atv"] = 6
-                            elif 250+29.5*LINE_HEIGHT <= screen_y < 250+34.5*LINE_HEIGHT:  # nr_7
-                                gui_state["atv"] = 7
-                            else:
-                                gui_state["atv"] = None
+            # Select col
+            loc = screen2loc(screen_x, screen_y, COL_WIDTH)
+            gui_state["loc"] = loc
+            gui_state["conn"] = None
+            gui_state["atv"] = None
+        if keys[pg.K_ESCAPE]:
+            gui_state["loc"] = None
+            gui_state["conn"] = None
+            gui_state["atv"] = None
+            
+        if gui_state["loc"]:  # Selected a col
+            if buttons[2]:  # Right click
+                # Try to stay on same col and select conn or activation layer
+                screen_x, screen_y = pg.mouse.get_pos()
+                screen_x, screen_y = screen_x / scale, screen_y / scale
+                loc = gui_state["loc"]
+                conn_loc = screen2loc(screen_x, screen_y, COL_WIDTH)
+                conn_dir = screen2dir(screen_x, screen_y, COL_WIDTH)
+                if os.path.isdir(f"{PATH}/{conn_loc}"):  # Check if conn location is valid
+                    gui_state["atv"] = None
+                    gui_state["conn"] = (conn_loc, conn_dir)
+                else:
+                    gui_state["conn"] = None
+                    if 1500 < screen_x < 2000:  # Try to select layer of activations
+                        if 250+0*LINE_HEIGHT <= screen_y < 250+4.5*LINE_HEIGHT:  # nr_1
+                            gui_state["atv"] = 1
+                        elif 250+4.5*LINE_HEIGHT <= screen_y < 250+9.5*LINE_HEIGHT:  # nr_2
+                            gui_state["atv"] = 2
+                        elif 250+9.5*LINE_HEIGHT <= screen_y < 250+14.5*LINE_HEIGHT:  # nr_3
+                            gui_state["atv"] = 3
+                        elif 250+14.5*LINE_HEIGHT <= screen_y < 250+19.5*LINE_HEIGHT:  # nr_4
+                            gui_state["atv"] = 4
+                        elif 250+19.5*LINE_HEIGHT <= screen_y < 250+24.5*LINE_HEIGHT:  # nr_5
+                            gui_state["atv"] = 5
+                        elif 250+24.5*LINE_HEIGHT <= screen_y < 250+29.5*LINE_HEIGHT:  # nr_6
+                            gui_state["atv"] = 6
+                        elif 250+29.5*LINE_HEIGHT <= screen_y < 250+34.5*LINE_HEIGHT:  # nr_7
+                            gui_state["atv"] = 7
                         else:
                             gui_state["atv"] = None
-                else:  # No col selected so ignore shift
-                    loc = screen2loc(screen_x, screen_y, COL_WIDTH)
-                    gui_state["loc"] = loc
-            else:  # Select col
-                loc = screen2loc(screen_x, screen_y, COL_WIDTH)
-                gui_state["loc"] = loc
-                gui_state["conn"] = None
+                    else:
+                        gui_state["atv"] = None
 
             # Draw debug info
             if os.path.isdir(f"{PATH}/{loc}"):  # Check if col location is valid
@@ -631,18 +635,12 @@ def debugger(PATH, pipes):
                         pg.draw.aaline(window, (0, 0, 0), (1125, 100+WIDTH*left), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom left portion
                         pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*top, 100+WIDTH*right))  # bottom right portion
                         pg.draw.aaline(window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom vertical edge
-            else:
+            else:  # Selected col does not exist
                 gui_state = {
                     "loc": None,
                     "conn": None,
                     "atv": None,
                 }
-        else:
-            gui_state = {
-                "loc": None,
-                "conn": None,
-                "atv": None,
-            }
 
         true_window.fill((255,255,255))
         true_window.blit(pg.transform.smoothscale(window, (scale*W, scale*H)), (0,0))
