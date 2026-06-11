@@ -63,7 +63,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 20
-        AGT_PATH = f"{project_root_path}/saves/mnist_repr_agt"
+        AGT_PATH = f"{project_root_path}/saves/mnist_repr_agt-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}"
         agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
     agt.debug_init()
 

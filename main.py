@@ -43,7 +43,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 200 if torch.cuda.is_available() else 50
-        AGT_PATH = "saves/main_agt"  # TODO include timestamp?
+        AGT_PATH = f"saves/main_agt-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}"
         agt = Agt(Cfg(N_COLS, ispec, ospec), AGT_PATH)
     agt.debug_init()
 
