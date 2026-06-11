@@ -663,7 +663,7 @@ class AgtBase(ABC):
                     bin_width = 0.05
                 else:
                     bin_width = 0.1
-            else:  # Actuvations
+            else:  # Activations
                 bin_width = 0.1
             bins = torch.tensor([float("-inf")] + [bin_width*i - 20.5*bin_width for i in range(42)] + [float("inf")], device="cpu", dtype=torch.float64)
             h, _ = torch.histogram(x.cpu().to(torch.float64), bins)  # NOTE issue if use lower float precision
@@ -797,7 +797,7 @@ class AgtBase(ABC):
             # Should only be necessary during large inits,
             # since loading while running already frees memory
             available, total = torch.cuda.memory.mem_get_info()
-            # Use stronger threahold so that newly loaded cols
+            # Use stronger threshold so that newly loaded cols
             # are not immediately freed
             if available < 0.04*total:
                 c.to("cpu", non_blocking=True)
