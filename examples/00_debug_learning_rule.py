@@ -3,27 +3,27 @@
 See the effect of the learning rule on reference situations:
 
       0       1       2       3       4
-  .-------.-------.-------.-------.-------.        ---
-  | randn | randn |       |       |       |         |
-0 |refresh| fixed | zeros |  ones | -ones |         | Inputs
-  |       |       |       |       |       |         |
-  .-------.-------.-------.-------.-------.        ---
+  ┌───────┬───────┬───────┬───────┬───────┐        ─┬─
+  │ randn │ randn │       │       │       │         │
+0 │refresh│ fixed │ zeros │  ones │ -ones │         │ Inputs
+  │       │       │       │       │       │         │
+  └───────┴───────┴───────┴───────┴───────┘        ─┴─
       
     
     
-  .-------.-------.-------.-------.-------.        ---
-  | randn | randn |       |       |       |         | Passive
-2 |refresh| fixed | zeros |  ones | -ones |         | outputs
-  |       |       |       |       |       |         |
-  .-------.-------.-------.-------.-------.        ---           ---              
-  | (0,0) | (1,0) | zeros |  ones | -ones |         |             | Without       
-3 | times | times | times | times | times |         |             | activation    
-  |weights|weights|weights|weights|weights|         | Active      | function      
-  .-------.-------.-------.-------.-------.         | Outputs    ---              
-  | (0,0) | (1,0) | zeros |  ones | -ones |         |             | With          
-4 | times | times | times | times | times |         |             | activation    
-  |weights|weights|weights|weights|weights|         |             | function      
-  .-------.-------.-------.-------.-------.        ---           ---              
+  ┌───────┬───────┬───────┬───────┬───────┐        ─┬─
+  │ randn │ randn │       │       │       │         │ Passive
+2 │refresh│ fixed │ zeros │  ones │ -ones │         │ outputs
+  │       │       │       │       │       │         │
+  ├───────┼───────┼───────┼───────┼───────┤        ─┼─           ─┬─              
+  │ (0,0) │ (1,0) │ zeros │  ones │ -ones │         │             │ Without       
+3 │ times │ times │ times │ times │ times │         │             │ activation    
+  │weights│weights│weights│weights│weights│         │ Active      │ function      
+  ├───────┼───────┼───────┼───────┼───────┤         │ Outputs    ─┼─              
+  │ (0,0) │ (1,0) │ zeros │  ones │ -ones │         │             │ With          
+4 │ times │ times │ times │ times │ times │         │             │ activation    
+  │weights│weights│weights│weights│weights│         │             │ function      
+  └───────┴───────┴───────┴───────┴───────┘        ─┴─           ─┴─              
 
 For example to see what happens when input is all -1
 and output is all 0, see the connection from (4, 0) to (2, 2).
