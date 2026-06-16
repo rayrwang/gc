@@ -454,7 +454,7 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
         self.is_4_5   = fc.lrn(self.nr_4[0], self.is_4_5, self.nr_5[0])
 
         # Apply activity rule (propagate activations)
-        self.nr_1_[0]
+        self.nr_1_[0]  # No local inputs
         self.nr_2_[0] += fc.atv(self.nr_1[0], self.is_1_2, self.nr_2_[0]) \
             + fc.atv(self.nr_3[0], self.is_2_3_b, self.nr_2_[0])
         self.nr_3_[0] += fc.atv(self.nr_2[0], self.is_2_3_f, self.nr_3_[0])
@@ -566,6 +566,7 @@ class AgtBase(ABC):
                 self.debug_update()
 
         # Second pass: set current activations equal to new, and reset new
+            # Activations only, don't need to load weights
         self.bar = tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)
         for col in self.bar:
             # Used to communicate debugger exited

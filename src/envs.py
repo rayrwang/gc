@@ -110,7 +110,7 @@ class GridEnv(EnvBase):
         ispec = [T.I_Vector(d=cfg.width**2)]
 
         # Horizontal and vertical movement,
-            # place and break square
+        # TODO place and break square
         n_actions = 4
         ospec = [T.O_Vector(d=n_actions)]
         return ispec, ospec
