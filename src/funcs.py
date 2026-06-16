@@ -78,29 +78,6 @@ def inhibit(x):
 
 
 @torch.compile(disable=disable_compile)
-def lrn_basic(x, w, y, ss=1e-4):
-    """
-    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
-
-    Simplest possible learning rule
-
-    Δw ∝ xy
-    """
-    d_x, = x.shape
-    d_y, = y.shape
-
-    check_shapes(d_x, tuple(w.shape), d_y, "basic learning rule")
-
-    return w + ss*torch.outer(x, y)
-@torch.compile(disable=disable_compile)
-def lrn_basic_d(x, w, y, ss=1e-4):
-    """
-    Same as above but discrete in inputs
-    """
-    return lrn_basic(spike(x), w, y, ss=ss)
-
-
-@torch.compile(disable=disable_compile)
 def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     """
     `d_x, (d_x d_y), d_y, (), (), () -> (d_x d_y)`
@@ -248,3 +225,27 @@ def dist(x, y, /):
 def density(x: torch.Tensor, threshold: float = 1.0, /) -> float:
     """Proportion of elements of x over threshold"""
     return (torch.sum(torch.where(x < threshold, 0.0, 1.0)) / x.numel()).item()
+
+
+# Archive #####################################################################
+@torch.compile(disable=disable_compile)
+def lrn_basic(x, w, y, ss=1e-4):
+    """
+    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
+
+    Simplest possible learning rule
+
+    Δw ∝ xy
+    """
+    d_x, = x.shape
+    d_y, = y.shape
+
+    check_shapes(d_x, tuple(w.shape), d_y, "basic learning rule")
+
+    return w + ss*torch.outer(x, y)
+@torch.compile(disable=disable_compile)
+def lrn_basic_d(x, w, y, ss=1e-4):
+    """
+    Same as above but discrete in inputs
+    """
+    return lrn_basic(spike(x), w, y, ss=ss)
