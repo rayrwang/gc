@@ -989,13 +989,6 @@ class Agt(AgtBase):  # Agent
                 f"Different location dims at {loc0} and {loc}!"
         print("✔️")
 
-        print("Checking that there are no location collisions...", end="")  # (inefficient but readable)
-        for i, loc1 in enumerate(self.cols.keys()):
-            for j, loc2 in enumerate(self.cols.keys()):
-                if i != j:
-                    assert loc1 != loc2, f"Location collision at {loc1}!"
-        print("✔️")
-
         print("Checking that targets of conns exist...", end="")
         for col in self.cols.values():
             self.load_col(col)
