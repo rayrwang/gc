@@ -51,7 +51,6 @@ def atv(x, w, y=None, threshold=1.0):
     return spike(x, threshold=threshold) @ w
 
 
-inhibit_weights = {}
 def inhibit(x):
     """
     `Activs d -> Activs d`
@@ -59,20 +58,23 @@ def inhibit(x):
     Lateral inhibition for winner take all behavior,
     to have less (more) activity & change for (un)expected
 
+    Global subtractive normalization: each unit is suppressed by A/(d-1) times
+    the total expected activity of all *other* units. The inhibition matrix is
+    `W = A/(d-1) * (I - 11^T)` (0 on the diagonal, -A/(d-1) elsewhere), which is
+    a diagonal + rank-1 map -- so `expected @ W == A/(d-1) * (expected - sum)`,
+    an O(d) scale-and-sum rather than an O(d^2) matmul.
+
     TODO possible changes:
     - Other ways of integrating expectations e.g. Outstar, predictive coding
+    - Structured (distance-tuned) surround: sum over neighbours instead of all
     """
-    d = x[0].shape[0]
-    weights = inhibit_weights.get(d)
-    if weights is None:
-        # 0's down diagonal, -A / (d-1) everywhere else
-        A = 5.0
-        weights = (0 + A/(d-1))*torch.eye(d) - torch.full((d, d), A/(d-1))
-        inhibit_weights[d] = weights
+    A = 5.0
     THRESHOLD = 0.8
+    d = x[0].shape[0]
     # Where both activations AND expectations are above threshold
     expected = spike(x[0]) * torch.where(x[1] < THRESHOLD, 0.0, 1.0)
-    return [x[0] + expected @ weights, *x[1:]]
+    inhib = (A / (d - 1)) * (expected - expected.sum())
+    return [x[0] + inhib, *x[1:]]
 
 
 @torch.compile(disable=disable_compile)
