@@ -71,6 +71,7 @@ from typing import Annotated, Literal
 import dacite
 import numpy as np
 import torch
+import torch.nn.functional as F
 from tqdm import tqdm
 
 # isort: off
@@ -1129,9 +1130,15 @@ class MNISTAgt(AgtBase):
             col2 = BareCol((1, 0), BareColCfg(128))
             self.cols[col2.loc] = col2
 
+            col3 = BareCol((2, 0), BareColCfg(64))
+            self.cols[col3.loc] = col3
+
             # Conns
             self.cols[col1.loc].conns[col2.loc, Dir.A] = \
                 conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 3)
+
+            self.cols[col2.loc].conns[col3.loc, Dir.A] = \
+                conn(self.cols[col2.loc], self.cols[col3.loc], Dir.A, 3)
 
             self.create_directory()
 
@@ -1151,11 +1158,16 @@ class MNISTAgt(AgtBase):
 
         col1 = self.cols[0, 0]
         col2 = self.cols[1, 0]
+        col3 = self.cols[2, 0]
         
         col1.ipt(ipt[0])
         col1.update_activations()
         col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]
         col2.update_activations()
+        # Main net uses step activation function, here uses ReLU,
+        # since ReLU would blow up main net, and step is overly restrictive here
+        col3.a_post_ += F.relu(col2.a_pre) @ col2.conns[col3.loc, Dir.A]
+        col3.update_activations()
 
         if use_lrn:
             col1.conns[col2.loc, Dir.A] = fc.lrn(
