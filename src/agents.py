@@ -824,7 +824,7 @@ class AgtBase(ABC):
             json.dump(cfg_data, f)
 
         # Save cols
-        for _loc, col in tqdm(self.cols.items(), desc="Saving cols"):
+        for col in tqdm(self.cols.values(), desc="Saving cols"):
             col.save(self.path, keep_weights=keep_weights)
         print("done saving.")
 

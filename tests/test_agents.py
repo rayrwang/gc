@@ -4,8 +4,9 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-from src.agents import Agt, BareAgt, BareCfg, Cfg, MNISTAgt, MNISTCfg
+# isort: off
 from src.iotypes import I_Vector, O_Vector
+from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt
 
 N_COLS = 4
 

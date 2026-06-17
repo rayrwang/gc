@@ -3,7 +3,8 @@ from itertools import count
 
 from tqdm import tqdm
 
-from simple.agents import Ising, NrnAgt, Oscillator
+# isort: off
+from simple.agents import Ising, Oscillator, NrnAgt
 
 
 def ising():
