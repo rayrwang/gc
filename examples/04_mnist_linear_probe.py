@@ -9,7 +9,8 @@ ReLU features saturate the task; 128 trades some gap for ~85% absolute. Input is
 raw -- BCM is continuous, so it does not need the discretized input the old
 discrete rule did.) Show digits one at a time, train a linear probe on the hidden
 activations, and compare learning ON vs the SAME net frozen at its random init,
-against a ReLU MLP trained on the image as a control.
+against two image baselines: a linear probe on the raw pixels (the floor) and a
+ReLU MLP on the pixels (the strong nonlinear ceiling).
 
 Findings (controlled same-init A/B, raw input, multiple seeds; rule and machinery
 search in the gitignored _sweep.py, width/probe sweep on this agent):
@@ -131,9 +132,14 @@ if __name__ == "__main__":
     no_lrn_classifier = nn.Linear(get_representations(no_lrn_agt).shape[0], 10)
     no_lrn_optim = torch.optim.SGD(no_lrn_classifier.parameters(), lr=1e-2)
 
-    # Regular control: Takes in the image
+    # Regular control: ReLU MLP on the image (the strong nonlinear ceiling)
     control_classifier = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-2)
+
+    # Linear baseline: a linear probe straight on the image (the floor -- is the
+    # learned rep even worth more than a linear classifier on the raw pixels?)
+    linear_classifier = nn.Linear(784, 10)
+    linear_optim = torch.optim.SGD(linear_classifier.parameters(), lr=1e-2)
 
     def training_step(x, classifier, label, optimizer):
         x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
@@ -171,9 +177,10 @@ if __name__ == "__main__":
         no_lrn_agt.step(i, use_lrn=False, disable_print=True)
         training_step(get_representations(no_lrn_agt), no_lrn_classifier, label, no_lrn_optim)
 
-        # Regular control
+        # Regular control + linear baseline (both on the image)
         img, = i
         training_step(img, control_classifier, label, control_optim)
+        training_step(img, linear_classifier, label, linear_optim)
 
         # Test classifiers ####################################################
         if step % TEST_INTERVAL == 0:
@@ -181,6 +188,7 @@ if __name__ == "__main__":
             correct = 0
             no_lrn_correct = 0
             control_correct = 0
+            linear_correct = 0
             total = 0
             with torch.no_grad():
                 for i in random.sample(range(len(mnist_test)), k=TEST_SIZE):
@@ -201,22 +209,29 @@ if __name__ == "__main__":
                     if torch.argmax(pred) == torch.argmax(label):
                         no_lrn_correct += 1
 
-                    # Regular control
+                    # Regular control (ReLU MLP on image)
                     control_pred = control_classifier(img)
                     if torch.argmax(control_pred) == torch.argmax(label):
                         control_correct += 1
+
+                    # Linear baseline (linear probe on image)
+                    if torch.argmax(linear_classifier(img)) == torch.argmax(label):
+                        linear_correct += 1
                         
                     total += 1
 
             accuracy = 100*correct/total
             no_lrn_accuracy = 100*no_lrn_correct/total
             control_accuracy = 100*control_correct/total
+            linear_accuracy = 100*linear_correct/total
             print(f"Accuracy: {accuracy:.2f}%")
             print(f"No lrn control accuracy: {no_lrn_accuracy:.2f}%")
-            print(f"Control accuracy: {control_accuracy:.2f}%\n")
+            print(f"Linear-on-image baseline: {linear_accuracy:.2f}%")
+            print(f"Control (ReLU MLP) accuracy: {control_accuracy:.2f}%\n")
             with SummaryWriter("runs/mnist_representations") as writer:
                 writer.add_scalars("Accuracy", {
                     "accuracy": accuracy,
                     "no lrn control accuracy": no_lrn_accuracy,
+                    "linear-on-image baseline": linear_accuracy,
                     "control accuracy": control_accuracy
                 }, global_step=step)
