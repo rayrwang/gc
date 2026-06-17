@@ -27,10 +27,7 @@ from src.envs import MNISTEnvCfg, MNISTEnv
 
 
 def get_representations(agt: MNISTAgt):
-    return torch.cat([
-        col.nr_1[0].clone() 
-        for col in agt.cols.values()
-        if not agt.is_i(col.loc)])  # Don't look at inputs (cheating)
+    return agt.cols[2, 0].nr_1[0].clone()
 
 
 if __name__ == "__main__":
