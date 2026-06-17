@@ -2,13 +2,17 @@
 """
 Learning representations of MNIST digits with a local (Hebbian) rule.
 
-Architecture: one wide (256) post-ReLU hidden layer, learned online by BCM, read
-directly as the representation. Show digits one at a time, train a linear probe
-on the hidden activations, and compare learning ON vs the SAME net frozen at its
-random init, against a linear probe on the raw image and a ReLU MLP control.
+Architecture: one 128-unit post-ReLU hidden layer, fed the raw grayscale image,
+learned online by BCM, read directly as the representation. (Width 128: the
+learn-vs-random gap is largest at narrow widths and washes out by ~256 as random
+ReLU features saturate the task; 128 trades some gap for ~85% absolute. Input is
+raw -- BCM is continuous, so it does not need the discretized input the old
+discrete rule did.) Show digits one at a time, train a linear probe on the hidden
+activations, and compare learning ON vs the SAME net frozen at its random init,
+against a ReLU MLP trained on the image as a control.
 
-Findings (from sweeping the rules and machinery in the gitignored _sweep.py;
-controlled same-init A/B, ridge probe, multiple seeds):
+Findings (controlled same-init A/B, raw input, multiple seeds; rule and machinery
+search in the gitignored _sweep.py, width/probe sweep on this agent):
 
 1. A local rule needs some stabilizing mechanism or it collapses: without one
    every unit drifts to the same feature and the rep degenerates to chance.
@@ -22,18 +26,18 @@ controlled same-init A/B, ridge probe, multiple seeds):
    between-neuron competition signal -- it stabilizes each unit but does not
    reliably stop two units learning the same feature. The BCM literature reports
    exactly that redundancy on natural images and routinely ADDS lateral inhibition
-   / DoG / contrast normalization to fix it. So "BCM needs no competition" is a
-   binarized-MNIST result, not a property of BCM; expect competition to become
+   / DoG / contrast normalization to fix it. So "BCM needs no competition" is an
+   easy-MNIST result, not a property of BCM; expect competition to become
    necessary on harder / natural data -- an untested prediction to check before
    relying on it.
 
 2. Learning then beats random, but only a little and only in the right regime.
    Reading the post-ReLU hidden directly, BCM beats its own frozen init by a
-   controlled +2.1% at width 128 and +0.9% at 256 (every seed positive); the gap
-   SHRINKS to noise by width 1024 as random ReLU features saturate the task
-   (~92%). So width drives absolute accuracy and the learning gap is a rescue
-   that only shows where random is weak: narrow width here, the harsh spike
-   activation (+12% when random spike features are weak ~45%), harder datasets.
+   controlled +2.1% (ridge) at width 128, rising to ~+3.5% at width 64 and
+   shrinking to ~0 by 256-512 as random ReLU features saturate (~90% at 512). So
+   width drives absolute accuracy and the learning gap is a rescue that only shows
+   where random is weak: narrow width here, the harsh spike activation (+12% when
+   random spike features are weak ~45%), harder datasets.
 
 3. Read the post-ReLU hidden DIRECTLY. Stacking a second linear readout hop and
    reading THAT instead both bottlenecks the rep and collapses it under learning
@@ -41,10 +45,11 @@ controlled same-init A/B, ridge probe, multiple seeds):
    nonlinearity after it is the one place local learning reliably hurts.
 
 4. The gap is robust across probe types, not a linear-probe artifact: kNN, ridge,
-   and logistic regression all show it, and it is LARGEST under kNN (+2.6% at
-   width 128). Since kNN is parameter-free and only measures neighborhood
-   structure, learning is tightening same-class clusters, not merely rotating the
-   space for a linear boundary. See 05_mnist_other_probes.py.
+   and logistic regression are all positive. At width 128 ridge/logistic lead
+   (+2.1 / +2.6) and the parameter-free kNN is smaller (+1.6); at width 64, where
+   the effect is strongest, all three agree (~+3.3 to +3.8), so the nearest-
+   neighbour cluster structure improves too, not just linear decodability. See
+   05_mnist_other_probes.py.
 
 Caveat that bit us repeatedly: the learn-vs-frozen comparison MUST be controlled
 (same init weights, fixed seed, averaged over seeds) or the gap is pure init

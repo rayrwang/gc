@@ -1127,11 +1127,13 @@ class MNISTAgt(AgtBase):
             self.cols[col1.loc] = col1
             self.I_cols.append(col1)
 
-            # Single wide post-ReLU hidden layer, read directly. A second (col3)
-            # readout hop only bottlenecks and collapses under learning; reading
-            # the post-ReLU hidden gives a controlled +2%/+0.9% gap over random at
-            # width 128/256 (see examples/04). 256 = signal-x-accuracy sweet spot.
-            col2 = BareCol((1, 0), BareColCfg(256))
+            # Single post-ReLU hidden layer, read directly. A second (col3) readout
+            # hop only bottlenecks and collapses under learning; reading the
+            # post-ReLU hidden gives a controlled learn-vs-random gap that is
+            # visible at width 128 but WASHES OUT by ~256 as random ReLU features
+            # saturate the task (see examples/04). 128 keeps the effect visible;
+            # widen for higher absolute accuracy at the cost of a smaller gap.
+            col2 = BareCol((1, 0), BareColCfg(128))
             self.cols[col2.loc] = col2
 
             # Conns
@@ -1153,12 +1155,13 @@ class MNISTAgt(AgtBase):
         col1 = self.cols[0, 0]
         col2 = self.cols[1, 0]
 
-        # Feed the raw grayscale input. BCM (lrn_adaptive) is continuous and does
-        # not need the discretized input the old discrete rule did; tested
-        # equal-or-better than binarizing, which only discards grayscale. Read
-        # ipt[0] -- do NOT rebind it (callers reuse the list, e.g. the raw-image
-        # control). If switching back to a discrete rule (lrn_*_d / instar),
-        # re-binarize: col1.ipt(torch.where(ipt[0] > 0, 1.0, 0.0)).
+        # Feed the raw grayscale input. BCM (lrn_adaptive) is continuous, so it
+        # does not need the discretized input the old discrete rule did. Tested
+        # roughly a wash on accuracy (binarizing flatters kNN, raw flatters ridge);
+        # raw is the principled choice -- keeping binary for a nicer number would
+        # be p-hacking. Read ipt[0]; do NOT rebind it (callers reuse the list).
+        # For a discrete rule (lrn_*_d / instar) re-binarize:
+        # col1.ipt(torch.where(ipt[0] > 0, 1.0, 0.0)).
         col1.ipt(ipt[0])
         col1.update_activations()
         col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]

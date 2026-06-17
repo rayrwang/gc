@@ -12,19 +12,14 @@ freezes both, reads the post-ReLU hidden layer as features, standardises them,
 and fits each probe.
 
 Result: the learn-vs-control gap is positive and robust across all three probes,
-so it is not a linear-probe artifact -- and it is LARGEST for the parameter-free
-kNN. On the controlled same-init, multi-seed sweep (the gitignored _sweep.py), at
-hidden width 128, the gap is +2.6% for kNN and +2.1% for ridge, with logistic
-regression also positive. Because kNN classifies purely by nearest-neighbour
-structure and fits no parameters, a larger kNN gap means learning is tightening
-same-class clusters in the representation itself, not merely rotating the space
-so that a linear boundary separates the classes better.
-
-These figures are at width 128, the regime where the effect is clearest. As 04
-documents for the linear probe, the gap shrinks toward noise as the hidden width
-grows and random ReLU features alone saturate the task (~92% at width 1024), so
-the effect is a rescue that shows where random features are weak, not a uniform
-gain.
+so it is not a linear-probe artifact. On the controlled same-init, multi-seed
+sweep, at the committed width 128 ridge and logistic lead (~+2.1% / +2.6%) and the
+parameter-free kNN is smaller (~+1.6%); at narrower width 64, where the effect is
+strongest, all three agree at ~+3.3 to +3.8%, so even the nearest-neighbour
+cluster structure improves -- learning is not only rotating the space for a linear
+boundary. The gap shrinks toward noise as width grows and random ReLU features
+saturate the task (~90% by width 512), so it is a rescue that shows where random
+features are weak, not a uniform gain (see 04).
 
 Provenance: the quantified gaps above are from the controlled, multi-seed
 _sweep.py measurement. This script runs the same learn-vs-control comparison
@@ -36,7 +31,7 @@ sign between runs.
 
 Unlike 04 this is offline (no env / debugger): the agent learns online, but the
 probes are fit on frozen representations. A kNN/ridge/logistic probe on the raw
-binarized image is logged as a baseline.
+image is logged as a baseline.
 
 Prints each probe's learn / control / image-baseline accuracy and logs them:
   tensorboard --logdir runs/mnist_other_probes
@@ -137,10 +132,9 @@ if __name__ == "__main__":
     control_agt = MNISTAgt(MNISTCfg(ispec, ospec), f"{project_root_path}/saves/probes_control")
     agents = {"learn": (learn_agt, True), "control": (control_agt, False)}
 
-    # Probes on the raw binarized image, once, as a reference baseline
+    # Probes on the raw image, once, as a reference baseline
     base_tr, base_te = standardize(
-        torch.where(train_imgs[eval_tr] > 0, 1.0, 0.0).float(),
-        torch.where(test_imgs[eval_te] > 0, 1.0, 0.0).float())
+        train_imgs[eval_tr].float(), test_imgs[eval_te].float())
     baseline = {name: probe(base_tr, ytr, base_te, yte) for name, probe in PROBES.items()}
 
     writer = SummaryWriter("runs/mnist_other_probes")
