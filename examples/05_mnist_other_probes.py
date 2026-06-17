@@ -9,14 +9,34 @@ complementing 04's online linear probe:
 
 Trains the BCM agent and a SAME-INIT frozen control on MNIST, then periodically
 freezes both, reads the post-ReLU hidden layer as features, standardises them,
-and fits each probe. The learn-vs-control gap is robust across all three and is
-largest for kNN -- i.e. learning tightens same-class clusters, not just linear
-separability (see 04 for the full result). A kNN/ridge/logistic probe on the raw
-binarized image is logged as a baseline.
+and fits each probe.
+
+Result: the learn-vs-control gap is positive and robust across all three probes,
+so it is not a linear-probe artifact -- and it is LARGEST for the parameter-free
+kNN. On the controlled same-init, multi-seed sweep (the gitignored _sweep.py), at
+hidden width 128, the gap is +2.6% for kNN and +2.1% for ridge, with logistic
+regression also positive. Because kNN classifies purely by nearest-neighbour
+structure and fits no parameters, a larger kNN gap means learning is tightening
+same-class clusters in the representation itself, not merely rotating the space
+so that a linear boundary separates the classes better.
+
+These figures are at width 128, the regime where the effect is clearest. As 04
+documents for the linear probe, the gap shrinks toward noise as the hidden width
+grows and random ReLU features alone saturate the task (~92% at width 1024), so
+the effect is a rescue that shows where random features are weak, not a uniform
+gain.
+
+Provenance: the quantified gaps above are from the controlled, multi-seed
+_sweep.py measurement. This script runs the same learn-vs-control comparison
+online; both agents share one init, so it is controlled for initialisation (not
+dominated by init noise) -- but it is a single seed, so its live printed gaps
+track the sweep in direction while being noisier in magnitude. The comparison
+MUST stay same-init: on independent inits the gap is pure init noise and flips
+sign between runs.
 
 Unlike 04 this is offline (no env / debugger): the agent learns online, but the
-probes are fit on frozen representations, and learn vs control share one init so
-the gap is controlled rather than noisy.
+probes are fit on frozen representations. A kNN/ridge/logistic probe on the raw
+binarized image is logged as a baseline.
 
 Prints each probe's learn / control / image-baseline accuracy and logs them:
   tensorboard --logdir runs/mnist_other_probes
