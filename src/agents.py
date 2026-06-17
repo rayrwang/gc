@@ -179,7 +179,7 @@ class ColBase(ABC):
             layer_name, i = self.conn_layer_dict[name]
             return getattr(self, layer_name)[i]
         else:
-            raise AttributeError
+            raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if name in self.conn_layer_dict:
