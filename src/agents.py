@@ -588,11 +588,11 @@ class AgtBase(ABC):
         return out
 
     def is_i(self, loc):
-        return any([loc == col.loc for col in self.I_cols])
+        return any(loc == col.loc for col in self.I_cols)
     def is_o(self, loc):
-        return any([loc == col.loc for col in self.O_cols])
+        return any(loc == col.loc for col in self.O_cols)
     def is_io(self, loc):
-        return any([loc == col.loc for col in self.I_cols+self.O_cols])
+        return any(loc == col.loc for col in self.I_cols + self.O_cols)
 
     def debug_init(self):
         from .debugger import debugger  # To avoid circular import
