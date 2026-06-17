@@ -19,10 +19,15 @@ strongest, all three agree at ~+3.3 to +3.8%, so even the nearest-neighbour
 cluster structure improves -- learning is not only rotating the space for a linear
 boundary. The gap shrinks toward noise as width grows and random ReLU features
 saturate the task (~90% by width 512), so it is a rescue that shows where random
-features are weak, not a uniform gain (see 04).
+features are weak, not a uniform gain (see 04). And note the floor logged below as
+the image baseline: the learned rep sits at-or-below a linear classifier on the
+raw pixels, so the gap over random does NOT add up to a rep that beats logistic
+regression on the image -- learning helps relative to random, not in absolute
+terms (see 04 finding 5).
 
-Provenance: the quantified gaps above are from the controlled, multi-seed
-_sweep.py measurement. This script runs the same learn-vs-control comparison
+Provenance: the quantified gaps above are from controlled, multi-seed sweeps
+(rule search in the gitignored _sweep.py; width and probe numbers on this agent).
+This script runs the same learn-vs-control comparison
 online; both agents share one init, so it is controlled for initialisation (not
 dominated by init noise) -- but it is a single seed, so its live printed gaps
 track the sweep in direction while being noisier in magnitude. The comparison
@@ -34,7 +39,7 @@ probes are fit on frozen representations. A kNN/ridge/logistic probe on the raw
 image is logged as a baseline.
 
 Prints each probe's learn / control / image-baseline accuracy and logs them:
-  tensorboard --logdir runs/mnist_other_probes
+  tensorboard --logdir runs/mnist_all_probes
 """
 
 import os
@@ -137,9 +142,9 @@ if __name__ == "__main__":
         train_imgs[eval_tr].float(), test_imgs[eval_te].float())
     baseline = {name: probe(base_tr, ytr, base_te, yte) for name, probe in PROBES.items()}
 
-    writer = SummaryWriter("runs/mnist_other_probes")
+    writer = SummaryWriter("runs/mnist_all_probes")
     print("\nImage baseline:  " + "   ".join(f"{n} {baseline[n]:.1f}%" for n in PROBES))
-    print("tensorboard --logdir runs/mnist_other_probes\n")
+    print("tensorboard --logdir runs/mnist_all_probes\n")
 
     for step in range(N_STEPS + 1):
         i = random.randrange(len(train_imgs))

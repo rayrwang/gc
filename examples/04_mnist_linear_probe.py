@@ -50,7 +50,17 @@ search in the gitignored _sweep.py, width/probe sweep on this agent):
    (+2.1 / +2.6) and the parameter-free kNN is smaller (+1.6); at width 64, where
    the effect is strongest, all three agree (~+3.3 to +3.8), so the nearest-
    neighbour cluster structure improves too, not just linear decodability. See
-   05_mnist_other_probes.py.
+   05_mnist_all_probes.py.
+
+5. SOBERING -- the learned rep does NOT beat a linear classifier on the raw
+   pixels. Full ladder (width 128, raw, logistic, 3 seeds): linear-on-pixels
+   85.0%, frozen rep 82.3%, learned rep 84.1% (+1.8 over frozen), ReLU MLP on
+   pixels 93.0%. So learning closes the gap TOWARD the linear floor but stays
+   BELOW it -- a 128-unit ReLU projection is worth slightly less than logistic
+   regression on the 784 pixels (likely more below with full data; here only an
+   8k subset). "Learning helps" is true vs random, but the representation is not
+   useful in absolute terms on MNIST. That is what the linear floor reveals;
+   without it the +2% reads as a win.
 
 Caveat that bit us repeatedly: the learn-vs-frozen comparison MUST be controlled
 (same init weights, fixed seed, averaged over seeds) or the gap is pure init
