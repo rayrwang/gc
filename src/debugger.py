@@ -166,12 +166,24 @@ def debugger(PATH, pipes):
         Dir.E: "bottom",
     }
 
+    def parse_loc(name):
+        """Parse a col directory name into a loc, or None if it isn't one
+        (so stray files like .DS_Store or partial writes are skipped)."""
+        if name in ("type", "cfg", "cfg_type"):
+            return None
+        try:
+            loc = ast.literal_eval(name)
+        except (ValueError, SyntaxError):
+            return None
+        return loc if isinstance(loc, tuple) and len(loc) == 2 else None
+
     # Calculate size of rendered grid cells according to distance spanned by grid
     x_min, x_max = float("inf"), float("-inf")
     y_min, y_max = float("inf"), float("-inf")
     for name in os.listdir(PATH):
-        if name not in ["type", "cfg", "cfg_type"]:
-            x, y = ast.literal_eval(name)
+        loc = parse_loc(name)
+        if loc is not None:
+            x, y = loc
             if x < x_min:
                 x_min = x
             if x > x_max:
@@ -250,8 +262,9 @@ def debugger(PATH, pipes):
 
         # Display cols
         for name in os.listdir(PATH):
-            if name not in ["type", "cfg", "cfg_type"]:
-                draw_col(ast.literal_eval(name))
+            loc = parse_loc(name)
+            if loc is not None:
+                draw_col(loc)
 
         # Display overview info ###############################################
         _, pipe = pipes["overview"]
