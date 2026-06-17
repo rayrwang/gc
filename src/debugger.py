@@ -135,14 +135,13 @@ def debugger(PATH, pipes):
                 max_height = max(h_e)
                 txt = fonts["small"].render(f"{int(max_height):,}", True, (100,100,255))
                 histogram.blit(txt, txt.get_rect(midright=(100, 15+15)))
+                surface = pg.Surface(histogram.get_size(), pg.SRCALPHA)
+                surface.fill((255, 255, 255))
+                surface.set_colorkey((255, 255, 255))
                 for i, num in enumerate(h_e):
-                    height = round(133*(num/max_height))
-                    surface = pg.Surface(histogram.get_size(), pg.SRCALPHA)
-                    surface.fill((255, 255, 255))
-                    surface.set_colorkey((255, 255, 255))
                     height_e = round(133*(num/max_height))
                     pg.draw.rect(surface, (200, 220, 255, 180), (100+i*5, 15+133-height_e, 5, height_e))  # Translucent, light blue bars
-                    histogram.blit(surface, (0, 0))
+                histogram.blit(surface, (0, 0))
 
         # Draw NaN warning
         if has_nan and not all_nan:
