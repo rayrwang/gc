@@ -515,7 +515,7 @@ class AgtBase(ABC):
 
     def cleanup(self):
         if hasattr(self, "bar"):  # tqdm progress bar
-            getattr(self, "bar").close()
+            self.bar.close()
         self.save()
 
     def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
