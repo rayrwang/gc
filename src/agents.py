@@ -218,8 +218,7 @@ class ColBase(ABC):
 
     def save(self, agt_path: str, keep_weights: bool) -> None:
         # Create save directory
-        if not os.path.exists(f"{agt_path}/{self.loc}"):
-            os.makedirs(f"{agt_path}/{self.loc}")
+        os.makedirs(f"{agt_path}/{self.loc}", exist_ok=True)
 
         # Save type of col
         with open(f"{agt_path}/{self.loc}/type", "w") as f:
@@ -805,8 +804,7 @@ class AgtBase(ABC):
 
     def save(self, keep_weights: bool = True) -> None:
         print(f"\nSaving agent to \"{self.path}\":")
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
+        os.makedirs(self.path, exist_ok=True)
 
         # Save type of agt
         with open(f"{self.path}/type", "w") as f:
