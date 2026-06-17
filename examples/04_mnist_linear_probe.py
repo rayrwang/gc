@@ -32,6 +32,12 @@ controlled same-init A/B, ridge probe, multiple seeds):
    (BCM on the final linear projection: -12% vs frozen). A readout layer with no
    nonlinearity after it is the one place local learning reliably hurts.
 
+4. The gap is robust across probe types, not a linear-probe artifact: kNN, ridge,
+   and logistic regression all show it, and it is LARGEST under kNN (+2.6% at
+   width 128). Since kNN is parameter-free and only measures neighborhood
+   structure, learning is tightening same-class clusters, not merely rotating the
+   space for a linear boundary. See 05_mnist_other_probes.py.
+
 Caveat that bit us repeatedly: the learn-vs-frozen comparison MUST be controlled
 (same init weights, fixed seed, averaged over seeds) or the gap is pure init
 noise -- on a single uncontrolled run it flips sign between runs. The probe in
