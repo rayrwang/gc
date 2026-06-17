@@ -302,6 +302,22 @@ class CIFAREnv(EnvBase[CIFAREnvCfg]):
         cv2.imshow("cifar env", img)
         cv2.waitKey(1)
 
-    
+
+class CIFAR100Dataset(Dataset):
+    def __init__(self, train=True):
+        self.cifar = torchvision.datasets.CIFAR100("data", train=train, download=True)
+        self.len = len(self.cifar)
+
+    def __getitem__(self, i):  # ty: ignore[invalid-method-override]
+        (image_raw, label_raw) = self.cifar[i]
+        image = torchvision.transforms.functional.to_tensor(image_raw)  # (3, 32, 32) in [0, 1]
+        label = torch.zeros(100)
+        label[label_raw] = 1
+        return image, label
+
+    def __len__(self):
+        return self.len
+
+
 # Real world environments #####################################################
 # TODO
