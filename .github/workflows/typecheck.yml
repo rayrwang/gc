@@ -1,0 +1,23 @@
+
+name: Type check
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m venv venv  # `[tool.ty.environment] python` points here
+          venv/bin/pip install -e ".[dev]"
+      - name: Run `ty check`
+        run: venv/bin/ty check

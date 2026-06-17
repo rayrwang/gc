@@ -20,6 +20,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "ruff",
+    "ty",
     "pytest",
 ]
 
@@ -28,3 +29,16 @@ packages = ["src", "simple"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+
+[tool.ty.environment]
+python = "venv"
+root = ["."]
+
+# Lazy/None-init skeletons (cols before weights load, deliberately freed
+# weights), setattr-driven attributes, and subclass step() overrides are
+# intentional dynamic patterns in these modules; the rules below fire on them
+# as false positives, so scope them off rather than litter the code with
+# per-line ignores. Library code (envs, funcs, iotypes) stays fully checked.
+[[tool.ty.overrides]]
+include = ["src/agents.py", "simple/**", "examples/**"]
+rules = { "not-subscriptable" = "ignore", "invalid-assignment" = "ignore", "unresolved-attribute" = "ignore", "invalid-method-override" = "ignore", "invalid-argument-type" = "ignore", "unsupported-operator" = "ignore" }

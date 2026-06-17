@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import random
 from typing import Any, Literal
+from collections.abc import Sequence
 import time
 import sys
 import signal
@@ -11,6 +12,7 @@ import cv2
 import torch
 from torch.utils.data import Dataset
 import torchvision
+import torchvision.transforms.functional
 
 from . import iotypes as T
 
@@ -24,10 +26,13 @@ Actions = list[torch.Tensor]
 
 class EnvCfgBase(ABC):
     pass
-class EnvBase(ABC):
+class EnvBase[CfgT: EnvCfgBase](ABC):
+    def __init__(self, cfg: CfgT):
+        ...
+
     @staticmethod
     @abstractmethod
-    def get_specs(cfg: EnvCfgBase) -> Specs:
+    def get_specs(cfg: CfgT) -> Specs:
         ...
 
     @abstractmethod
@@ -39,11 +44,11 @@ class EnvBase(ABC):
         ...
 
 
-def get_default(iospec: list[T.I_Base | T.O_Base]) -> Percepts | Actions:
+def get_default(iospec: Sequence[T.I_Base | T.O_Base]) -> Percepts | Actions:
     """Get all zeros inputs or outputs"""
     default = []
     for spec in iospec:
-        if type(spec) in [T.I_Vector, T.O_Vector]:
+        if isinstance(spec, (T.I_Vector, T.O_Vector)):
             default.append(torch.zeros(spec.d))
         elif type(spec) is T.I_Video:
             default.append(torch.zeros(spec.h, spec.w, spec.c))
@@ -93,7 +98,7 @@ def run_env(
 @dataclass
 class GridEnvCfg(EnvCfgBase):
     width: int = 4
-class GridEnv(EnvBase):
+class GridEnv(EnvBase[GridEnvCfg]):
     def __init__(self, cfg: GridEnvCfg):
         self.cfg = cfg
         self.width = width = cfg.width
@@ -107,12 +112,12 @@ class GridEnv(EnvBase):
 
     @staticmethod
     def get_specs(cfg: GridEnvCfg) -> Specs:
-        ispec = [T.I_Vector(d=cfg.width**2)]
+        ispec: list[T.I_Base] = [T.I_Vector(d=cfg.width**2)]
 
         # Horizontal and vertical movement,
         # TODO place and break square
         n_actions = 4
-        ospec = [T.O_Vector(d=n_actions)]
+        ospec: list[T.O_Base] = [T.O_Vector(d=n_actions)]
         return ispec, ospec
 
     def _step(self, a: Actions) -> Percepts:
@@ -170,7 +175,7 @@ class MNISTDataset(Dataset):
         self.mnist = torchvision.datasets.MNIST("data", train=train, download=True)
         self.len = len(self.mnist)
 
-    def __getitem__(self, i):
+    def __getitem__(self, i):  # ty: ignore[invalid-method-override]
         (image_raw, label_raw) = self.mnist[i]
         image = torchvision.transforms.functional.to_tensor(image_raw)
         image = image.reshape(-1)
@@ -185,7 +190,7 @@ class MNISTEnvCfg(EnvCfgBase):
     # active  : choose image based on agent's action
     # passive : randomly show images
     mode: Literal["active", "passive"]
-class MNISTEnv(EnvBase):
+class MNISTEnv(EnvBase[MNISTEnvCfg]):
     def __init__(self, cfg: MNISTEnvCfg):
         self.cfg = cfg
         self.mode = cfg.mode
@@ -198,8 +203,8 @@ class MNISTEnv(EnvBase):
 
     @staticmethod
     def get_specs(cfg: MNISTEnvCfg) -> Specs:
-        ispec = [T.I_Vector(d=28*28)]
-        ospec = [T.O_Vector(d=10)]
+        ispec: list[T.I_Base] = [T.I_Vector(d=28*28)]
+        ospec: list[T.O_Base] = [T.O_Vector(d=10)]
         return ispec, ospec
 
     def _step(self, a: Actions) -> tuple[Percepts, Aux]:

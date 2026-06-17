@@ -20,7 +20,7 @@ def check_shapes(
         name: str | None = None) -> None:
     if name is None:
         # Fallback to function name
-        name = f"`{inspect.currentframe().f_back.f_code.co_name}`"
+        name = f"`{inspect.currentframe().f_back.f_code.co_name}`"  # ty: ignore[unresolved-attribute]
     assert (x_shape, y_shape) == w_shape, (
         f"Shape mismatch in {name}:\n"
         f"|-- Activations: {x_shape} to {y_shape}\n"
@@ -108,7 +108,7 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     excite = torch.where(yu >= 1, ss, 0)
 
     # Case 2: -1 < y < 1, decay weight
-    weaken = torch.where(torch.logical_and(-1 < yu, yu < 1), 1.0, 0.0) \
+    weaken = torch.where(torch.logical_and(yu > -1, yu < 1), 1.0, 0.0) \
         * (decay*w - w)
 
     # Case 3: y <= -1, subtract ss from weight
