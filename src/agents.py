@@ -817,10 +817,10 @@ class AgtBase(ABC):
         # Save cfg
         print("Saving cfg...")
         cfg_data = {}
-        for f in fields(self.cfg):
-            val = getattr(self.cfg, f.name)
-            cfg_data[f.name] = ([spec2dict(s) for s in val]
-                if f.name in ("ispec", "ospec") else val)
+        for field in fields(self.cfg):
+            val = getattr(self.cfg, field.name)
+            cfg_data[field.name] = ([spec2dict(s) for s in val]
+                if field.name in ("ispec", "ospec") else val)
         with open(f"{self.path}/cfg", "w") as f:
             json.dump(cfg_data, f)
 
@@ -848,10 +848,11 @@ class AgtBase(ABC):
         with open(f"{path}/cfg", "r") as f:
             cfg_data = json.load(f)
             kwargs = {}
-            for f in fields(cfg_type):
-                assert f.name in cfg_data
-                kwargs[f.name] = ([dict2spec(s) for s in cfg_data[f.name]]
-                    if f.name in ("ispec", "ospec") else cfg_data[f.name])
+            for field in fields(cfg_type):
+                if field.name not in cfg_data:
+                    raise ValueError(f"Saved cfg is missing field {field.name!r}")
+                kwargs[field.name] = ([dict2spec(s) for s in cfg_data[field.name]]
+                    if field.name in ("ispec", "ospec") else cfg_data[field.name])
             cfg = cfg_type(**kwargs)
 
         agt = agt_type(cfg, path, skip_init=True)
