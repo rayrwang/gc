@@ -10,14 +10,22 @@ random init, against a linear probe on the raw image and a ReLU MLP control.
 Findings (from sweeping the rules and machinery in the gitignored _sweep.py;
 controlled same-init A/B, ridge probe, multiple seeds):
 
-1. A local rule needs COMPETITION between neurons or it collapses: without it
+1. A local rule needs some stabilizing mechanism or it collapses: without one
    every unit drifts to the same feature and the rep degenerates to chance.
-   basic / instar / Oja all collapse without an external winner-take-all and are
-   otherwise interchangeable. BCM is the exception -- its sliding threshold
-   theta = <y^2> is built-in competition (a unit potentiates only above its own
-   running average), so it self-stabilizes with no competition mechanism. Hence
-   this agent uses BCM (fc.lrn_adaptive); adding explicit competition to BCM is
-   redundant and slightly hurts.
+   basic / instar / Oja all collapse here without an external winner-take-all and
+   are otherwise interchangeable. BCM did NOT collapse without one: its sliding
+   threshold theta = <y^2> is computed from each neuron's own activity (per-neuron
+   homeostasis -- a unit potentiates only above its own running average), and on
+   this task that was enough on its own -- adding explicit competition to BCM did
+   not help and slightly hurt. Hence this agent uses BCM (fc.lrn_adaptive).
+   CAVEAT (likely MNIST-specific): theta is per-neuron homeostasis, not a direct
+   between-neuron competition signal -- it stabilizes each unit but does not
+   reliably stop two units learning the same feature. The BCM literature reports
+   exactly that redundancy on natural images and routinely ADDS lateral inhibition
+   / DoG / contrast normalization to fix it. So "BCM needs no competition" is a
+   binarized-MNIST result, not a property of BCM; expect competition to become
+   necessary on harder / natural data -- an untested prediction to check before
+   relying on it.
 
 2. Learning then beats random, but only a little and only in the right regime.
    Reading the post-ReLU hidden directly, BCM beats its own frozen init by a
