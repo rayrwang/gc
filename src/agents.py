@@ -1163,10 +1163,12 @@ class MNISTAgt(AgtBase):
         col1.ipt(ipt[0])
         col1.update_activations()
         col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]
-        col2.update_activations()
         # Main net uses step activation function, here uses ReLU,
         # since ReLU would blow up main net, and step is overly restrictive here
-        col3.a_post_ += F.relu(col2.a_pre) @ col2.conns[col3.loc, Dir.A]
+        col2.a_post_ = F.relu(col2.a_post_)
+        col2.update_activations()
+        
+        col3.a_post_ += col2.a_pre @ col2.conns[col3.loc, Dir.A]
         col3.update_activations()
 
         if use_lrn:
