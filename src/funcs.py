@@ -204,7 +204,7 @@ def update(x, threshold=1.0):
     
     Reset activations after applying activity rule
     """
-    return torch.zeros(x.shape)
+    return torch.zeros_like(x)
 
 
 def update_e(x):
@@ -213,7 +213,7 @@ def update_e(x):
     
     Reset expectations
     """
-    return torch.zeros(x.shape)
+    return torch.zeros_like(x)
 
 
 def dist(x, y, /):
