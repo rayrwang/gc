@@ -17,8 +17,8 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=int,
         help="The number of modules to initialize in the network.")
     args = parser.parse_args()
-    assert not (args.load and args.size), \
-        "Size argument is only valid when initializing."
+    if args.load and args.size:
+        parser.error("--size is only valid when initializing (not with --load).")
 
     torch.set_default_dtype(torch.float16)
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
