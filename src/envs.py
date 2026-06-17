@@ -240,6 +240,68 @@ class MNISTEnv(EnvBase[MNISTEnvCfg]):
         cv2.imshow("mnist env", img)
         cv2.waitKey(1)
 
+
+class CIFARDataset(Dataset):
+    def __init__(self, train=True):
+        self.cifar = torchvision.datasets.CIFAR10("data", train=train, download=True)
+        self.len = len(self.cifar)
+
+    def __getitem__(self, i):  # ty: ignore[invalid-method-override]
+        (image_raw, label_raw) = self.cifar[i]
+        image = torchvision.transforms.functional.to_tensor(image_raw)  # (3, 32, 32) in [0, 1]
+        label = torch.zeros(10)
+        label[label_raw] = 1
+        return image, label
+
+    def __len__(self):
+        return self.len
+@dataclass
+class CIFAREnvCfg(EnvCfgBase):
+    # active  : choose image based on agent's action
+    # passive : randomly show images
+    mode: Literal["active", "passive"]
+class CIFAREnv(EnvBase[CIFAREnvCfg]):
+    def __init__(self, cfg: CIFAREnvCfg):
+        self.cfg = cfg
+        self.mode = cfg.mode
+
+        self.cifar = CIFARDataset()
+
+        (self.image, self.label) = random.choice(self.cifar)
+
+        self.opencv_init = False
+
+    @staticmethod
+    def get_specs(cfg: CIFAREnvCfg) -> Specs:
+        ispec: list[T.I_Base] = [T.I_Video(w=32, h=32, c=3)]
+        ospec: list[T.O_Base] = [T.O_Vector(d=10)]
+        return ispec, ospec
+
+    def _step(self, a: Actions) -> tuple[Percepts, Aux]:
+        if self.mode == "active":
+            classes, = a
+            assert classes.shape == (10,)
+            if not torch.allclose(classes, torch.zeros(10, dtype=torch.get_default_dtype(), device="cpu")):
+                target = torch.argmax(classes)
+                while True:
+                    (image, label) = random.choice(self.cifar)
+                    if torch.argmax(label) == target:
+                        self.image, self.label = image, label
+                        break
+        elif self.mode == "passive":
+            (self.image, self.label) = random.choice(self.cifar)
+        return [self.image.clone()], self.label
+
+    def _show(self) -> None:
+        img = (self.image.clone() * 255).to(torch.uint8).permute(1, 2, 0).cpu().numpy()
+        img = img[:, :, ::-1].copy()  # CHW float -> HWC uint8, RGB -> BGR for cv2
+        if not self.opencv_init:
+            self.opencv_init = True
+            cv2.namedWindow("cifar env", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("cifar env", 200, 200)
+        cv2.imshow("cifar env", img)
+        cv2.waitKey(1)
+
     
 # Real world environments #####################################################
 # TODO

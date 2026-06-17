@@ -1190,4 +1190,88 @@ class MNISTAgt(AgtBase):
             self.debug_update()
 
         return [torch.zeros(10)]
-        
+
+
+class CIFARAgt:
+    """
+    Conv net trained with BCM, for CIFAR-10. A single Hebbian conv layer to start
+    (mirrors the single-hidden-layer MNISTAgt): unfold the image into patches,
+    project each patch through a shared weight (= a stride-s, k x k conv), ReLU,
+    and read the spatially avg-pooled feature map as the representation. The conv
+    weight is learned by BCM (same rule as fc.lrn_adaptive) treating each patch as
+    a Hebbian sample -- weight sharing plus local plasticity IS a Hebbian conv.
+
+    Optional ZCA whitening of patches (fit_whitening) is off by default but matters
+    a lot here. WITHOUT it, BCM degrades the rep below a frozen random conv on
+    CIFAR (it chases the DC / low-frequency redundancy in raw patches); WITH it,
+    the learn-vs-random gap flips to a small robust positive (~+1, all probes). See
+    examples/06_cifar.py for the numbers and the "is it cheating" discussion --
+    short version: label-free input prep, applied equally to learn and control, but
+    a non-local offline shortcut a local decorrelation (lateral inhibition) should
+    eventually replace.
+
+    Standalone for now: a conv does not fit the vector-col AgtBase/Col framework,
+    so this is a focused agent with the same step()/get_representations() interface
+    the offline probe examples (05/06) use. No save/load/debugger yet.
+    """
+    def __init__(self, in_ch: int = 3, channels: int = 128, kernel: int = 5,
+                 stride: int = 2, pool: int = 4, ss: float = 1e-4, scale: float = 3.0):
+        self.kernel = kernel
+        self.stride = stride
+        self.pool = pool
+        self.channels = channels
+        self.ss = ss
+        patch_dim = in_ch * kernel * kernel
+        # He-ish init, same convention as conn() above
+        self.weight = scale * torch.randn(patch_dim, channels) / patch_dim**0.5
+        self.theta = torch.ones(channels)   # BCM sliding threshold: EMA of <y^2> per channel
+        self.rep: torch.Tensor | None = None
+        # Optional ZCA whitening of patches (set via fit_whitening); None = off
+        self.whiten_mu: torch.Tensor | None = None
+        self.whiten_W: torch.Tensor | None = None
+
+    def fit_whitening(self, images: torch.Tensor, eps: float = 0.1, n_patches: int = 100_000) -> None:
+        """Estimate a ZCA whitening transform from a sample of patches.
+
+        Raw image-patch covariance is dominated by a few low-frequency / DC
+        directions (neighbouring pixels are correlated, all positive), and BCM
+        chases that variance instead of selective structure. ZCA centers and
+        decorrelates the patches -- z = (x - mu) @ W with W = (Cov + eps I)^-1/2 --
+        flattening the spectrum so the rule must pick directions by selectivity.
+        Symmetric (ZCA, not PCA) so whitened patches stay spatially local.
+        """
+        imgs = images.to(torch.get_default_device()).to(torch.get_default_dtype())
+        patches = F.unfold(imgs, self.kernel, stride=self.stride)  # (N, patch_dim, L)
+        patches = patches.permute(0, 2, 1).reshape(-1, patches.shape[1])
+        if len(patches) > n_patches:  # subsample for the covariance estimate
+            patches = patches[torch.randperm(len(patches), device=patches.device)[:n_patches]]
+        mu = patches.mean(0)
+        xc = (patches - mu).double()
+        cov = (xc.T @ xc) / len(xc)
+        evals, evecs = torch.linalg.eigh(cov)
+        self.whiten_W = (evecs @ torch.diag((evals + eps).rsqrt()) @ evecs.T).to(mu.dtype)
+        self.whiten_mu = mu
+
+    def step(self, ipt: Inputs, use_lrn: bool = True, disable_print: bool = False) -> Outputs:
+        img = ipt[0].to(torch.get_default_device()).to(torch.get_default_dtype())  # (C, H, W)
+        # Unfold into patches: (L, patch_dim), each row a kernel-position patch
+        x = F.unfold(img.unsqueeze(0), self.kernel, stride=self.stride)[0].T
+        if self.whiten_W is not None:
+            x = (x - self.whiten_mu) @ self.whiten_W   # ZCA-whitened patches
+        y = F.relu(x @ self.weight)              # (L, channels): post-ReLU conv response
+
+        # Representation: feature map -> spatial avg-pool -> flatten
+        side = int(round(x.shape[0] ** 0.5))
+        fmap = y.T.reshape(1, self.channels, side, side)
+        self.rep = F.adaptive_avg_pool2d(fmap, self.pool).reshape(-1).clone()
+
+        if use_lrn:
+            # BCM over patches: Dw = ss * x * y * (y - theta), theta = <y^2>, averaged
+            self.theta = (1 - ALPHA) * self.theta + ALPHA * (y * y).mean(0)
+            self.weight = self.weight + self.ss * (x.T @ (y * (y - self.theta)) / x.shape[0])
+
+        return [torch.zeros(10)]   # dummy output; the offline experiment reads the rep
+
+    def get_representations(self) -> torch.Tensor:
+        assert self.rep is not None
+        return self.rep
