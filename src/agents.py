@@ -1175,6 +1175,11 @@ class MNISTAgt(AgtBase):
                 col1.conns[col2.loc, Dir.A],
                 col2.a_post
             )
+            col2.conns[col3.loc, Dir.A] = fc.lrn(
+                col2.a_pre,
+                col2.conns[col3.loc, Dir.A],
+                col3.a_post
+            )
 
         if self.use_debug:
             if self.pipes["overview"][0].poll():
