@@ -1150,13 +1150,15 @@ class MNISTAgt(AgtBase):
         In the general case this is unavoidable (?),
         but in this small testing case it can be prevented.
         """
-        # In general learning rule is discrete,
-        # so discretize input here (until come up with continuous learning rule)
-        ipt[0] = torch.where(ipt[0] > 0, 1.0, 0.0)
-
         col1 = self.cols[0, 0]
         col2 = self.cols[1, 0]
 
+        # Feed the raw grayscale input. BCM (lrn_adaptive) is continuous and does
+        # not need the discretized input the old discrete rule did; tested
+        # equal-or-better than binarizing, which only discards grayscale. Read
+        # ipt[0] -- do NOT rebind it (callers reuse the list, e.g. the raw-image
+        # control). If switching back to a discrete rule (lrn_*_d / instar),
+        # re-binarize: col1.ipt(torch.where(ipt[0] > 0, 1.0, 0.0)).
         col1.ipt(ipt[0])
         col1.update_activations()
         col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]
