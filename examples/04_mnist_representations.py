@@ -2,32 +2,41 @@
 """
 Learning representations of MNIST digits with a local (Hebbian) rule.
 
-Show digits one at a time; read a hidden col's activations as a feature vector
-and train a linear probe on top. Compare the agent's representation under
-learning ON vs the SAME net with learning OFF (frozen random init), against a
-linear probe on the raw image and a ReLU MLP control.
+Architecture: one wide (256) post-ReLU hidden layer, learned online by BCM, read
+directly as the representation. Show digits one at a time, train a linear probe
+on the hidden activations, and compare learning ON vs the SAME net frozen at its
+random init, against a linear probe on the raw image and a ReLU MLP control.
 
-Two findings from sweeping the local rules (instar, Oja, BCM, basic Hebb) and
-the surrounding machinery (gitignored _sweep.py, controlled same-init A/B):
+Findings (from sweeping the rules and machinery in the gitignored _sweep.py;
+controlled same-init A/B, ridge probe, multiple seeds):
 
 1. A local rule needs COMPETITION between neurons or it collapses: without it
    every unit drifts to the same feature and the rep degenerates to chance.
-   basic / instar / Oja all collapse without an external winner-take-all, and
-   are otherwise interchangeable. BCM is the exception -- its sliding threshold
+   basic / instar / Oja all collapse without an external winner-take-all and are
+   otherwise interchangeable. BCM is the exception -- its sliding threshold
    theta = <y^2> is built-in competition (a unit potentiates only above its own
-   running average), so it self-stabilizes with no competition mechanism. That
-   is why this agent uses BCM (fc.lrn_adaptive).
+   running average), so it self-stabilizes with no competition mechanism. Hence
+   this agent uses BCM (fc.lrn_adaptive); adding explicit competition to BCM is
+   redundant and slightly hurts.
 
-2. Once stable, the rules only TIE random features, they do not beat them. On
-   MNIST a frozen random-init net + linear probe is already strong (wide ReLU
-   features ~90%); learning adds at most ~+0.5% there. The learning gap is a
-   rescue for WEAK architectures, not a win: it grows with depth and with the
-   harsh spike activation (+12% when random spike features are weak ~45%), while
-   width / architecture dominates absolute accuracy, not the rule.
+2. Learning then beats random, but only a little and only in the right regime.
+   Reading the post-ReLU hidden directly, BCM beats its own frozen init by a
+   controlled +2.1% at width 128 and +0.9% at 256 (every seed positive); the gap
+   SHRINKS to noise by width 1024 as random ReLU features saturate the task
+   (~92%). So width drives absolute accuracy and the learning gap is a rescue
+   that only shows where random is weak: narrow width here, the harsh spike
+   activation (+12% when random spike features are weak ~45%), harder datasets.
 
-Caveat that bit us: the learn-vs-frozen comparison MUST be controlled (same init
-weights, fixed seed, averaged over seeds) or the gap is pure init noise -- on a
-single uncontrolled run it flips sign between runs.
+3. Read the post-ReLU hidden DIRECTLY. Stacking a second linear readout hop and
+   reading THAT instead both bottlenecks the rep and collapses it under learning
+   (BCM on the final linear projection: -12% vs frozen). A readout layer with no
+   nonlinearity after it is the one place local learning reliably hurts.
+
+Caveat that bit us repeatedly: the learn-vs-frozen comparison MUST be controlled
+(same init weights, fixed seed, averaged over seeds) or the gap is pure init
+noise -- on a single uncontrolled run it flips sign between runs. The probe in
+this script (online SGD, independent inits) is NOT controlled, so its live
+numbers are noisy; the trustworthy gap is the _sweep.py / same-init measurement.
 """
 
 import os
@@ -54,7 +63,7 @@ from src.envs import MNISTEnvCfg, MNISTEnv
 
 
 def get_representations(agt: MNISTAgt):
-    return agt.cols[2, 0].nr_1[0].clone()
+    return agt.cols[1, 0].nr_1[0].clone()  # the single post-ReLU hidden layer
 
 
 if __name__ == "__main__":

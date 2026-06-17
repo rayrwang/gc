@@ -1127,18 +1127,16 @@ class MNISTAgt(AgtBase):
             self.cols[col1.loc] = col1
             self.I_cols.append(col1)
 
-            col2 = BareCol((1, 0), BareColCfg(128))
+            # Single wide post-ReLU hidden layer, read directly. A second (col3)
+            # readout hop only bottlenecks and collapses under learning; reading
+            # the post-ReLU hidden gives a controlled +2%/+0.9% gap over random at
+            # width 128/256 (see examples/04). 256 = signal-x-accuracy sweet spot.
+            col2 = BareCol((1, 0), BareColCfg(256))
             self.cols[col2.loc] = col2
-
-            col3 = BareCol((2, 0), BareColCfg(64))
-            self.cols[col3.loc] = col3
 
             # Conns
             self.cols[col1.loc].conns[col2.loc, Dir.A] = \
                 conn(self.cols[col1.loc], self.cols[col2.loc], Dir.A, 3)
-
-            self.cols[col2.loc].conns[col3.loc, Dir.A] = \
-                conn(self.cols[col2.loc], self.cols[col3.loc], Dir.A, 3)
 
             self.create_directory()
 
@@ -1158,8 +1156,7 @@ class MNISTAgt(AgtBase):
 
         col1 = self.cols[0, 0]
         col2 = self.cols[1, 0]
-        col3 = self.cols[2, 0]
-        
+
         col1.ipt(ipt[0])
         col1.update_activations()
         col2.a_post_ += col1.a_pre @ col1.conns[col2.loc, Dir.A]
@@ -1167,9 +1164,6 @@ class MNISTAgt(AgtBase):
         # since ReLU would blow up main net, and step is overly restrictive here
         col2.a_post_ = F.relu(col2.a_post_)
         col2.update_activations()
-        
-        col3.a_post_ += col2.a_pre @ col2.conns[col3.loc, Dir.A]
-        col3.update_activations()
 
         if use_lrn:
             # BCM (adaptive): the only local rule that self-stabilizes without a
@@ -1182,12 +1176,6 @@ class MNISTAgt(AgtBase):
                 col1.nr_1,
                 col1.conns[col2.loc, Dir.A],
                 col2.nr_1,
-                ss=1e-4
-            )
-            col2.conns[col3.loc, Dir.A] = fc.lrn_adaptive(
-                col2.nr_1,
-                col2.conns[col3.loc, Dir.A],
-                col3.nr_1,
                 ss=1e-4
             )
 
