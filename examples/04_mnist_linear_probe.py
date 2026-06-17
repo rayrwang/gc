@@ -121,6 +121,7 @@ if __name__ == "__main__":
             N_COLS = 20
         AGT_PATH = f"{project_root_path}/saves/mnist_repr_agt-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}"
         agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
+    assert isinstance(agt, MNISTAgt)  # load() returns base AgtBase; narrow for use_lrn
     agt.debug_init()
 
     # Actual (experimental): Takes in agent's internal representations
@@ -196,7 +197,7 @@ if __name__ == "__main__":
                     img, label = img.to(torch.get_default_device()), label.to(torch.get_default_device())
 
                     # Actual
-                    agt.step([img], disable_print=True)
+                    agt.step([img], use_lrn=False, disable_print=True)  # don't learn on test
                     representations = get_representations(agt)
                     pred = classifier(representations)
                     if torch.argmax(pred) == torch.argmax(label):
