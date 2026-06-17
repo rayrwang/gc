@@ -1,7 +1,7 @@
 
-import pytest
 import inspect
 
+import pytest
 import torch
 
 import src.funcs as fc

@@ -5,14 +5,16 @@ MNIST where agent's output determines next digit presented
 
 import os
 import sys
+
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
+import argparse
 import datetime
 import multiprocessing
-import argparse
 
 import torch
 
+# isort: off
 from src.agents import BareCfg, BareAgt
 from src.envs import get_default, run_env
 from src.envs import MNISTEnvCfg, MNISTEnv

@@ -52,27 +52,28 @@ save to disk
 
 from __future__ import annotations
 
-import os
-from typing import Annotated, Literal
-from dataclasses import dataclass, asdict, fields
-import time
-import random
-import math
-from enum import Enum
-from abc import ABC, abstractmethod
-import multiprocessing
-import shutil
-import sys
-import atexit
-import signal
 import ast
+import atexit
 import json
+import math
+import multiprocessing
+import os
+import random
+import shutil
+import signal
+import sys
+import time
+from abc import ABC, abstractmethod
+from dataclasses import asdict, dataclass, fields
+from enum import Enum
+from typing import Annotated, Literal
 
-import torch
-import numpy as np
-from tqdm import tqdm
 import dacite
+import numpy as np
+import torch
+from tqdm import tqdm
 
+# isort: off
 from . import iotypes as T
 from .iotypes import spec2dict, dict2spec
 from . import funcs as fc
@@ -262,12 +263,12 @@ class ColBase(ABC):
             load_activations: bool, 
             load_weights: bool) -> ColBase:
         loc = ast.literal_eval(name)
-        with open(f"{agt_path}/{name}/type", "r") as f:
+        with open(f"{agt_path}/{name}/type") as f:
             col_type = COL_REGISTRY[f.read().strip()]
             
-        with open(f"{agt_path}/{name}/cfg_type", "r") as f:
+        with open(f"{agt_path}/{name}/cfg_type") as f:
             cfg_type = COLCFG_REGISTRY[f.read().strip()]
-        with open(f"{agt_path}/{name}/cfg", "r") as f:
+        with open(f"{agt_path}/{name}/cfg") as f:
             cfg = dacite.from_dict(cfg_type, json.load(f))
         col = col_type(loc, cfg, skip_init=True)
         col.load(agt_path=agt_path, load_activations=load_activations, load_weights=load_weights)
@@ -463,7 +464,8 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
     def update_activations(self):
         for curr, new in zip(
                 (self.nr_1,  self.nr_2,  self.nr_3,  self.nr_4,  self.nr_5),
-                (self.nr_1_, self.nr_2_, self.nr_3_, self.nr_4_, self.nr_5_)):
+                (self.nr_1_, self.nr_2_, self.nr_3_, self.nr_4_, self.nr_5_),
+                strict=True):
             # Compute new activations averages
             new_avg = ALPHA*new[0] + (1-ALPHA)*curr[2]
             new_avg_sq = ALPHA*new[0]**2 + (1-ALPHA)*curr[3]
@@ -522,7 +524,7 @@ class AgtBase(ABC):
         assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
 
         # Receive inputs
-        for col, x in zip(self.I_cols, ipt):
+        for col, x in zip(self.I_cols, ipt, strict=True):
             col.ipt(x)
 
         # First pass: compute new weights and activations
@@ -582,10 +584,7 @@ class AgtBase(ABC):
                 self.debug_update()
 
         # Return outputs
-        out = []
-        for col in self.O_cols:
-            out.append(col.out())
-        return out
+        return [col.out() for col in self.O_cols]
 
     def is_i(self, loc):
         return any(loc == col.loc for col in self.I_cols)
@@ -690,7 +689,7 @@ class AgtBase(ABC):
             esyns = 0  # External weights (between cols)
 
             sum_density = 0
-            for loc, col in self.cols.items():
+            for col in self.cols.values():
                 # This doesn't use col.count since also need to calculate density
                 for name, x in vars(col).items():
                     # Only count current activations, not new
@@ -702,7 +701,7 @@ class AgtBase(ABC):
                         sum_density += torch.sum(torch.where(x < threshold, 0.0, 1.0)).item()
                     elif name.startswith("is_"):
                         isyns += x.numel()
-                for _, weight in col.conns.items():
+                for weight in col.conns.values():
                     esyns += weight.numel()
             info["nrns"] = nrns
             info["copies"] = copies
@@ -736,7 +735,7 @@ class AgtBase(ABC):
                     info[name] = stats(x, True)
 
             conns_skeleton = {}
-            for (loc, direction), _ in col.conns.items():
+            for (loc, direction) in col.conns:
                 conns_skeleton[(loc, direction)] = None
             info["conns"] = conns_skeleton
 
@@ -825,7 +824,7 @@ class AgtBase(ABC):
             json.dump(cfg_data, f)
 
         # Save cols
-        for loc, col in tqdm(self.cols.items(), desc="Saving cols"):
+        for _loc, col in tqdm(self.cols.items(), desc="Saving cols"):
             col.save(self.path, keep_weights=keep_weights)
         print("done saving.")
 
@@ -836,16 +835,16 @@ class AgtBase(ABC):
         print(f"\nLoading agent from \"{path}\":")
 
         # Load type of agt
-        with open(f"{path}/type", "r") as f:
+        with open(f"{path}/type") as f:
             agt_type = AGT_REGISTRY[f.read().strip()]
 
         # Load type of cfg
-        with open(f"{path}/cfg_type", "r") as f:
+        with open(f"{path}/cfg_type") as f:
             cfg_type = CFG_REGISTRY[f.read().strip()]
 
         # Load cfg
         print("Loading cfg...")
-        with open(f"{path}/cfg", "r") as f:
+        with open(f"{path}/cfg") as f:
             cfg_data = json.load(f)
             kwargs = {}
             for field in fields(cfg_type):
@@ -940,7 +939,7 @@ class Agt(AgtBase):  # Agent
                     continue
                 # Independent probability for each possible conn
                 # TODO randomly sample the required number of conns (more efficient)
-                for other_loc in self.cols.keys():
+                for other_loc in self.cols:
                     if other_loc != loc:
                         distance = fc.dist(loc, other_loc)
                         if self.is_io(loc):
@@ -984,7 +983,7 @@ class Agt(AgtBase):  # Agent
         print("Checking for uniform column location dimensionality...", end="")
         loc0 = list(self.cols.keys())[0]
         dim0 = len(loc0)
-        for loc in self.cols.keys():
+        for loc in self.cols:
             assert len(loc) == dim0, \
                 f"Different location dims at {loc0} and {loc}!"
         print("✔️")
@@ -992,7 +991,7 @@ class Agt(AgtBase):  # Agent
         print("Checking that targets of conns exist...", end="")
         for col in self.cols.values():
             self.load_col(col)
-            for (loc, _) in col.conns.keys():
+            for (loc, _) in col.conns:
                 assert loc in self.cols
             self.free_col(col)
         print("✔️")
@@ -1067,7 +1066,7 @@ class BareAgt(AgtBase):
                 if col in self.O_cols:  # no conns for output cols
                     continue
                 # Independent probability for each possible conn
-                for other_loc in self.cols.keys():
+                for other_loc in self.cols:
                     if other_loc != loc:
                         distance = fc.dist(loc, other_loc)
                         if self.is_io(loc):

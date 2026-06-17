@@ -25,6 +25,7 @@ two scalars per step to tensorboard:
 
 import os
 import sys
+
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
 import itertools
@@ -34,6 +35,8 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import src.funcs as fc
+
+# isort: off
 from src.agents import Cfg, Agt
 from src.envs import GridEnvCfg, GridEnv, get_default  # also sets default dtype
 

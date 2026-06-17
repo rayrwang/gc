@@ -1,7 +1,7 @@
 
+import inspect
 import math
 import platform
-import inspect
 
 import torch
 
@@ -219,7 +219,7 @@ def update_e(x):
 def dist(x, y, /):
     """`d, d -> ()`"""
     assert len(x) == len(y)
-    return math.sqrt(sum([(x_i-y_i)**2 for x_i, y_i in zip(x,y)]))
+    return math.sqrt(sum([(x_i-y_i)**2 for x_i, y_i in zip(x, y, strict=True)]))
 
 
 def density(x: torch.Tensor, threshold: float = 1.0, /) -> float:

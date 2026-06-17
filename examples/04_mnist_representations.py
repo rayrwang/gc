@@ -5,19 +5,21 @@
 
 import os
 import sys
+
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
-import multiprocessing
 import argparse
-import itertools
-import random
 import datetime
+import itertools
+import multiprocessing
+import random
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
+# isort: off
 from src.agents import MNISTCfg, MNISTAgt
 from src.envs import run_env
 from src.envs import MNISTDataset

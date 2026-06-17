@@ -33,6 +33,7 @@ and output is all 0, see the connection from (4, 0) to (2, 2).
 
 import os
 import sys
+
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
 import itertools
@@ -41,6 +42,8 @@ import torch
 from tqdm import tqdm
 
 import src.funcs as fc
+
+# isort: off
 from src.agents import Dir, conn
 from src.agents import BareColCfg, BareCol
 from src.agents import AgtBase
@@ -65,14 +68,14 @@ class DebugLearningRuleAgt(AgtBase):
 
         # Inputs
         self.input_locs = [(i, 0) for i in range(4+1)]
-        for loc, init in zip(self.input_locs, inits):
+        for loc, init in zip(self.input_locs, inits, strict=True):
             col = BareCol(loc, BareColCfg())
             col.nr_1[0] = init
             self.cols[loc] = col
 
         # Passive outputs
         passive_output_locs = [(i, 2) for i in range(4+1)]
-        for loc, init in zip(passive_output_locs, inits):
+        for loc, init in zip(passive_output_locs, inits, strict=True):
             col = BareCol(loc, BareColCfg())
             col.nr_1[0] = init
             self.cols[loc] = col

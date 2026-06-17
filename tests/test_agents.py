@@ -1,11 +1,11 @@
 
-import pytest
 from dataclasses import dataclass
 
+import pytest
 import torch
 
+from src.agents import Agt, BareAgt, BareCfg, Cfg, MNISTAgt, MNISTCfg
 from src.iotypes import I_Vector, O_Vector
-from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt
 
 N_COLS = 4
 
@@ -50,7 +50,7 @@ def test_agent_save_and_load(tmp_path, case):
             assert name1 in vars(col2)
             if name1.startswith("nr_"):
                 assert len(value1) == len(getattr(col2, name1))
-                for a1, a2 in zip(value1, getattr(col2, name1)):
+                for a1, a2 in zip(value1, getattr(col2, name1), strict=True):
                     assert torch.allclose(a1, a2)
             elif name1.startswith("is_"):
                 assert torch.allclose(value1, getattr(col2, name1))

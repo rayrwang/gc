@@ -1,18 +1,18 @@
 
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
 import random
-from typing import Any, Literal
-from collections.abc import Sequence
-import time
-import sys
 import signal
+import sys
+import time
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any, Literal
 
 import cv2
 import torch
-from torch.utils.data import Dataset
 import torchvision
 import torchvision.transforms.functional
+from torch.utils.data import Dataset
 
 from . import iotypes as T
 

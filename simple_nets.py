@@ -3,7 +3,8 @@ from itertools import count
 
 from tqdm import tqdm
 
-from simple.agents import Ising, Oscillator, NrnAgt
+from simple.agents import Ising, NrnAgt, Oscillator
+
 
 def ising():
     agt = Ising("saves/ising", 2000)

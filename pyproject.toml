@@ -30,6 +30,26 @@ packages = ["src", "simple"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
+[tool.ruff.lint]
+extend-select = [
+    "I",    # import sorting
+    "UP",   # pyupgrade (3.12+ syntax)
+    "B",    # bugbear -- B905 zip-strict is the win
+    "C4",   # comprehensions
+    "PIE",  # redundant code
+    "PERF", # perf footguns
+    "SIM",  # simplify
+    "FLY",  # f-string joins
+    "ISC",  # implicit string concat
+    "PT",   # pytest style
+    "NPY",  # numpy deprecations
+]
+ignore = [
+    "B024",   # marker/grouping ABCs are intentional
+    "B027",   # EnvBase.__init__ is an intentional signature-only base stub
+    "SIM108", # ternary rewrites can hurt readability
+]
+
 [tool.ty.environment]
 python = "venv"
 root = ["."]
@@ -41,4 +61,4 @@ root = ["."]
 # per-line ignores. Library code (envs, funcs, iotypes) stays fully checked.
 [[tool.ty.overrides]]
 include = ["src/agents.py", "simple/**", "examples/**"]
-rules = { "not-subscriptable" = "ignore", "invalid-assignment" = "ignore", "unresolved-attribute" = "ignore", "invalid-method-override" = "ignore", "invalid-argument-type" = "ignore", "unsupported-operator" = "ignore" }
+rules = { "not-subscriptable" = "ignore", "not-iterable" = "ignore", "invalid-assignment" = "ignore", "unresolved-attribute" = "ignore", "invalid-method-override" = "ignore", "invalid-argument-type" = "ignore", "unsupported-operator" = "ignore" }

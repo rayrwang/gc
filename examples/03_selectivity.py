@@ -5,6 +5,7 @@
 
 import os
 import sys
+
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
 import itertools
@@ -15,6 +16,8 @@ import torch
 from tqdm import tqdm
 
 import src.funcs as fc
+
+# isort: off
 from src.agents import Dir, conn
 from src.agents import BareColCfg, BareCol
 from src.agents import AgtBase

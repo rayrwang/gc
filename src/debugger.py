@@ -17,17 +17,18 @@
 1300 └────────────────────────┴─────────┴──────────┴──────────┘
 """
 
-import os
-import time
-import math
-import sys
-import signal
 import ast
+import math
+import os
+import signal
+import sys
+import time
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
 
 from .agents import Dir
+
 
 def debugger(PATH, pipes):
     # Suppress keyboard interrupt traceback
@@ -406,9 +407,9 @@ def debugger(PATH, pipes):
                 cache["col"] = new_info
 
         # If no new information, try to read from cache
-        if info is None and cache["col"] is not None:
-            if cache["col"]["loc"] == loc:
-                info = cache["col"]
+        if info is None and cache["col"] is not None \
+                and cache["col"]["loc"] == loc:
+            info = cache["col"]
 
         if info is None:
             txt = fonts["debug"].render("waiting...", True, (0,0,0))
@@ -509,7 +510,7 @@ def debugger(PATH, pipes):
             txt_line += 3
 
         # Highlight outgoing connections
-        for (conn_loc, direction), _ in info["conns"].items():
+        for (conn_loc, direction) in info["conns"]:
             draw_col(conn_loc, dir2pos[direction])
 
         return loc
@@ -532,9 +533,9 @@ def debugger(PATH, pipes):
                 cache["conn"] = new_info
 
         # If no new information, try to read from cache
-        if info is None and cache["conn"] is not None:
-            if cache["conn"]["request"] == (loc, conn_loc, conn_dir):
-                info = cache["conn"]
+        if info is None and cache["conn"] is not None \
+                and cache["conn"]["request"] == (loc, conn_loc, conn_dir):
+            info = cache["conn"]
 
         if info is None:
             txt = fonts["debug"].render("waiting...", True, (0,0,0))
@@ -589,9 +590,9 @@ def debugger(PATH, pipes):
                 cache["atv"] = new_info
 
         # If no new information, try to read from cache
-        if info is None and cache["atv"] is not None:
-            if cache["atv"]["request"] == request:
-                info = cache["atv"]
+        if info is None and cache["atv"] is not None \
+                and cache["atv"]["request"] == request:
+            info = cache["atv"]
 
         if info is None:
             txt = fonts["debug"].render("waiting...", True, (0,0,0))
@@ -614,7 +615,7 @@ def debugger(PATH, pipes):
             x_avg = info["x_avg"]
             WIDTH = 600 // (max(128, x.size)**0.5)  # Width of each grid cell
             GRID_WIDTH = 350 // WIDTH  # Number of grid cells across
-            for i, (xi, x_avg_i) in enumerate(zip(x, x_avg)):
+            for i, (xi, x_avg_i) in enumerate(zip(x, x_avg, strict=True)):
                 # Fill from top to bottom, them left to right
                 px = i % GRID_WIDTH
                 py = i // GRID_WIDTH

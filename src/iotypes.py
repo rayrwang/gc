@@ -4,13 +4,15 @@ This file contains specifications for input and output types.
 The actual inputs and outputs are simply lists of tensors.
 """
 
-from functools import reduce
 import operator
-from dataclasses import dataclass, asdict
-from typing import Sequence, Literal
 from abc import ABC
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
+from functools import reduce
+from typing import Literal
 
 import dacite
+
 
 class I_Base(ABC):
     pass

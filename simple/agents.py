@@ -1,19 +1,19 @@
 
-import random
-import multiprocessing
-import time
-from numbers import Number
-import os
 import math
+import multiprocessing
+import os
+import random
 import shutil
 import sys
+import time
+from numbers import Number
 
-from tqdm import tqdm
 import numpy as np
 import torch
+from tqdm import tqdm
 
-from .debugger import nrn_debugger
 from . import funcs as fc
+from .debugger import nrn_debugger
 
 Loc = tuple[Number, Number]
 
@@ -90,8 +90,7 @@ class NrnAgtBase:
             for loc, nrn in self.nrns.items():
                 info[loc] = nrn.x
                 nrns.append(nrn.x)
-                for _, syn in nrn.conns.items():
-                    syns.append(syn)
+                syns.extend(nrn.conns.values())
 
             # Activations stats and histogram
             info["nrn_stats"] = stats(torch.tensor(nrns))
@@ -142,7 +141,7 @@ class Ising(NrnAgtBase):
         # Initialize connections
         for loc, nrn in self.nrns.items():
             for dir in [(0,1),(1,0),(0,-1),(-1,0)]:
-                neighbor_loc = tuple([sum(x) for x in zip(loc, dir)])
+                neighbor_loc = tuple(sum(x) for x in zip(loc, dir, strict=True))
                 neighbor = self.nrns.get(neighbor_loc)
                 if neighbor:
                     nrn.conns[neighbor_loc] = 1
@@ -232,7 +231,7 @@ class NrnAgt(NrnAgtBase):
         # Initialize connections
         for nrn in tqdm(self.nrns.values(), desc="Initializing conns"):
             # Independent probability for each possible conn
-            for other_loc in self.nrns.keys():
+            for other_loc in self.nrns:
                 if other_loc != nrn.loc:
                     distance = fc.dist(nrn.loc, other_loc)
                     p = 1 / (distance + 1e-3)**2

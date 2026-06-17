@@ -1,10 +1,10 @@
 
+import ast
 import math
 import os
-import time
-import sys
 import signal
-import ast
+import sys
+import time
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
@@ -280,9 +280,9 @@ def nrn_debugger(PATH, pipes):
                             cache["nrn"] = new_info
 
                     # If no new information, try to read from cache
-                    if info is None and cache["nrn"] is not None:
-                        if cache["nrn"]["loc"] == loc:
-                            info = cache["nrn"]
+                    if info is None and cache["nrn"] is not None \
+                            and cache["nrn"]["loc"] == loc:
+                        info = cache["nrn"]
 
                     if info is None:
                         txt = fonts["large"].render("waiting...", True, (0,0,0))
@@ -307,7 +307,7 @@ def nrn_debugger(PATH, pipes):
                         window.blit(sq, sq.get_rect(midleft=(1750, 470)))
 
                         # Highlight connected
-                        for conn_loc, _ in info["conns"].items():
+                        for conn_loc in info["conns"]:
                             draw_col(conn_loc, "highlight")
 
                 # Draw conn debug info ########################################
