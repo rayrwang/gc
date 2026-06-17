@@ -1,6 +1,33 @@
 
 """
-(WIP) Learning representations of random MNIST digits
+Learning representations of MNIST digits with a local (Hebbian) rule.
+
+Show digits one at a time; read a hidden col's activations as a feature vector
+and train a linear probe on top. Compare the agent's representation under
+learning ON vs the SAME net with learning OFF (frozen random init), against a
+linear probe on the raw image and a ReLU MLP control.
+
+Two findings from sweeping the local rules (instar, Oja, BCM, basic Hebb) and
+the surrounding machinery (gitignored _sweep.py, controlled same-init A/B):
+
+1. A local rule needs COMPETITION between neurons or it collapses: without it
+   every unit drifts to the same feature and the rep degenerates to chance.
+   basic / instar / Oja all collapse without an external winner-take-all, and
+   are otherwise interchangeable. BCM is the exception -- its sliding threshold
+   theta = <y^2> is built-in competition (a unit potentiates only above its own
+   running average), so it self-stabilizes with no competition mechanism. That
+   is why this agent uses BCM (fc.lrn_adaptive).
+
+2. Once stable, the rules only TIE random features, they do not beat them. On
+   MNIST a frozen random-init net + linear probe is already strong (wide ReLU
+   features ~90%); learning adds at most ~+0.5% there. The learning gap is a
+   rescue for WEAK architectures, not a win: it grows with depth and with the
+   harsh spike activation (+12% when random spike features are weak ~45%), while
+   width / architecture dominates absolute accuracy, not the rule.
+
+Caveat that bit us: the learn-vs-frozen comparison MUST be controlled (same init
+weights, fixed seed, averaged over seeds) or the gap is pure init noise -- on a
+single uncontrolled run it flips sign between runs.
 """
 
 import os

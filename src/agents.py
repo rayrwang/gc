@@ -1170,15 +1170,23 @@ class MNISTAgt(AgtBase):
         col3.update_activations()
 
         if use_lrn:
-            col1.conns[col2.loc, Dir.A] = fc.lrn(
-                col1.a_pre,
+            # BCM (adaptive): the only local rule that self-stabilizes without a
+            # competition mechanism, via its sliding threshold (see examples/04).
+            # Pass full activations lists (nr_1), not nr_1[0], since BCM needs the
+            # avg-of-squares threshold y[3]. ss=1e-4: BCM is potentiation-dominated
+            # with no weight bound, and in float16 the default 1e-2 overflows to NaN
+            # within a few steps; 1e-4 is the largest stable rate here.
+            col1.conns[col2.loc, Dir.A] = fc.lrn_adaptive(
+                col1.nr_1,
                 col1.conns[col2.loc, Dir.A],
-                col2.a_post
+                col2.nr_1,
+                ss=1e-4
             )
-            col2.conns[col3.loc, Dir.A] = fc.lrn(
-                col2.a_pre,
+            col2.conns[col3.loc, Dir.A] = fc.lrn_adaptive(
+                col2.nr_1,
                 col2.conns[col3.loc, Dir.A],
-                col3.a_post
+                col3.nr_1,
+                ss=1e-4
             )
 
         if self.use_debug:
