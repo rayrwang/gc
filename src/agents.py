@@ -110,7 +110,7 @@ def activs(d: int) -> Activs:
     TODO use dataclass?
     """
     activations = torch.randn(d)
-    return [activations, torch.zeros(d), activations, activations**2]
+    return [activations, torch.zeros(d), activations.clone(), activations**2]
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
