@@ -1,16 +1,16 @@
 
 """
-CIFAR-100 version of 07_cifar10.py: same CIFARAgt, same protocol, only N_CLASSES=100.
+CIFAR-100 version of 08_cifar10.py: same CIFARAgt, same protocol, only N_CLASSES=100.
 The agent is class-count-agnostic, so this just swaps the dataset and probe output
-dim. Kept identical to 07 (width, init, ss, whitening, 4000-sample probe set) for
+dim. Kept identical to 08 (width, init, ss, whitening, 4000-sample probe set) for
 direct comparability -- the GAP is the signal; absolute numbers crater (chance 1%).
 
 Result: at matched probe budget the small CIFAR-10 whitened gap (~+1) washes into
 noise -- 100 classes over ~40 samples/class can't resolve a ~1% effect (not refuted,
-unresolvable). Random conv stays strong (ridge ~20% vs ~6% pixels). See 07 for the
+unresolvable). Random conv stays strong (ridge ~20% vs ~6% pixels). See 08 for the
 full arc and the whitening discussion.
 
-float32, same as 07.
+float32, same as 08.
 
   tensorboard --logdir runs/cifar100
 """

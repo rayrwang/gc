@@ -7,7 +7,7 @@ by BCM, read directly as the rep. Show digits one at a time, train a linear prob
 the hidden activations, and compare learning ON vs the SAME net frozen at init,
 against two pixel baselines: a linear probe (floor) and a ReLU MLP (ceiling).
 
-Findings (controlled same-init A/B, raw input, multiple seeds; sweep in _sweep.py):
+Findings (controlled same-init A/B, raw input, multiple seeds; sweep in 06_mnist_sweep.py):
 
 1. A local rule needs stabilization or it collapses (every unit drifts to one
    feature). basic/instar/Oja all collapse without external winner-take-all; BCM
@@ -15,7 +15,7 @@ Findings (controlled same-init A/B, raw input, multiple seeds; sweep in _sweep.p
    CAVEAT (likely MNIST-specific): theta stabilizes each unit but doesn't stop two
    units learning the same feature -- the BCM literature adds lateral inhibition on
    natural images. "BCM needs no competition" is an easy-MNIST result; expect
-   competition to become necessary on harder data (now confirmed on CIFAR, see 07).
+   competition to become necessary on harder data (now confirmed on CIFAR, see 08).
 
 2. Learning beats random only a little and only in the right regime: BCM beats its
    frozen init +2.1% (ridge) at width 128, ~+3.5% at width 64, ~0 by 256-512 as
@@ -37,7 +37,7 @@ Findings (controlled same-init A/B, raw input, multiple seeds; sweep in _sweep.p
 
 Caveat that bit us: learn-vs-frozen MUST be controlled (same init, fixed seed,
 seed-averaged) or the gap is pure init noise that flips sign. This script's online-
-SGD probe is NOT controlled (noisy live numbers); trust the _sweep.py same-init gap.
+SGD probe is NOT controlled (noisy live numbers); trust the 06_mnist_sweep.py same-init gap.
 """
 
 import os

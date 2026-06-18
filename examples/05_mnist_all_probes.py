@@ -14,7 +14,7 @@ But the image baseline logged below is the floor: the learned rep sits at-or-bel
 linear classifier on the pixels -- learning helps vs random, not in absolute terms.
 
 Same-init is mandatory: on independent inits the gap is pure init noise that flips
-sign. Quantified gaps are from the multi-seed _sweep.py; this script runs the same
+sign. Quantified gaps are from the multi-seed 06_mnist_sweep.py; this script runs the same
 comparison online, single seed (noisier in magnitude, same direction).
 
   tensorboard --logdir runs/mnist_all_probes

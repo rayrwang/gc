@@ -1206,7 +1206,7 @@ class CIFARAgt:
     without it BCM degrades the rep below a frozen random conv (chases DC/low-freq
     redundancy); with it the learn-vs-random gap flips to a small positive (~+1).
     Label-free, equal on both arms, but a non-local offline shortcut a local
-    decorrelation (lateral inhibition) should replace. See examples/07_cifar10.py.
+    decorrelation (lateral inhibition) should replace. See examples/08_cifar10.py.
 
     Standalone (a conv doesn't fit the vector-col Col framework); same step() /
     get_representations() interface as the probe examples. No save/load/debugger.

@@ -6,7 +6,7 @@ dataset changes. A harder MNIST (~5-10 pts lower) that, unlike MNIST, fills the 
 
 Result: at the committed online rate it behaves like MNIST -- BCM weakly beats the
 frozen control (logistic +2.4, kNN +0.8) but stays below the linear-on-pixels floor.
-Whitening does NOT help here (raw/std/zca 3-seed sweep, _sweep.py): per-feature
+Whitening does NOT help here (raw/std/zca 3-seed sweep, 06_mnist_sweep.py): per-feature
 z-score is fatal (dead pixels -> inf), and ZCA only "rescued" Fashion when an over-hot
 ss=0.01 made raw BCM collapse -- a learning-rate artifact, not a real need. So the
 whitening rescue is CIFAR/conv-specific (CIFAR degrades even at the gentle ss);
