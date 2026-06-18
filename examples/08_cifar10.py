@@ -24,23 +24,32 @@ TWO NON-OBVIOUS LEVERS (a naive conv-Hebb stack fails without both):
 ZCA whitening of layer-1 patches (label-free, both arms) lifts the baseline; kept, though
 an offline shortcut a local decorrelation should eventually replace.
 
-RESULTS (CIFAR-10, 20k online steps, 2 seeds, %):
-    config                          kNN   ridge  logistic
-    gc no-learning (frozen)        43.3   49.1    52.9
-    gc learned (this script)       51.6   46.3    53.2   <- learning: +8.4 kNN, ~0 linear
-    SoftHebb no-learning (frozen)  39.9   48.0    49.0
-    SoftHebb online   (batch 1)    51.5   63.7    62.2   <- learning: +12 to +16 ALL probes
-    SoftHebb batched  (batch 10)   54.6   65.7    62.7
-    SoftHebb native readout         --     --     79.9   <- their headline: 50k-sample +
-                                                            dropout + 50-epoch linear probe
-gc matches SoftHebb's online variant on kNN (51.6 vs 51.5) -- the learning genuinely
-reorganizes local neighborhood structure (+8.4). But it does so ONLY on kNN: gc's learning
-leaves linear separability flat (ridge/logistic ~0), whereas SoftHebb's lifts all three
-probes by +12..+16. The frozen ridges are nearly equal (48 vs 49), so this is NOT a
-BatchNorm/baseline artifact -- it is a real gap in WHAT gets learned: SoftHebb's rule makes
-the rep more linearly separable, gc's (here) only more locally clustered. Closing the
-linear gap is open; likely suspects are SoftHebb's per-layer temperature/power schedule and
-BatchNorm-during-training (deliberately not tuned here).
+RESULTS (CIFAR-10, widetop config; gain vs same-init frozen). This script runs 20k steps
+= gc's kNN PEAK, which is a TRANSIENT early-stopping point, NOT a stable optimum. The rep
+sits on a kNN<->logistic tradeoff and gets WORSE with more training:
+    steps      kNN          ridge        logistic
+    20k     50.7 (+7.8)   48.4 (-1.8)   52.5 (-1.9)   <- kNN peak (this script's operating pt)
+    50k     47.4 (+4.5)   47.9 (-2.3)   57.0 (+2.6)
+    100k    43.8 (+0.9)   50.3 (+0.1)   58.0 (+3.6)
+    200k    36.2 (-6.7)   48.9 (-1.3)   57.6 (+3.2)   <- kNN now BELOW frozen
+Prolonged training COLLAPSES kNN (the prototype over-specializes, no homeostatic regularizer)
+while logistic creeps to a ~58 plateau and ridge never moves. There is no step count where
+gc is good on all three at once.
+
+TRAINING-MATCHED comparison (both ~1 epoch / 50k images):
+    gc @ 50k                       47.4   47.9   57.0
+    SoftHebb online   (batch 1)    51.5   63.7   62.2   <- holds all three high
+    SoftHebb batched  (batch 10)   54.6   65.7   62.7
+    SoftHebb native readout (50k-sample + dropout + 50-epoch linear): 79.9
+Matched on training, gc trails SoftHebb on ALL three probes. (A transient gc peak does reach
+kNN ~51 at 20k, but that is early-stopping luck, not parity.)
+
+WHY gc only TRADES kNN<->logistic while SoftHebb holds all three: leading suspect is
+BatchNorm-DURING-TRAINING (gc uses per-sample instance-norm). BN standardizes each channel
+across the batch every step -- a homeostatic regularizer that keeps channels balanced/used,
+which would both prevent the prototype collapse (the kNN crash) AND hold linear separability.
+Untested in gc; an online running-stats version would keep it in-spirit. This, not training
+length or per-layer tuning, is the open gap to SoftHebb.
 
 float32 (the Oja outer products overflow float16 over many patches).
   tensorboard --logdir runs/cifar
