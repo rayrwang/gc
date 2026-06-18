@@ -1194,25 +1194,19 @@ class MNISTAgt(AgtBase):
 
 class CIFARAgt:
     """
-    Conv net trained with BCM, for CIFAR-10. A single Hebbian conv layer to start
-    (mirrors the single-hidden-layer MNISTAgt): unfold the image into patches,
-    project each patch through a shared weight (= a stride-s, k x k conv), ReLU,
-    and read the spatially avg-pooled feature map as the representation. The conv
-    weight is learned by BCM (same rule as fc.lrn_adaptive) treating each patch as
-    a Hebbian sample -- weight sharing plus local plasticity IS a Hebbian conv.
+    Single Hebbian conv layer trained by BCM, for CIFAR (mirrors the 1-layer
+    MNISTAgt). Unfold image into patches, shared-weight project + ReLU (= a stride-s
+    k x k conv), read the avg-pooled feature map as the rep. BCM treats each patch as
+    a Hebbian sample (weight sharing + local plasticity = Hebbian conv).
 
-    Optional ZCA whitening of patches (fit_whitening) is off by default but matters
-    a lot here. WITHOUT it, BCM degrades the rep below a frozen random conv on
-    CIFAR (it chases the DC / low-frequency redundancy in raw patches); WITH it,
-    the learn-vs-random gap flips to a small robust positive (~+1, all probes). See
-    examples/06_cifar.py for the numbers and the "is it cheating" discussion --
-    short version: label-free input prep, applied equally to learn and control, but
-    a non-local offline shortcut a local decorrelation (lateral inhibition) should
-    eventually replace.
+    Optional ZCA whitening of patches (fit_whitening, off by default) is pivotal:
+    without it BCM degrades the rep below a frozen random conv (chases DC/low-freq
+    redundancy); with it the learn-vs-random gap flips to a small positive (~+1).
+    Label-free, equal on both arms, but a non-local offline shortcut a local
+    decorrelation (lateral inhibition) should replace. See examples/07_cifar10.py.
 
-    Standalone for now: a conv does not fit the vector-col AgtBase/Col framework,
-    so this is a focused agent with the same step()/get_representations() interface
-    the offline probe examples (05/06) use. No save/load/debugger yet.
+    Standalone (a conv doesn't fit the vector-col Col framework); same step() /
+    get_representations() interface as the probe examples. No save/load/debugger.
     """
     def __init__(self, in_ch: int = 3, channels: int = 128, kernel: int = 5,
                  stride: int = 2, pool: int = 4, ss: float = 1e-4, scale: float = 3.0):
@@ -1233,12 +1227,10 @@ class CIFARAgt:
     def fit_whitening(self, images: torch.Tensor, eps: float = 0.1, n_patches: int = 100_000) -> None:
         """Estimate a ZCA whitening transform from a sample of patches.
 
-        Raw image-patch covariance is dominated by a few low-frequency / DC
-        directions (neighbouring pixels are correlated, all positive), and BCM
-        chases that variance instead of selective structure. ZCA centers and
-        decorrelates the patches -- z = (x - mu) @ W with W = (Cov + eps I)^-1/2 --
-        flattening the spectrum so the rule must pick directions by selectivity.
-        Symmetric (ZCA, not PCA) so whitened patches stay spatially local.
+        Raw patch covariance is dominated by DC/low-frequency directions; BCM chases
+        that variance instead of selective structure. ZCA centers + decorrelates
+        (z = (x-mu) @ (Cov+eps I)^-1/2), flattening the spectrum. Symmetric (not PCA)
+        so whitened patches stay spatially local.
         """
         imgs = images.to(torch.get_default_device()).to(torch.get_default_dtype())
         patches = F.unfold(imgs, self.kernel, stride=self.stride)  # (N, patch_dim, L)

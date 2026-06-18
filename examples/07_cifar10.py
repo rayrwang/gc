@@ -1,55 +1,28 @@
 
 """
-Evaluate the CIFAR-10 conv-BCM agent's learned representations with FROZEN probes
-(kNN, ridge, logistic), offline -- the CIFAR analogue of 05_mnist_all_probes.
+CIFAR-10 conv-BCM probe (offline) -- the CIFAR analogue of 05. A single Hebbian conv
+layer (CIFARAgt) trained by BCM, read as an avg-pooled feature map; same controlled
+protocol (learn vs SAME-INIT frozen control, kNN/ridge/logistic, raw-pixel baseline).
 
-A single Hebbian conv layer (CIFARAgt) trained by BCM, read as a spatially
-avg-pooled feature map. Same controlled protocol as 05: a learning agent and a
-SAME-INIT frozen control, periodically frozen, features standardised, each probe
-fit. kNN / ridge / logistic on the raw flattened pixels is the image baseline.
+Findings (same-init, 1 seed, 5000 steps):
+1. Random conv is strong: a frozen untrained conv+ReLU+pool gets ridge ~47% vs ~29%
+   on pixels (+18 from an untrained conv) -- the random init claims most of CIFAR's
+   headroom.
+2. Plain conv-BCM (no competition/whitening) DEGRADES the rep monotonically below
+   that control (kNN -1.2, ridge -1.3, logistic -4.6): it chases DC/low-frequency
+   patch directions and collapses the diverse random filters. Confirms 04's
+   prediction that competition becomes necessary on natural images -- here BCM HURTS.
+3. ZCA whitening (CIFARAgt.fit_whitening, fit once, applied EQUALLY to both arms)
+   flips the sign: +3 to the random baseline AND learning now beats it (kNN +0.9,
+   ridge +0.7, logistic +0.9, stable). Most of the absolute gain is the
+   preprocessing, not BCM.
 
-Findings (controlled same-init A/B, single seed, 5000 online steps):
+Is whitening cheating? No: label-free (input stats only) and equal on both arms, so
+the gap stays attributable to BCM, and it mirrors retinal/LGN whitening. But it IS a
+non-local offline shortcut -- a local decorrelation (= lateral-inhibition
+competition) should eventually replace it.
 
-1. Random conv is a strong baseline. A frozen, untrained conv + ReLU + avg-pool
-   gets ridge ~47% vs ~29% on raw pixels -- +18 from an UNtrained conv. CIFAR
-   gives a high ceiling for a representation, but the random init already claims
-   most of it (the "random features are hard to beat" result, more pronounced
-   here than on MNIST where random ReLU sat near the linear floor).
-
-2. Plain conv-BCM (no competition, no whitening) DEGRADES the rep, monotonically:
-   every probe ends BELOW its frozen control (kNN -1.2, ridge -1.3, logistic -4.6
-   at step 5000) and the learn curve declines steadily while the control is flat.
-   Without competition or whitening BCM chases the dominant DC / low-frequency
-   patch directions and collapses the diverse random filters toward redundant
-   ones -> lower effective rank -> below random. This CONFIRMS the prediction in
-   04's finding 1 ("expect competition to become necessary on harder / natural
-   data"): on natural images the caveat is binding, and learning HURTS.
-
-3. ZCA whitening of the patches flips the sign. CIFARAgt.fit_whitening centers
-   and decorrelates patches, killing the DC dominance, fit once and applied
-   EQUALLY to learn and control (label-free input preprocessing). Two effects:
-   (a) whitening alone lifts the random baseline ~+3 every probe (an untrained
-   conv on decorrelated input is just better); (b) the learning gap flips from
-   collapse to a small robust positive -- kNN +0.9, ridge +0.7, logistic +0.9 at
-   step 5000, stable (no decline), consistent across all three probes incl.
-   parameter-free kNN (the same ~+1 signature as MNIST). So learning on CIFAR is
-   no longer harmful, now weakly helpful.
-
-   Is whitening cheating? No in the way that matters: it is label-free (input
-   statistics only) and applied equally to both arms, so it raises learn and
-   control together and the learn-vs-control gap stays clean and attributable to
-   BCM; and it is biologically grounded (retinal / LGN center-surround ~ whitening,
-   and the BCM / ICA / sparse-coding natural-image literature all whiten). But it
-   IS a non-local, offline, batch-fit linear transform -- a shortcut the local-
-   learning program should eventually replace with an ONLINE LOCAL decorrelation,
-   which is the same machinery as lateral-inhibition competition. Treat the ZCA as
-   a fixed oracle proving "decorrelated input lets BCM help instead of hurt";
-   making it local is future work (and overlaps with competition, TBD). Note most
-   of the absolute accuracy is the preprocessing, not the learning (~+3 vs ~+1).
-
-float32 (not the float16 the MNIST agent uses): conv-BCM accumulates over many
-patches and overflows float16 more easily, and CIFAR is harder, so start clean.
-
+float32 (BCM overflows float16 more easily over many patches).
   tensorboard --logdir runs/cifar
 """
 

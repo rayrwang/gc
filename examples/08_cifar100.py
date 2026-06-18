@@ -1,24 +1,16 @@
 
 """
-CIFAR-100 conv-BCM probe: the CIFAR-100 version of 06_cifar.py, same CIFARAgt and
-same controlled protocol, only the probes change (100 classes instead of 10). The
-agent and its representation are class-count-agnostic, so this just swaps the
-dataset and the probe output dimension; everything else mirrors 06.
+CIFAR-100 version of 07_cifar10.py: same CIFARAgt, same protocol, only N_CLASSES=100.
+The agent is class-count-agnostic, so this just swaps the dataset and probe output
+dim. Kept identical to 07 (width, init, ss, whitening, 4000-sample probe set) for
+direct comparability -- the GAP is the signal; absolute numbers crater (chance 1%).
 
-Why a harder task: CIFAR-100 has the same 32x32 images but 100 classes (~600
-train each), so chance is 1% and the probes are much weaker in absolute terms. The
-question is whether the 06 finding survives the harder regime -- specifically
-whether ZCA-whitened conv-BCM still edges out a frozen random conv (the small
-robust +1 gap), or whether the thinner per-class signal washes the gap into noise.
-Kept identical to 06 (same width, init, ss, whitening, 4000-sample probe set) so
-the two are directly comparable; the absolute numbers drop with 100 classes, the
-learn-vs-control GAP is the thing to read.
+Result: at matched probe budget the small CIFAR-10 whitened gap (~+1) washes into
+noise -- 100 classes over ~40 samples/class can't resolve a ~1% effect (not refuted,
+unresolvable). Random conv stays strong (ridge ~20% vs ~6% pixels). See 07 for the
+full arc and the whitening discussion.
 
-See 06_cifar.py for the full arc (random conv is strong; plain conv-BCM degrades;
-ZCA whitening flips the sign) and the "is whitening cheating" discussion. Whitening
-is on here too, fit once and shared by learn and control as label-free input prep.
-
-float32, same as 06.
+float32, same as 07.
 
   tensorboard --logdir runs/cifar100
 """

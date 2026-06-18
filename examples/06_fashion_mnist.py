@@ -1,22 +1,17 @@
 
 """
-Fashion-MNIST version of 05_mnist_all_probes.py: the SAME MNISTAgt (one 128-unit
-post-ReLU hidden layer, raw input, BCM) and the SAME controlled protocol (learn
-agent vs SAME-INIT frozen control, periodically frozen, features standardised,
-kNN/ridge/logistic probes, image baseline). Fashion-MNIST is a drop-in -- 28x28
-grayscale, 10 classes -- so only the dataset changes.
+Fashion-MNIST version of 05: same MNISTAgt (width-128 post-ReLU hidden, raw input,
+BCM), same controlled protocol. Drop-in -- 28x28 grayscale, 10 classes -- so only the
+dataset changes. A harder MNIST (~5-10 pts lower) that, unlike MNIST, fills the frame.
 
-Why Fashion-MNIST: it is a harder MNIST (clothing, not digits; absolute accuracies
-run ~10-15 points lower), and it is the natural midpoint for the whitening finding.
-On MNIST whitening HURTS (the big constant-zero digit border makes the pixel
-covariance near-singular, so ZCA amplifies dead-border noise over the stroke
-signal); on CIFAR whitening HELPS (natural images, well-conditioned covariance, DC
-dominance to flatten). Fashion-MNIST is grayscale like MNIST but the garments fill
-the frame, so it has far less dead border -> better-conditioned covariance -> the
-prediction is that it sits between the two. This example measures the learn-vs-
-random gap; the raw/std/zca whitening comparison is run separately (see _sweep.py).
+Result: at the committed online rate it behaves like MNIST -- BCM weakly beats the
+frozen control (logistic +2.4, kNN +0.8) but stays below the linear-on-pixels floor.
+Whitening does NOT help here (raw/std/zca 3-seed sweep, _sweep.py): per-feature
+z-score is fatal (dead pixels -> inf), and ZCA only "rescued" Fashion when an over-hot
+ss=0.01 made raw BCM collapse -- a learning-rate artifact, not a real need. So the
+whitening rescue is CIFAR/conv-specific (CIFAR degrades even at the gentle ss);
+grayscale FC datasets don't need it.
 
-Prints each probe's learn / control / image-baseline accuracy and logs them:
   tensorboard --logdir runs/fashion_mnist
 """
 
