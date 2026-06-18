@@ -1212,12 +1212,23 @@ class CIFARAgt:
     get_representations() interface as the probe examples. No save/load/debugger.
     """
     def __init__(self, in_ch: int = 3, channels: int = 128, kernel: int = 5,
-                 stride: int = 2, pool: int = 4, ss: float = 1e-4, scale: float = 3.0):
+                 stride: int = 2, pool: int = 4, ss: float = 1e-4, scale: float = 3.0,
+                 comp: str = "none", temp: float = 1.0, inhib: float = 5.0):
         self.kernel = kernel
         self.stride = stride
         self.pool = pool
         self.channels = channels
         self.ss = ss
+        # Between-channel competition for the BCM learning signal (the gap that
+        # collapses CIFAR -- BCM alone has no between-neuron competition). All modes
+        # are scale-preserving so a single ss is fair across them. comp="none" =
+        # original behavior. temp: softmax temperature; inhib: subtractive gain.
+        self.comp = comp
+        self.temp = temp
+        self.inhib = inhib
+        # Read the competed feature map as the rep (SoftHebb-style: competition is the
+        # activation) vs the dense ReLU. Off = competition shapes only what is learned.
+        self.read_competed = False
         patch_dim = in_ch * kernel * kernel
         # He-ish init, same convention as conn() above
         self.weight = scale * torch.randn(patch_dim, channels) / patch_dim**0.5
@@ -1247,6 +1258,30 @@ class CIFARAgt:
         self.whiten_W = (evecs @ torch.diag((evals + eps).rsqrt()) @ evecs.T).to(mu.dtype)
         self.whiten_mu = mu
 
+    def _compete_raw(self, y: torch.Tensor) -> torch.Tensor:
+        """Between-channel competition over y (L, channels), across channels per
+        spatial location. Used as-is for the rep (read_competed); energy-matched
+        version (_compete) drives learning."""
+        if self.comp == "none":
+            return y
+        if self.comp == "softmax":  # soft-WTA gate: winner keeps value, losers suppressed
+            return y * torch.softmax(y / self.temp, dim=1)
+        if self.comp == "triangle":  # Coates-Ng: only above-(channel)-mean fire
+            return F.relu(y - y.mean(1, keepdim=True))
+        if self.comp == "inhibit":  # subtract inhib * mean of OTHER channels, rectify
+            mean_others = (y.sum(1, keepdim=True) - y) / (self.channels - 1)
+            return F.relu(y - self.inhib * mean_others)
+        raise ValueError(self.comp)
+
+    def _compete(self, y: torch.Tensor) -> torch.Tensor:
+        """Energy-matched competition for the LEARNING signal, so a single ss is fair
+        across modes (competition redistributes WHICH channels learn, not the rate;
+        otherwise softmax/inhibit just look like a smaller ss)."""
+        yl = self._compete_raw(y)
+        if self.comp == "none":
+            return yl
+        return yl * (y.norm() / (yl.norm() + 1e-8))
+
     def step(self, ipt: Inputs, use_lrn: bool = True, disable_print: bool = False) -> Outputs:
         img = ipt[0].to(torch.get_default_device()).to(torch.get_default_dtype())  # (C, H, W)
         # Unfold into patches: (L, patch_dim), each row a kernel-position patch
@@ -1255,15 +1290,17 @@ class CIFARAgt:
             x = (x - self.whiten_mu) @ self.whiten_W   # ZCA-whitened patches
         y = F.relu(x @ self.weight)              # (L, channels): post-ReLU conv response
 
-        # Representation: feature map -> spatial avg-pool -> flatten
+        # Representation: (optionally competed) feature map -> spatial avg-pool
+        y_rep = self._compete_raw(y) if self.read_competed else y
         side = int(round(x.shape[0] ** 0.5))
-        fmap = y.T.reshape(1, self.channels, side, side)
+        fmap = y_rep.T.reshape(1, self.channels, side, side)
         self.rep = F.adaptive_avg_pool2d(fmap, self.pool).reshape(-1).clone()
 
         if use_lrn:
-            # BCM over patches: Dw = ss * x * y * (y - theta), theta = <y^2>, averaged
-            self.theta = (1 - ALPHA) * self.theta + ALPHA * (y * y).mean(0)
-            self.weight = self.weight + self.ss * (x.T @ (y * (y - self.theta)) / x.shape[0])
+            # BCM over patches on the competed signal: Dw = ss * x * yl * (yl - theta)
+            yl = self._compete(y)
+            self.theta = (1 - ALPHA) * self.theta + ALPHA * (yl * yl).mean(0)
+            self.weight = self.weight + self.ss * (x.T @ (yl * (yl - self.theta)) / x.shape[0])
 
         return [torch.zeros(10)]   # dummy output; the offline experiment reads the rep
 
