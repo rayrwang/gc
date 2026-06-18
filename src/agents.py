@@ -859,15 +859,18 @@ class AgtBase(ABC):
 
         # Load cols
         for name in tqdm(os.listdir(path), desc="Loading cols"):
-            if name not in ["type", "cfg", "cfg_type"]:
-                col = Col.init_and_load(path, name, load_activations, load_weights)
+            # Skip agt metadata and any stray files (.DS_Store, editor temps);
+            # col saves are directories named by their loc tuple
+            if name in ("type", "cfg", "cfg_type") or not os.path.isdir(f"{path}/{name}"):
+                continue
+            col = Col.init_and_load(path, name, load_activations, load_weights)
 
-                loc = ast.literal_eval(name)
-                agt.cols[loc] = col
-                if isinstance(col, I_ColBase):
-                    agt.I_cols.append(col)
-                elif isinstance(col, O_ColBase):
-                    agt.O_cols.append(col)
+            loc = ast.literal_eval(name)
+            agt.cols[loc] = col
+            if isinstance(col, I_ColBase):
+                agt.I_cols.append(col)
+            elif isinstance(col, O_ColBase):
+                agt.O_cols.append(col)
         print("done loading.")
         return agt
 
