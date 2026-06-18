@@ -2,43 +2,21 @@
 """
 Compare activation functions in the recurrent network.
 
-Fix the weights (learning off) and feed the same input every step, so the
-network is a fixed map iterated: a_t+1 = F(W a_t). The activation F decides
-whether the activations settle to a fixed point or keep moving. Logged per step
-is mean_change = mean |a_t - a_t-1| (is it still moving).
+Fix the weights (learning off) and feed the same input every step, so the net is a
+fixed map iterated: a_t+1 = F(W a_t). F decides whether activations settle to a fixed
+point or keep moving. Logged: mean_change = mean |a_t - a_t-1|.
 
-Findings (mean_change, seed 0, ~210 steps):
+Findings (seed 0, ~210 steps): spike plateaus ~0.57 (sustained motion); every smooth
+sigmoid decays to a fixed point, gain only slowing it (b1 ~10 steps, b40 ~80). So it
+is the DISCONTINUITY, not steepness: near a fixed point the map J=F'(.)W + lateral
+inhibition is a contraction for any smooth F (higher gain pushes the spectral radius
+toward 1 but it stays < 1), while the step function has no continuous fixed point to
+fall into, so motion persists. Caveat: inhibition does this work -- with inhibit off,
+a steep enough sigmoid (b40) also stays alive.
 
-  spike        plateaus ~0.57, never decays       -> sustained motion (alive)
-  sigmoid b1   falls to ~0 by ~step 10            -> fixed point (dies)
-  sigmoid b4   falls to ~0 by ~step 20            -> dies
-  sigmoid b40  falls to ~0 by ~step 80 (slower)   -> dies
-
-So it is the discontinuity, not the steepness. Every smooth sigmoid settles to a
-fixed point; raising the gain only slows the contraction (b40 takes ~80 steps vs
-b1's ~10), it does not prevent it. Only the step function's discontinuity keeps
-the system permanently off the fixed point.
-
-Why. Near a fixed point the iteration is governed by the Jacobian J = F'(.) W
-together with the lateral inhibition applied each step. For any smooth F that
-combined map is a contraction (spectral radius < 1), so activity collapses to the
-fixed point; higher gain raises the local slope and pushes the radius toward 1,
-slowing the decay, but it stays a contraction. The step function has no
-continuous fixed point to fall into (it keeps jumping across the threshold), so
-motion persists.
-
-Note: the lateral inhibition is doing this work. With inhibit disabled, a steep
-enough sigmoid (b40) also stays alive -- gain alone then destabilizes the fixed
-point. So inhibition is what contracts the smooth high-gain map; the
-discontinuity is what survives it.
-
-Each activation has its own agent. Step them round robin (one step each per
-loop, swapping the activation before each, since it is a module global) so they
-stay on the same step. Runs until killed (ctrl-c), like the main net. Each logs
-two scalars per step to tensorboard:
-
-  mean_change      mean |a_t - a_t-1|, does it keep moving
-  active_fraction  fraction of a >= threshold, how sparse / how alive
+Each activation has its own agent, stepped round-robin (activation is a module global)
+so they stay on the same step. Runs until killed. Logs mean_change and active_fraction
+(fraction a >= threshold) per step.
 
   tensorboard --logdir runs/activation_functions
 """

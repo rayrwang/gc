@@ -1,44 +1,22 @@
 
 """
-Evaluate the agent's learned representations with several FROZEN classifiers,
-complementing 04's online linear probe:
+Evaluate the agent's learned representations with three FROZEN probes (complementing
+04's online linear probe): kNN (cluster structure), ridge (least-squares linear),
+logistic (cross-entropy linear). Trains the BCM agent + a SAME-INIT frozen control on
+MNIST, periodically freezes both, reads the post-ReLU hidden as features, standardises,
+fits each probe. Offline (unlike 04): learning is online, probes fit on frozen reps.
 
-  kNN       parameter-free, measures cluster / neighbourhood structure
-  ridge     least-squares linear probe
-  logistic  cross-entropy linear probe
+Result: the learn-vs-control gap is positive and robust across ALL three probes (not a
+linear-probe artifact) -- at width 128 ridge/logistic lead (~+2.1/+2.6), kNN smaller
+(~+1.6); at width 64 all agree ~+3.3-3.8. It shrinks toward noise as width grows and
+random features saturate, so it's a rescue where random is weak, not a uniform gain.
+But the image baseline logged below is the floor: the learned rep sits at-or-below a
+linear classifier on the pixels -- learning helps vs random, not in absolute terms.
 
-Trains the BCM agent and a SAME-INIT frozen control on MNIST, then periodically
-freezes both, reads the post-ReLU hidden layer as features, standardises them,
-and fits each probe.
+Same-init is mandatory: on independent inits the gap is pure init noise that flips
+sign. Quantified gaps are from the multi-seed _sweep.py; this script runs the same
+comparison online, single seed (noisier in magnitude, same direction).
 
-Result: the learn-vs-control gap is positive and robust across all three probes,
-so it is not a linear-probe artifact. On the controlled same-init, multi-seed
-sweep, at the committed width 128 ridge and logistic lead (~+2.1% / +2.6%) and the
-parameter-free kNN is smaller (~+1.6%); at narrower width 64, where the effect is
-strongest, all three agree at ~+3.3 to +3.8%, so even the nearest-neighbour
-cluster structure improves -- learning is not only rotating the space for a linear
-boundary. The gap shrinks toward noise as width grows and random ReLU features
-saturate the task (~90% by width 512), so it is a rescue that shows where random
-features are weak, not a uniform gain (see 04). And note the floor logged below as
-the image baseline: the learned rep sits at-or-below a linear classifier on the
-raw pixels, so the gap over random does NOT add up to a rep that beats logistic
-regression on the image -- learning helps relative to random, not in absolute
-terms (see 04 finding 5).
-
-Provenance: the quantified gaps above are from controlled, multi-seed sweeps
-(rule search in the gitignored _sweep.py; width and probe numbers on this agent).
-This script runs the same learn-vs-control comparison
-online; both agents share one init, so it is controlled for initialisation (not
-dominated by init noise) -- but it is a single seed, so its live printed gaps
-track the sweep in direction while being noisier in magnitude. The comparison
-MUST stay same-init: on independent inits the gap is pure init noise and flips
-sign between runs.
-
-Unlike 04 this is offline (no env / debugger): the agent learns online, but the
-probes are fit on frozen representations. A kNN/ridge/logistic probe on the raw
-image is logged as a baseline.
-
-Prints each probe's learn / control / image-baseline accuracy and logs them:
   tensorboard --logdir runs/mnist_all_probes
 """
 

@@ -2,71 +2,42 @@
 """
 Learning representations of MNIST digits with a local (Hebbian) rule.
 
-Architecture: one 128-unit post-ReLU hidden layer, fed the raw grayscale image,
-learned online by BCM, read directly as the representation. (Width 128: the
-learn-vs-random gap is largest at narrow widths and washes out by ~256 as random
-ReLU features saturate the task; 128 trades some gap for ~85% absolute. Input is
-raw -- BCM is continuous, so it does not need the discretized input the old
-discrete rule did.) Show digits one at a time, train a linear probe on the hidden
-activations, and compare learning ON vs the SAME net frozen at its random init,
-against two image baselines: a linear probe on the raw pixels (the floor) and a
-ReLU MLP on the pixels (the strong nonlinear ceiling).
+Architecture: one 128-unit post-ReLU hidden layer fed the raw image, learned online
+by BCM, read directly as the rep. Show digits one at a time, train a linear probe on
+the hidden activations, and compare learning ON vs the SAME net frozen at init,
+against two pixel baselines: a linear probe (floor) and a ReLU MLP (ceiling).
 
-Findings (controlled same-init A/B, raw input, multiple seeds; rule and machinery
-search in the gitignored _sweep.py, width/probe sweep on this agent):
+Findings (controlled same-init A/B, raw input, multiple seeds; sweep in _sweep.py):
 
-1. A local rule needs some stabilizing mechanism or it collapses: without one
-   every unit drifts to the same feature and the rep degenerates to chance.
-   basic / instar / Oja all collapse here without an external winner-take-all and
-   are otherwise interchangeable. BCM did NOT collapse without one: its sliding
-   threshold theta = <y^2> is computed from each neuron's own activity (per-neuron
-   homeostasis -- a unit potentiates only above its own running average), and on
-   this task that was enough on its own -- adding explicit competition to BCM did
-   not help and slightly hurt. Hence this agent uses BCM (fc.lrn_adaptive).
-   CAVEAT (likely MNIST-specific): theta is per-neuron homeostasis, not a direct
-   between-neuron competition signal -- it stabilizes each unit but does not
-   reliably stop two units learning the same feature. The BCM literature reports
-   exactly that redundancy on natural images and routinely ADDS lateral inhibition
-   / DoG / contrast normalization to fix it. So "BCM needs no competition" is an
-   easy-MNIST result, not a property of BCM; expect competition to become
-   necessary on harder / natural data -- an untested prediction to check before
-   relying on it.
+1. A local rule needs stabilization or it collapses (every unit drifts to one
+   feature). basic/instar/Oja all collapse without external winner-take-all; BCM
+   does NOT, because its sliding threshold theta=<y^2> is per-neuron homeostasis.
+   CAVEAT (likely MNIST-specific): theta stabilizes each unit but doesn't stop two
+   units learning the same feature -- the BCM literature adds lateral inhibition on
+   natural images. "BCM needs no competition" is an easy-MNIST result; expect
+   competition to become necessary on harder data (now confirmed on CIFAR, see 07).
 
-2. Learning then beats random, but only a little and only in the right regime.
-   Reading the post-ReLU hidden directly, BCM beats its own frozen init by a
-   controlled +2.1% (ridge) at width 128, rising to ~+3.5% at width 64 and
-   shrinking to ~0 by 256-512 as random ReLU features saturate (~90% at 512). So
-   width drives absolute accuracy and the learning gap is a rescue that only shows
-   where random is weak: narrow width here, the harsh spike activation (+12% when
-   random spike features are weak ~45%), harder datasets.
+2. Learning beats random only a little and only in the right regime: BCM beats its
+   frozen init +2.1% (ridge) at width 128, ~+3.5% at width 64, ~0 by 256-512 as
+   random ReLU features saturate. Width drives absolute accuracy; the gap is a
+   rescue that only shows where random is weak.
 
-3. Read the post-ReLU hidden DIRECTLY. Stacking a second linear readout hop and
-   reading THAT instead both bottlenecks the rep and collapses it under learning
-   (BCM on the final linear projection: -12% vs frozen). A readout layer with no
+3. Read the post-ReLU hidden DIRECTLY. A second linear readout hop both bottlenecks
+   and collapses the rep under learning (-12% vs frozen) -- a readout with no
    nonlinearity after it is the one place local learning reliably hurts.
 
-4. The gap is robust across probe types, not a linear-probe artifact: kNN, ridge,
-   and logistic regression are all positive. At width 128 ridge/logistic lead
-   (+2.1 / +2.6) and the parameter-free kNN is smaller (+1.6); at width 64, where
-   the effect is strongest, all three agree (~+3.3 to +3.8), so the nearest-
-   neighbour cluster structure improves too, not just linear decodability. See
-   05_mnist_all_probes.py.
+4. The gap is robust across probes (kNN/ridge/logistic all positive), not a linear-
+   probe artifact -- nearest-neighbour cluster structure improves too. See 05.
 
-5. SOBERING -- the learned rep does NOT beat a linear classifier on the raw
-   pixels. Full ladder (width 128, raw, logistic, 3 seeds): linear-on-pixels
-   85.0%, frozen rep 82.3%, learned rep 84.1% (+1.8 over frozen), ReLU MLP on
-   pixels 93.0%. So learning closes the gap TOWARD the linear floor but stays
-   BELOW it -- a 128-unit ReLU projection is worth slightly less than logistic
-   regression on the 784 pixels (likely more below with full data; here only an
-   8k subset). "Learning helps" is true vs random, but the representation is not
-   useful in absolute terms on MNIST. That is what the linear floor reveals;
-   without it the +2% reads as a win.
+5. SOBERING: the learned rep does NOT beat a linear classifier on the pixels. Ladder
+   (width 128, logistic, 3 seeds): linear-on-pixels 85.0, frozen 82.3, learned 84.1,
+   ReLU MLP 93.0. Learning closes the gap TOWARD the linear floor but stays below it
+   -- helps vs random, not useful in absolute terms. Without the floor the +2% reads
+   as a win.
 
-Caveat that bit us repeatedly: the learn-vs-frozen comparison MUST be controlled
-(same init weights, fixed seed, averaged over seeds) or the gap is pure init
-noise -- on a single uncontrolled run it flips sign between runs. The probe in
-this script (online SGD, independent inits) is NOT controlled, so its live
-numbers are noisy; the trustworthy gap is the _sweep.py / same-init measurement.
+Caveat that bit us: learn-vs-frozen MUST be controlled (same init, fixed seed,
+seed-averaged) or the gap is pure init noise that flips sign. This script's online-
+SGD probe is NOT controlled (noisy live numbers); trust the _sweep.py same-init gap.
 """
 
 import os
