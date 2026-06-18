@@ -185,6 +185,26 @@ class MNISTDataset(Dataset):
 
     def __len__(self):
         return self.len
+
+
+class FashionMNISTDataset(Dataset):
+    # Drop-in for MNISTDataset: same 28x28 grayscale, 10 classes, so it reuses
+    # MNISTAgt / MNISTEnv specs unchanged. Kept attribute name `mnist` so the
+    # offline probe example can read .mnist.data / .mnist.targets like 05 does.
+    def __init__(self, train=True):
+        self.mnist = torchvision.datasets.FashionMNIST("data", train=train, download=True)
+        self.len = len(self.mnist)
+
+    def __getitem__(self, i):  # ty: ignore[invalid-method-override]
+        (image_raw, label_raw) = self.mnist[i]
+        image = torchvision.transforms.functional.to_tensor(image_raw)
+        image = image.reshape(-1)
+        label = torch.zeros(10)
+        label[label_raw] = 1
+        return image, label
+
+    def __len__(self):
+        return self.len
 @dataclass
 class MNISTEnvCfg(EnvCfgBase):
     # active  : choose image based on agent's action
