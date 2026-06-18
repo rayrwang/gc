@@ -3,6 +3,8 @@ __pycache__/
 env/
 venv/
 *.egg-info/
+.pytest_cache/
+.ruff_cache/
 
 .vscode/
 .obsidian/
@@ -13,5 +15,5 @@ saves/
 data/
 runs/
 
-# Scratchpads
-_*.py
+# Scratchpads (_*.py, _*.log, _*.svg, ...)
+_*
