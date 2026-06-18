@@ -110,7 +110,8 @@ if __name__ == "__main__":
     optim = torch.optim.SGD(classifier.parameters(), lr=1e-2)
 
     # No learning control: Above but with static weights
-    no_lrn_agt = MNISTAgt(MNISTCfg(ispec, ospec), f"{project_root_path}/saves/mnist_repr_no_lrn_agt")
+    no_lrn_agt = MNISTAgt(MNISTCfg(ispec, ospec),
+        f"{project_root_path}/saves/mnist_repr_no_lrn_agt-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}")
     no_lrn_classifier = nn.Linear(get_representations(no_lrn_agt).shape[0], 10)
     no_lrn_optim = torch.optim.SGD(no_lrn_classifier.parameters(), lr=1e-2)
 

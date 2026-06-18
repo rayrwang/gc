@@ -63,10 +63,10 @@ class SelectivityAgt(AgtBase):
             self.cols[loc1].a_pre,
             self.cols[loc1].conns[loc2, Dir.A],
             self.cols[loc2].a_post,
-            reg_width=float("inf"),  # Disalbe regulation
+            reg_width=float("inf"),  # Disable regulation
         )
 
-        agt.debug_update()
+        self.debug_update()
 
 
 if __name__ == "__main__":

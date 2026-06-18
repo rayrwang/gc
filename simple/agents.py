@@ -106,7 +106,7 @@ class NrnAgtBase:
         while pipe.poll():  # Get most recent request
             request = pipe.recv()
         if request is not None and (time.time()-self.t_prevs["nrn"]) > COOLDOWN_NRN:
-            self.t_prevs["col"] = time.time()
+            self.t_prevs["nrn"] = time.time()
 
             col = self.nrns[request]
             info = {}
