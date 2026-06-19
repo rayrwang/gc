@@ -37,12 +37,16 @@ dim [both 24576] -- gc and SoftHebb read the same 4x4x1536 feature map):
     gc no-learning (frozen)    44.3   57.1    57.7
     gc            50k          51.2   60.6    59.6
     gc           200k          49.5   64.2    61.9
+    SoftHebb no-learning       43.2   53.8    53.4
     SoftHebb b1   50k          50.9   63.4    61.8
     SoftHebb b1  200k          47.7   59.6    58.9
     SoftHebb b10  50k          53.9   65.9    62.9
     SoftHebb b10 200k          50.2   61.7    58.8
     SoftHebb native readout     --     --     79.9
     (50k-sample + dropout + 50-epoch linear)
+
+    no-learning rows = random conv, BN warmed (matched both sides); native readout = a much
+    harder-trained linear probe than our kNN/ridge/logistic, not comparable to the rest.
 
 KEY: SoftHebb is tuned for 1 epoch and DEGRADES with more training (b1 50.9->47.7 kNN); gc is
 STABLE -- no collapse, ridge/logistic even RISE with training. At 1 epoch gc already wins kNN
