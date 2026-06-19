@@ -32,7 +32,9 @@ RESULTS (CIFAR-10, kNN/ridge/logistic %, matched on training: 50k=1 epoch, 200k=
     SoftHebb b1  200k           47.7   59.6    58.9
     SoftHebb b10  50k           53.9   65.9    62.9
     SoftHebb b10 200k           50.2   61.7    58.8
-    SoftHebb native readout (50k-sample + dropout + 50-epoch linear) = 79.9% logistic
+    SoftHebb native readout      --     --     79.9
+    (50k-sample + dropout + 50-epoch linear)
+
 KEY: SoftHebb is tuned for 1 epoch and DEGRADES with more training (b1 50.9->47.7 kNN); gc is
 STABLE -- no collapse, ridge/logistic even rise. So at 1 epoch SoftHebb leads, but at 4 epochs
 (the continual regime gc targets) gc TIES SoftHebb-online on kNN/ridge and BEATS it on logistic
