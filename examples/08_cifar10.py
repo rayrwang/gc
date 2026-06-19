@@ -88,7 +88,9 @@ def ridge(rtr, ytr, rte, yte, lam=80.0):
     targets = F.one_hot(ytr, 10).double()
     a = torch.cat([rtr, torch.ones(len(rtr), 1)], 1).double()
     b = torch.cat([rte, torch.ones(len(rte), 1)], 1).double()
-    weights = torch.linalg.solve(a.T @ a + lam * torch.eye(a.shape[1], dtype=torch.float64), a.T @ targets)
+    gram = a.T @ a
+    gram.diagonal().add_(lam)             # ridge penalty in-place (avoids a 24576^2 eye -> OOM at this rep dim)
+    weights = torch.linalg.solve(gram, a.T @ targets)
     return ((b @ weights).argmax(1) == yte).float().mean().item() * 100
 
 
