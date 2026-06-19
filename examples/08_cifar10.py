@@ -24,15 +24,15 @@ FOUR INGREDIENTS, each load-bearing (drop any and it breaks):
    SUPPRESSES the kNN learning (it pre-captures the structure the prototype would learn).
 
 RESULTS (CIFAR-10, kNN/ridge/logistic %, matched on training: 50k=1 epoch, 200k=4 epochs):
-    config                       kNN   ridge  logistic
-    gc no-learning (frozen)     41.7   52.0    59.2
-    gc           50k            48.2   53.5    59.8
-    gc          200k            47.3   58.8    63.3
-    SoftHebb b1   50k           50.9   63.4    61.8
-    SoftHebb b1  200k           47.7   59.6    58.9
-    SoftHebb b10  50k           53.9   65.9    62.9
-    SoftHebb b10 200k           50.2   61.7    58.8
-    SoftHebb native readout      --     --     79.9
+    config                     kNN    ridge   logistic
+    gc no-learning (frozen)    41.7   52.0    59.2
+    gc            50k          48.2   53.5    59.8
+    gc           200k          47.3   58.8    63.3
+    SoftHebb b1   50k          50.9   63.4    61.8
+    SoftHebb b1  200k          47.7   59.6    58.9
+    SoftHebb b10  50k          53.9   65.9    62.9
+    SoftHebb b10 200k          50.2   61.7    58.8
+    SoftHebb native readout     --     --     79.9
     (50k-sample + dropout + 50-epoch linear)
 
 KEY: SoftHebb is tuned for 1 epoch and DEGRADES with more training (b1 50.9->47.7 kNN); gc is
@@ -57,6 +57,8 @@ import os
 import sys
 
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
+
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")  # deterministic cuBLAS (set before torch)
 
 import torch
 import torch.nn.functional as F
@@ -88,6 +90,7 @@ def ridge(rtr, ytr, rte, yte, lam=80.0):
 
 
 def logistic(rtr, ytr, rte, yte, steps=400, lr=0.05):
+    torch.manual_seed(SEED)                       # deterministic classifier init (the only RNG in eval)
     clf = torch.nn.Linear(rtr.shape[1], 10).float()
     opt = torch.optim.Adam(clf.parameters(), lr=lr)
     for _ in range(steps):
