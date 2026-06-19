@@ -64,6 +64,7 @@ from src.envs import CIFARDataset
 
 SEED = 0
 N_STEPS = 50000                                       # online single-sample steps (~1 epoch)
+EVAL_INTERVAL = 10000                                 # report learn-vs-frozen progress
 WARMUP = 1000                                         # populate BN stats before learning
 N_TRAIN_EVAL, N_TEST_EVAL = 3000, 1000
 K_NN = 20
@@ -191,12 +192,15 @@ if __name__ == "__main__":
     for agt in (learn_agt, control_agt):                      # warm up BN stats before learning
         for i in warm:
             agt.step(train_imgs[i], use_lrn=False, training=True)
-    for i in order:
-        learn_agt.step(train_imgs[i], use_lrn=True, training=True)
+    control = evaluate(control_agt, etr, ytr, ete, yte)       # frozen baseline (constant)
+    print("frozen baseline:  " + "   ".join(f"{p} {control[p]:.1f}" for p in PROBES), flush=True)
 
-    acc = {cond: evaluate(agt, etr, ytr, ete, yte) for cond, agt in (("learn", learn_agt), ("control", control_agt))}
-    print(f"{'probe':9} {'learned':>8} {'frozen':>8} {'gain':>6}")
-    for p in PROBES:
-        print(f"{p:9} {acc['learn'][p]:8.1f} {acc['control'][p]:8.1f} {acc['learn'][p] - acc['control'][p]:+6.1f}")
-        writer.add_scalars(p, {"learn": acc["learn"][p], "control": acc["control"][p]}, N_STEPS)
+    for step, i in enumerate(order, 1):
+        learn_agt.step(train_imgs[i], use_lrn=True, training=True)
+        if step % EVAL_INTERVAL == 0:
+            acc = evaluate(learn_agt, etr, ytr, ete, yte)
+            print(f"step {step:>6}:  " + "   ".join(
+                f"{p} {acc[p]:5.1f} ({acc[p] - control[p]:+.1f})" for p in PROBES), flush=True)
+            for p in PROBES:
+                writer.add_scalars(p, {"learn": acc[p], "control": control[p]}, step)
     writer.flush()
