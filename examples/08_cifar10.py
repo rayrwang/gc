@@ -62,6 +62,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
+from src.agents import CIFARAgt          # the recipe lives in the agent; this script is the harness
 from src.envs import CIFARDataset
 
 SEED = 0
@@ -70,55 +71,6 @@ EVAL_INTERVAL = 10000                                 # report learn-vs-frozen p
 WARMUP = 1000                                         # populate BN stats before learning
 N_TRAIN_EVAL, N_TEST_EVAL = 3000, 1000
 K_NN = 20
-LAYERS = [(3, 96, 5), (96, 384, 3), (384, 1536, 3)]   # (in, out, kernel); SoftHebb widths
-BASE_LR, POWER, SIGNED_T, INIT_SCALE, BN_MOM = 0.03, 0.7, 1.0, 3.0, 0.01
-
-
-class ConvHebb:
-    """3-layer conv trained ONLY by the local oja-signed rule (no backprop), online BN, no whitening."""
-
-    def __init__(self, learns=True):
-        self.learns = learns
-        self.W = [INIT_SCALE * torch.randn(ic * k * k, oc) / (ic * k * k) ** 0.5 for ic, oc, k in LAYERS]
-        self.bn_m = [torch.zeros(ic) for ic, oc, k in LAYERS]   # online-BN running stats
-        self.bn_v = [torch.ones(ic) for ic, oc, k in LAYERS]
-        self.rep = None
-
-    def _bn(self, fmap, li, training):
-        """Online BatchNorm: normalize by current-image spatial stats at train, running stats at eval."""
-        cur_m, cur_v = fmap.mean((1, 2)), fmap.var((1, 2))
-        if training:
-            self.bn_m[li] = (1 - BN_MOM) * self.bn_m[li] + BN_MOM * cur_m
-            self.bn_v[li] = (1 - BN_MOM) * self.bn_v[li] + BN_MOM * cur_v
-            m, v = cur_m, cur_v
-        else:
-            m, v = self.bn_m[li], self.bn_v[li]
-        return (fmap - m[:, None, None]) / (v[:, None, None] + 1e-5).sqrt()
-
-    def _signed_gate(self, u):
-        """SoftHebb gate: winner Hebbian (+), losers anti-Hebbian (-), magnitude = responsibility."""
-        gate = -torch.softmax(u * SIGNED_T, dim=1)
-        gate[torch.arange(u.shape[0]), u.argmax(1)] *= -1
-        return gate
-
-    def step(self, img, use_lrn=True, training=False):
-        fmap = img
-        for li, (ic, oc, k) in enumerate(LAYERS):
-            fmap = self._bn(fmap, li, training)
-            H, Wd = fmap.shape[1], fmap.shape[2]
-            x = F.unfold(fmap.unsqueeze(0), k, stride=1, padding=(k - 1) // 2)[0].T  # (H*W, ic*k*k)
-            u = x @ self.W[li]
-            y = F.relu(u - u.mean(1, keepdim=True)) ** POWER  # Triangle activation (graded)
-            if use_lrn and self.learns:
-                g = self._signed_gate(u)
-                dW = (x.T @ g - self.W[li] * (g * u).sum(0, keepdim=True)) / x.shape[0]  # oja-signed
-                self.W[li] = self.W[li] + BASE_LR * dW       # soft norm: no hard projection
-            fmap = y.T.reshape(oc, H, Wd).unsqueeze(0)
-            fmap = F.max_pool2d(fmap, 4, stride=2, padding=1)[0] if li < 2 else F.avg_pool2d(fmap, 2)[0]
-        self.rep = F.adaptive_avg_pool2d(fmap.unsqueeze(0), 2).reshape(-1).clone()
-
-    def get_representations(self):
-        return self.rep
 
 
 # Frozen classifiers (each: train feats/labels, test feats/labels -> accuracy %)
@@ -157,7 +109,7 @@ def representations(agt, imgs):
     """Read the pooled conv feature map for each image (learning off, BN in eval mode)."""
     out = []
     for img in imgs:
-        agt.step(img, use_lrn=False, training=False)
+        agt.step([img], use_lrn=False, training=False)
         out.append(agt.get_representations().float())
     return torch.stack(out)
 
@@ -188,17 +140,17 @@ if __name__ == "__main__":
     writer = SummaryWriter("runs/cifar")
     print("tensorboard --logdir runs/cifar\n")
     torch.manual_seed(SEED)
-    learn_agt = ConvHebb(learns=True)
+    learn_agt = CIFARAgt()
     torch.manual_seed(SEED)                                   # SAME init as the control
-    control_agt = ConvHebb(learns=False)
+    control_agt = CIFARAgt()                                  # never gets use_lrn=True -> stays frozen
     for agt in (learn_agt, control_agt):                      # warm up BN stats before learning
         for i in warm:
-            agt.step(train_imgs[i], use_lrn=False, training=True)
+            agt.step([train_imgs[i]], use_lrn=False, training=True)
     control = evaluate(control_agt, etr, ytr, ete, yte)       # frozen baseline (constant)
     print("frozen baseline:  " + "   ".join(f"{p} {control[p]:.1f}" for p in PROBES), flush=True)
 
     for step, i in enumerate(order, 1):
-        learn_agt.step(train_imgs[i], use_lrn=True, training=True)
+        learn_agt.step([train_imgs[i]], use_lrn=True, training=True)
         if step % EVAL_INTERVAL == 0:
             acc = evaluate(learn_agt, etr, ytr, ete, yte)
             print(f"step {step:>6}:  " + "   ".join(

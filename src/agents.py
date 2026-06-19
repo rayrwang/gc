@@ -1195,113 +1195,93 @@ class MNISTAgt(AgtBase):
         return [torch.zeros(10)]
 
 
+DEFAULT_CIFAR_LAYERS = [(3, 96, 5, "max"), (96, 384, 3, "max"), (384, 1536, 3, "avg")]
+
+
 class CIFARAgt:
     """
-    Single Hebbian conv layer trained by BCM, for CIFAR (mirrors the 1-layer
-    MNISTAgt). Unfold image into patches, shared-weight project + ReLU (= a stride-s
-    k x k conv), read the avg-pooled feature map as the rep. BCM treats each patch as
-    a Hebbian sample (weight sharing + local plasticity = Hebbian conv).
+    Deep local-Hebbian conv stack for CIFAR -- no backprop, no objective, online and
+    single-sample. Reproduces the SoftHebb recipe (Moraitis et al., arXiv:2209.11883)
+    under gc's online constraint with no offline oracles. Three conv layers trained
+    ONLY by a local rule; the pooled final feature map is the rep. See 08_cifar10.py.
 
-    Optional ZCA whitening of patches (fit_whitening, off by default) is pivotal:
-    without it BCM degrades the rep below a frozen random conv (chases DC/low-freq
-    redundancy); with it the learn-vs-random gap flips to a small positive (~+1).
-    Label-free, equal on both arms, but a non-local offline shortcut a local
-    decorrelation (lateral inhibition) should replace. See examples/08_cifar10.py.
+    RULE = oja-signed (SoftHebb's update): an Oja prototype rule gated by a SIGNED
+    soft-WTA -- the winner moves its weight TOWARD the input (Hebbian), losers AWAY
+    (anti-Hebbian). The loser repulsion makes channels tile instead of collapsing onto
+    one prototype; gc's own rules (BCM, plain instar/oja) were tested and FAIL here, so
+    the anti-Hebbian gate is load-bearing. Four ingredients each matter: Triangle
+    activation relu(u-mean_c(u))^p (graded, so depth doesn't collapse to one-hot); SOFT
+    weight-norm (let ||w|| drift via the rule's own decay -- hard projection makes
+    learning destructive); online BatchNorm (current-image stats at train, running at
+    eval -- a homeostatic regularizer that keeps the rep STABLE under continual
+    training, a transient peak without it); and NO whitening (it suppresses the kNN gain).
 
-    Standalone (a conv doesn't fit the vector-col Col framework); same step() /
-    get_representations() interface as the probe examples. No save/load/debugger.
+    layers: list of (in_ch, out_ch, kernel, pool), pool in {max, avg, none} --
+    max=MaxPool(4,s2,p1), avg=AvgPool(2), none=hold spatial (for extra depth).
+
+    Standalone (a conv doesn't fit the vector-col Col framework); step() /
+    get_representations() interface like the probe examples. `training` (BN mode)
+    defaults to `use_lrn`; pass training=True for a no-learning BN warmup. No
+    save/load/debugger.
     """
-    def __init__(self, in_ch: int = 3, channels: int = 128, kernel: int = 5,
-                 stride: int = 2, pool: int = 4, ss: float = 1e-4, scale: float = 3.0,
-                 comp: str = "none", temp: float = 1.0, inhib: float = 5.0):
-        self.kernel = kernel
-        self.stride = stride
-        self.pool = pool
-        self.channels = channels
-        self.ss = ss
-        # Between-channel competition for the BCM learning signal (the gap that
-        # collapses CIFAR -- BCM alone has no between-neuron competition). All modes
-        # are scale-preserving so a single ss is fair across them. comp="none" =
-        # original behavior. temp: softmax temperature; inhib: subtractive gain.
-        self.comp = comp
-        self.temp = temp
-        self.inhib = inhib
-        # Read the competed feature map as the rep (SoftHebb-style: competition is the
-        # activation) vs the dense ReLU. Off = competition shapes only what is learned.
-        self.read_competed = False
-        patch_dim = in_ch * kernel * kernel
-        # He-ish init, same convention as conn() above
-        self.weight = scale * torch.randn(patch_dim, channels) / patch_dim**0.5
-        self.theta = torch.ones(channels)   # BCM sliding threshold: EMA of <y^2> per channel
+    def __init__(self, layers: list | None = None, base_lr: float = 0.03,
+                 power: float = 0.7, signed_t: float = 1.0, scale: float = 3.0,
+                 bn_mom: float = 0.01, pool: int = 2):
+        self.layers = DEFAULT_CIFAR_LAYERS if layers is None else layers
+        self.base_lr = base_lr
+        self.power = power            # Triangle activation exponent
+        self.signed_t = signed_t      # soft-WTA gate temperature
+        self.bn_mom = bn_mom          # online-BN running-stat momentum
+        self.pool = pool              # final adaptive-avg-pool side
+        # He-ish init per layer; weight (in*k*k, out) projects unfolded patches
+        self.W = [scale * torch.randn(ic * k * k, oc) / (ic * k * k) ** 0.5
+                  for ic, oc, k, _ in self.layers]
+        self.bn_m = [torch.zeros(ic) for ic, _, _, _ in self.layers]  # online-BN running mean
+        self.bn_v = [torch.ones(ic) for ic, _, _, _ in self.layers]   # online-BN running var
         self.rep: torch.Tensor | None = None
-        # Optional ZCA whitening of patches (set via fit_whitening); None = off
-        self.whiten_mu: torch.Tensor | None = None
-        self.whiten_W: torch.Tensor | None = None
 
-    def fit_whitening(self, images: torch.Tensor, eps: float = 0.1, n_patches: int = 100_000) -> None:
-        """Estimate a ZCA whitening transform from a sample of patches.
+    def _bn(self, fmap: torch.Tensor, li: int, training: bool) -> torch.Tensor:
+        """Online BatchNorm: normalize by current-image spatial stats at train (and
+        update the running stats), by running stats at eval."""
+        cur_m, cur_v = fmap.mean((1, 2)), fmap.var((1, 2))
+        if training:
+            self.bn_m[li] = (1 - self.bn_mom) * self.bn_m[li] + self.bn_mom * cur_m
+            self.bn_v[li] = (1 - self.bn_mom) * self.bn_v[li] + self.bn_mom * cur_v
+            m, v = cur_m, cur_v
+        else:
+            m, v = self.bn_m[li], self.bn_v[li]
+        return (fmap - m[:, None, None]) / (v[:, None, None] + 1e-5).sqrt()
 
-        Raw patch covariance is dominated by DC/low-frequency directions; BCM chases
-        that variance instead of selective structure. ZCA centers + decorrelates
-        (z = (x-mu) @ (Cov+eps I)^-1/2), flattening the spectrum. Symmetric (not PCA)
-        so whitened patches stay spatially local.
-        """
-        imgs = images.to(torch.get_default_device()).to(torch.get_default_dtype())
-        patches = F.unfold(imgs, self.kernel, stride=self.stride)  # (N, patch_dim, L)
-        patches = patches.permute(0, 2, 1).reshape(-1, patches.shape[1])
-        if len(patches) > n_patches:  # subsample for the covariance estimate
-            patches = patches[torch.randperm(len(patches), device=patches.device)[:n_patches]]
-        mu = patches.mean(0)
-        xc = (patches - mu).double()
-        cov = (xc.T @ xc) / len(xc)
-        evals, evecs = torch.linalg.eigh(cov)
-        self.whiten_W = (evecs @ torch.diag((evals + eps).rsqrt()) @ evecs.T).to(mu.dtype)
-        self.whiten_mu = mu
+    def _signed_gate(self, u: torch.Tensor) -> torch.Tensor:
+        """SoftHebb gate: winner Hebbian (+), losers anti-Hebbian (-), magnitude =
+        softmax responsibility (per spatial location, across channels)."""
+        gate = -torch.softmax(u * self.signed_t, dim=1)
+        gate[torch.arange(u.shape[0]), u.argmax(1)] *= -1
+        return gate
 
-    def _compete_raw(self, y: torch.Tensor) -> torch.Tensor:
-        """Between-channel competition over y (L, channels), across channels per
-        spatial location. Used as-is for the rep (read_competed); energy-matched
-        version (_compete) drives learning."""
-        if self.comp == "none":
-            return y
-        if self.comp == "softmax":  # soft-WTA gate: winner keeps value, losers suppressed
-            return y * torch.softmax(y / self.temp, dim=1)
-        if self.comp == "triangle":  # Coates-Ng: only above-(channel)-mean fire
-            return F.relu(y - y.mean(1, keepdim=True))
-        if self.comp == "inhibit":  # subtract inhib * mean of OTHER channels, rectify
-            mean_others = (y.sum(1, keepdim=True) - y) / (self.channels - 1)
-            return F.relu(y - self.inhib * mean_others)
-        raise ValueError(self.comp)
-
-    def _compete(self, y: torch.Tensor) -> torch.Tensor:
-        """Energy-matched competition for the LEARNING signal, so a single ss is fair
-        across modes (competition redistributes WHICH channels learn, not the rate;
-        otherwise softmax/inhibit just look like a smaller ss)."""
-        yl = self._compete_raw(y)
-        if self.comp == "none":
-            return yl
-        return yl * (y.norm() / (yl.norm() + 1e-8))
-
-    def step(self, ipt: Inputs, use_lrn: bool = True, disable_print: bool = False) -> Outputs:
-        img = ipt[0].to(torch.get_default_device()).to(torch.get_default_dtype())  # (C, H, W)
-        # Unfold into patches: (L, patch_dim), each row a kernel-position patch
-        x = F.unfold(img.unsqueeze(0), self.kernel, stride=self.stride)[0].T
-        if self.whiten_W is not None:
-            x = (x - self.whiten_mu) @ self.whiten_W   # ZCA-whitened patches
-        y = F.relu(x @ self.weight)              # (L, channels): post-ReLU conv response
-
-        # Representation: (optionally competed) feature map -> spatial avg-pool
-        y_rep = self._compete_raw(y) if self.read_competed else y
-        side = int(round(x.shape[0] ** 0.5))
-        fmap = y_rep.T.reshape(1, self.channels, side, side)
-        self.rep = F.adaptive_avg_pool2d(fmap, self.pool).reshape(-1).clone()
-
-        if use_lrn:
-            # BCM over patches on the competed signal: Dw = ss * x * yl * (yl - theta)
-            yl = self._compete(y)
-            self.theta = (1 - ALPHA) * self.theta + ALPHA * (yl * yl).mean(0)
-            self.weight = self.weight + self.ss * (x.T @ (yl * (yl - self.theta)) / x.shape[0])
-
+    def step(self, ipt: Inputs, use_lrn: bool = True, training: bool | None = None,
+             disable_print: bool = False) -> Outputs:
+        if training is None:          # BN trains iff we are learning (override for warmup)
+            training = use_lrn
+        fmap = ipt[0].to(torch.get_default_device()).to(torch.get_default_dtype())  # (C, H, W)
+        for li, (ic, oc, k, pool) in enumerate(self.layers):
+            fmap = self._bn(fmap, li, training)
+            h, w = fmap.shape[1], fmap.shape[2]
+            x = F.unfold(fmap.unsqueeze(0), k, stride=1, padding=(k - 1) // 2)[0].T  # (h*w, ic*k*k)
+            u = x @ self.W[li]
+            y = F.relu(u - u.mean(1, keepdim=True)) ** self.power   # Triangle activation (graded)
+            if use_lrn:
+                g = self._signed_gate(u)
+                dW = (x.T @ g - self.W[li] * (g * u).sum(0, keepdim=True)) / x.shape[0]  # oja-signed
+                self.W[li] = self.W[li] + self.base_lr * dW         # soft norm: no hard projection
+            fmap = y.T.reshape(oc, h, w).unsqueeze(0)
+            if pool == "max":     # MaxPool 4x4/s2 (early layers, halve spatial)
+                fmap = F.max_pool2d(fmap, 4, stride=2, padding=1)[0]
+            elif pool == "avg":   # AvgPool 2x2 (halve spatial)
+                fmap = F.avg_pool2d(fmap, 2)[0]
+            else:                 # hold spatial (deeper layers)
+                fmap = fmap[0]
+        self.rep = F.adaptive_avg_pool2d(fmap.unsqueeze(0), self.pool).reshape(-1).clone()
         return [torch.zeros(10)]   # dummy output; the offline experiment reads the rep
 
     def get_representations(self) -> torch.Tensor:

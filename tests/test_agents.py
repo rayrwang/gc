@@ -61,13 +61,13 @@ def test_agent_save_and_load(tmp_path, case):
             assert torch.allclose(weight, col2.conns[address])
 
 
-# CIFARAgt is standalone (conv-BCM, no Cfg / save-load), so it gets its own tests
+# CIFARAgt is standalone (deep oja-signed conv, no Cfg / save-load), so it gets its own tests
 def test_cifar_agt_smoke():
-    """Conv-BCM forward + learning on synthetic input: rep is the right shape,
-    finite, the dummy output is 10-dim, and BCM actually moves the weights."""
+    """Deep oja-signed conv forward + learning on synthetic input: rep is the right
+    shape, finite, the dummy output is 10-dim, and learning moves the weights."""
     torch.manual_seed(0)
-    agt = CIFARAgt(channels=16, kernel=5, stride=2, pool=4)
-    w0 = agt.weight.clone()
+    agt = CIFARAgt(layers=[(3, 8, 5, "max"), (8, 16, 3, "avg")])  # tiny 2-layer net for speed
+    w0 = [w.clone() for w in agt.W]
     out = None
     for _ in range(5):
         out = agt.step([torch.rand(3, 32, 32)], use_lrn=True, disable_print=True)
@@ -75,20 +75,21 @@ def test_cifar_agt_smoke():
     assert len(out) == 1
     assert out[0].shape == (10,)
     rep = agt.get_representations()
-    assert rep.shape == (16 * 4 * 4,)
+    assert rep.shape == (16 * 2 * 2,)   # last layer 16 ch, final adaptive-pool 2x2
     assert torch.isfinite(rep).all()
-    assert not torch.allclose(agt.weight, w0)  # learning changed the weights
+    assert any(not torch.allclose(w, w_old) for w, w_old in zip(agt.W, w0))  # learning moved weights
 
 
-def test_cifar_agt_whitening():
-    """fit_whitening installs a ZCA transform that step() applies; rep stays finite."""
+def test_cifar_agt_bn_modes():
+    """Online BN: a no-learning warmup (training=True) moves the running stats; eval
+    (training defaults to use_lrn=False) uses them, stays finite, and learns nothing."""
     torch.manual_seed(0)
-    agt = CIFARAgt(channels=16, kernel=5)
-    assert agt.whiten_W is None
-    assert agt.whiten_mu is None
-    agt.fit_whitening(torch.rand(20, 3, 32, 32))
-    assert agt.whiten_W is not None
-    assert agt.whiten_mu is not None
-    assert agt.whiten_W.shape == (3 * 5 * 5, 3 * 5 * 5)  # (patch_dim, patch_dim)
-    agt.step([torch.rand(3, 32, 32)], use_lrn=False, disable_print=True)
+    agt = CIFARAgt(layers=[(3, 8, 5, "max"), (8, 16, 3, "avg")])
+    m0 = [m.clone() for m in agt.bn_m]
+    for _ in range(5):  # warmup: BN stats update, weights do not learn
+        agt.step([torch.rand(3, 32, 32)], use_lrn=False, training=True)
+    assert any(not torch.allclose(m, m_old) for m, m_old in zip(agt.bn_m, m0))
+    w_before = [w.clone() for w in agt.W]
+    agt.step([torch.rand(3, 32, 32)], use_lrn=False)  # eval: training defaults to use_lrn=False
     assert torch.isfinite(agt.get_representations()).all()
+    assert all(torch.allclose(w, w_old) for w, w_old in zip(agt.W, w_before))  # no learning in eval
