@@ -1,73 +1,57 @@
 """
-CIFAR-10: a local, ONLINE Hebbian conv stack -- no backprop, no objective, no batching, one
-sample at a time. Reproduces the SoftHebb recipe (Moraitis et al., arXiv:2209.11883) under
-gc's online/single-sample constraint, with NO offline oracles. Three conv layers trained
-ONLY by a local rule, read as a pooled feature map and probed (kNN/ridge/logistic) vs a
-SAME-INIT frozen control; the gap is what learning adds.
+CIFAR-10 substrate probe: a local, ONLINE Hebbian conv stack (no backprop, no objective, one
+sample at a time), three conv layers trained ONLY by a local rule, probed (kNN/ridge/logistic)
+vs a SAME-INIT frozen control. The gap is what learning adds.
 
-ARCHITECTURE (identical to SoftHebb's, ~5.65M conv params -- same network, param for param):
-three conv layers, 96 -> 384 -> 1536 channels, kernels 5/3/3, stride-1 + padding; spatial
-reduced 32 -> 16 -> 8 -> 4 by MaxPool(4, stride 2) after layers 1-2 and AvgPool(2) after layer
-3; affine-free BatchNorm before each conv; the final 4x4 feature map is read whole -> 24576-dim
-rep (= SoftHebb's flatten, so the comparison below is dim-matched). The only gc-vs-SoftHebb
-differences are in TRAINING (gc: fixed LR, no per-layer temperature/power/LR schedule). The
-recipe itself lives in src.agents.CIFARAgt; this script is just the harness.
+TL;DR -- the substrate is STABLE under continual training (its gains don't collapse); the
+earlier headline that it "beats SoftHebb" was wrong. This is the SUBSTRATE only -- the Dir.E
+critic, gc's actual claim, is NOT tested here. The result to want from this file is "a stable
+online substrate to build the critic on," which it now plausibly is.
 
-RULE -- oja-signed, which IS SoftHebb's update: a prototype rule gated by a SIGNED soft-WTA.
-Per location, softmax over channels; the winner moves its weight TOWARD the input (Hebbian),
-losers move AWAY (anti-Hebbian). Loser repulsion makes channels tile instead of collapsing
-onto one prototype. gc's own rules (BCM, plain instar/oja) were tested and FAIL on CIFAR --
-below the random control -- so the SoftHebb-class signed rule is the local primitive that
-works. gc's divergence from SoftHebb is what gets built ON this (the Dir.E critic), not here.
+FINDING -- read LEARNING GAINS (Δ vs each arm's OWN frozen); absolute numbers are confounded by
+a ~3-4pt frozen head-start (forward-path/seed; see bottom). Δ kNN / ridge / logistic:
+    config                   1 epoch (50k)        4 epochs (200k)
+    gc                       +6.9 /+3.5 /+1.9     +5.2 /+7.1 /+4.2
+    SoftHebb b1 (online)     +7.7 /+9.6 /+8.4     +4.5 /+5.8 /+5.5
+    SoftHebb b10 (batched)  +10.7 /+12.1/+9.5     +7.0 /+7.9 /+5.4
+At 1 epoch SoftHebb learns FAR more -- gc is NOT competitive at a single pass. The one thing gc
+does that SoftHebb (as run) doesn't is hold up under CONTINUED training: gc's gains are stable-
+to-RISING while SoftHebb's PEAK-then-DECAY. By 4 epochs gc edges online SoftHebb on kNN/ridge,
+still TRAILS it on logistic, batched SoftHebb leads throughout. Honest result: "gc's gains DON'T
+COLLAPSE under continual training," NOT "gc beats SoftHebb."
 
-FOUR INGREDIENTS, each load-bearing (drop any and it breaks):
- - Triangle activation relu(u-mean_c(u))^0.7 -- a GRADED forward code. A hard-WTA/softmax
-   activation near-one-hots the signal and collapses over depth (3 layers -> ~13% kNN).
- - SOFT weight-norm -- let ||w|| drift via the rule's decay; do NOT hard-project each step.
-   Hard projection makes learning DESTRUCTIVE (drops below the frozen baseline).
- - Online BatchNorm (current-image stats at train, running at eval) at every layer -- the
-   homeostatic regularizer. Without it, kNN is a TRANSIENT peak that collapses with training
-   (52->36); with it the rep is STABLE under indefinite (continual) training.
- - NO whitening -- BN does all the normalization. Whitening (even an online ZCA) actually
-   SUPPRESSES the kNN learning (it pre-captures the structure the prototype would learn).
+CAVEAT -- not yet a fair continual test: SoftHebb's per-layer temperature/power/LR schedule
+(tuned for 1 epoch) was not ported, so its 4-epoch decay may be un-annealed overtraining, not a
+property of induction. Needs a scheduled/annealed SoftHebb baseline + more seeds before "gc is
+stable where induction decays" is earned. Single config, ~1 seed.
 
-RESULTS (CIFAR-10, kNN/ridge/logistic %, matched on training [50k=1 epoch, 200k=4] AND on rep
-dim [both 24576] -- gc and SoftHebb read the same 4x4x1536 feature map):
-    config                     kNN    ridge   logistic
-    gc no-learning (frozen)    44.3   57.1    57.7
-    gc            50k          51.2   60.6    59.6
-    gc           200k          49.5   64.2    61.9
-    SoftHebb no-learning       43.2   53.8    53.4
-    SoftHebb b1   50k          50.9   63.4    61.8
-    SoftHebb b1  200k          47.7   59.6    58.9
-    SoftHebb b10  50k          53.9   65.9    62.9
-    SoftHebb b10 200k          50.2   61.7    58.8
-    SoftHebb native readout     --     --     79.9
-    (50k-sample + dropout + 50-epoch linear)
+----- reference below (how it works; skip unless you care) -----
 
-    no-learning rows = random conv, BN warmed (matched both sides); native readout = a much
-    harder-trained linear probe than our kNN/ridge/logistic, not comparable to the rest. The two
-    no-learning rows differ slightly (gc a touch higher) NOT from architecture (identical) but
-    the forward path: gc uses Triangle power 0.7 at EVERY layer vs SoftHebb's per-layer 0.7/1.4/
-    1.0 (its schedule, deliberately not ported), plus zero-vs-reflect padding, weight-init scale
-    (mostly BN-absorbed), BN momentum, and random-seed noise. This does not distort the learned
-    comparison -- each learning gain is measured against its OWN frozen baseline.
+RULE -- oja-signed = SoftHebb's update (Moraitis et al., arXiv:2209.11883): per-location softmax
+over channels, winner moves TOWARD the input, losers move AWAY (anti-Hebbian repulsion makes
+channels tile instead of collapsing onto one prototype). gc's own rules (BCM, plain instar/oja)
+all FAIL here -- the signed gate is required.
 
-KEY: SoftHebb is tuned for 1 epoch and DEGRADES with more training (b1 50.9->47.7 kNN); gc is
-STABLE -- no collapse, ridge/logistic even RISE with training. At 1 epoch gc already wins kNN
-(51.2 vs 50.9) and trails ridge/logistic by ~2-3; at 4 epochs (the continual regime gc targets)
-gc BEATS SoftHebb-online on ALL THREE (49.5/64.2/61.9 vs 47.7/59.6/58.9) and out-does even
-BATCHED SoftHebb on ridge/logistic. gc's edge is stability under indefinite training; SoftHebb's
-is the early-stop peak plus its per-layer schedule (temperature/power/LR), not ported here.
+FOUR INGREDIENTS, each load-bearing: (1) Triangle activation relu(u-mean_c)^0.7 -- graded code;
+hard-WTA collapses over depth. (2) SOFT weight-norm -- hard projection makes learning
+destructive. (3) Online BatchNorm -- the homeostatic regularizer; without it kNN is a transient
+peak that COLLAPSES (52->36). (4) NO whitening -- BN handles it; even online ZCA suppresses the
+kNN gain. (Per-neuron adaptive-LR also tested; HURTS kNN.)
 
-Other findings, in brief: gc's own rules (BCM, plain instar/oja) all FAIL here -- the signed
-anti-Hebbian gate is required. The four ingredients above are each necessary -- hard-WTA
-activation collapses with depth; hard weight-norm makes learning destructive; without online
-BN the kNN gain is a transient peak that COLLAPSES (52->36) under continued training; and
-whitening (even an online ZCA matching the offline oracle) SUPPRESSES the kNN gain, so none is
-used. Per-neuron adaptive-LR was tested and HURTS kNN.
+ARCHITECTURE (identical to SoftHebb, ~5.65M params): three conv 96->384->1536, kernels 5/3/3,
+stride-1+pad; spatial 32->16->8->4 via MaxPool(4,s2) after layers 1-2, AvgPool(2) after 3;
+affine-free BN before each conv; final 4x4 map read whole -> 24576-dim rep (= SoftHebb's
+flatten, dim-matched). Differs from SoftHebb only in TRAINING (gc: fixed LR, no schedule).
+Recipe in src.agents.CIFARAgt; this script is the harness. float32 (Oja products overflow fp16).
 
-float32 (the Oja outer products overflow float16 over many patches).
+ABSOLUTE NUMBERS (kNN/ridge/logistic %; gains above are vs each frozen row):
+    gc:       frozen 44.3/57.1/57.7   50k 51.2/60.6/59.6     200k 49.5/64.2/61.9
+    SoftHebb: frozen 43.2/53.8/53.4   b1 50k 50.9/63.4/61.8  b1 200k 47.7/59.6/58.9
+                                      b10 50k 53.9/65.9/62.9 b10 200k 50.2/61.7/58.8
+    SoftHebb native readout 79.9 logistic (50k-sample + dropout + 50-epoch linear -- a much
+    harder probe, not comparable). Frozen rows differ ~3-4pt NOT from architecture (identical)
+    but forward path: gc Triangle 0.7 every layer vs SoftHebb 0.7/1.4/1.0 schedule, pad, init, seed.
+
   tensorboard --logdir runs/cifar
 """
 
