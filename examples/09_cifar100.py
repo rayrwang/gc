@@ -1,18 +1,30 @@
-
 """
-CIFAR-100 version of 08_cifar10.py: same CIFARAgt, same protocol, only N_CLASSES=100.
-The agent is class-count-agnostic, so this just swaps the dataset and probe output
-dim. Kept identical to 08 (width, init, ss, whitening, 4000-sample probe set) for
-direct comparability -- the GAP is the signal; absolute numbers crater (chance 1%).
+CIFAR-100 substrate probe: the CIFAR-10 example (08_cifar10.py) on the harder 100-class task
+(1% chance). Same recipe (src.agents.CIFARAgt -- oja-signed + Triangle + soft-norm + online BN,
+no whitening, 24576-dim rep), same online single-sample protocol, same probes (kNN/ridge/
+logistic) vs a SAME-INIT frozen control. See 08 for the recipe, the four load-bearing
+ingredients, and the SoftHebb (Moraitis et al., arXiv:2209.11883) lineage. Kept deliberately
+parallel to 08 -- sync changes across both.
 
-Result: at matched probe budget the small CIFAR-10 whitened gap (~+1) washes into
-noise -- 100 classes over ~40 samples/class can't resolve a ~1% effect (not refuted,
-unresolvable). Random conv stays strong (ridge ~20% vs ~6% pixels). See 08 for the
-full arc and the whitening discussion.
+The CIFAR-100 story mirrors CIFAR-10. Read LEARNING GAINS (Δ vs each arm's OWN frozen):
+    config                  1 epoch (50k)         4 epochs (200k)
+    gc                      +4.1 / +2.0 / +1.6    +2.4 / +7.3 / +3.7
+    SoftHebb b1 (online)    +3.6 / +2.9 / +9.0    +2.2 / -1.7 / +5.9
 
-float32, same as 08.
+At 1 epoch SoftHebb learns more (especially logistic, +9.0 vs +1.6) -- gc is NOT competitive at a
+single pass. The one thing gc does that SoftHebb (as run) doesn't is hold up under CONTINUED
+training: gc's gains are stable-to-RISING (ridge 25.7->31.0) while SoftHebb's DECAY -- its ridge
+falls BELOW its own frozen by 4 epochs. By 200k gc edges SoftHebb on ridge and ~ties on
+kNN/logistic. Same honest result as 08: "gc's gains don't collapse under continual training,"
+NOT "gc beats SoftHebb." Same caveat: SoftHebb's per-layer temperature/power/LR schedule was not
+ported, so its 4-epoch decay may be un-annealed overtraining, not a property of induction; needs
+a scheduled baseline + more seeds. Single config, ~1 seed.
 
-  tensorboard --logdir runs/cifar100
+ABSOLUTE NUMBERS (kNN/ridge/logistic %, chance 1%; gains above are vs each frozen row):
+    gc:       frozen 15.1/23.7/20.1   50k 19.2/25.7/21.7   200k 17.5/31.0/23.8
+    SoftHebb: frozen 15.8/25.3/18.1   b1 50k 19.4/28.2/27.1   b1 200k 18.0/23.6/24.0
+Frozen rows differ slightly (same architecture; forward-path/seed, see 08). The recipe lives in
+src.agents.CIFARAgt; this script is the harness. float32 (Oja products overflow fp16).
 """
 
 import os
@@ -20,42 +32,42 @@ import sys
 
 sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file__))))
 
-import random
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")  # deterministic cuBLAS (set before torch)
 
 import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
-# isort: off
 from src.agents import CIFARAgt
 from src.envs import CIFAR100Dataset
 
 SEED = 0
+N_STEPS = 50000                                       # online single-sample steps (~1 epoch)
+EVAL_INTERVAL = 10000                                 # report learn-vs-frozen progress
+WARMUP = 1000                                         # populate BN stats before learning
+N_TRAIN_EVAL, N_TEST_EVAL = 3000, 1000
 N_CLASSES = 100
-N_STEPS = 5000          # online learning steps
-EVAL_INTERVAL = 500
-N_TRAIN_EVAL = 4000     # rep subset for fitting the probes
-N_TEST_EVAL = 1500
 K_NN = 20
 
 
 # Frozen classifiers (each: train feats/labels, test feats/labels -> accuracy %)
 def knn(rtr, ytr, rte, yte, k=K_NN):
     sim = F.normalize(rte, dim=1) @ F.normalize(rtr, dim=1).T
-    pred = torch.mode(ytr[sim.topk(k, dim=1).indices], dim=1).values
-    return (pred == yte).float().mean().item() * 100
+    return (torch.mode(ytr[sim.topk(k, dim=1).indices], dim=1).values == yte).float().mean().item() * 100
 
 
 def ridge(rtr, ytr, rte, yte, lam=80.0):
     targets = F.one_hot(ytr, N_CLASSES).double()
     a = torch.cat([rtr, torch.ones(len(rtr), 1)], 1).double()
     b = torch.cat([rte, torch.ones(len(rte), 1)], 1).double()
-    eye = lam * torch.eye(a.shape[1], dtype=torch.float64)
-    weights = torch.linalg.solve(a.T @ a + eye, a.T @ targets)
+    gram = a.T @ a
+    gram.diagonal().add_(lam)             # ridge penalty in-place (avoids a 24576^2 eye -> OOM at this rep dim)
+    weights = torch.linalg.solve(gram, a.T @ targets)
     return ((b @ weights).argmax(1) == yte).float().mean().item() * 100
 
 
 def logistic(rtr, ytr, rte, yte, steps=400, lr=0.05):
+    torch.manual_seed(SEED)                       # deterministic classifier init (the only RNG in eval)
     clf = torch.nn.Linear(rtr.shape[1], N_CLASSES).float()
     opt = torch.optim.Adam(clf.parameters(), lr=lr)
     for _ in range(steps):
@@ -74,68 +86,56 @@ def standardize(rtr, rte):
 
 
 def representations(agt, imgs):
-    """Read the pooled conv feature map for each image (learning off)."""
-    reps = []
+    """Read the pooled conv feature map for each image (learning off, BN in eval mode)."""
+    out = []
     for img in imgs:
-        agt.step([img], use_lrn=False, disable_print=True)
-        reps.append(agt.get_representations().float())
-    return torch.stack(reps)
+        agt.step([img], use_lrn=False, training=False)
+        out.append(agt.get_representations().float())
+    return torch.stack(out)
+
+
+def evaluate(agt, etr, ytr, ete, yte):
+    rtr, rte = standardize(representations(agt, etr), representations(agt, ete))
+    return {n: p(rtr, ytr, rte, yte) for n, p in PROBES.items()}
 
 
 if __name__ == "__main__":
     torch.set_default_dtype(torch.float32)
+    torch.use_deterministic_algorithms(True)              # fully reproducible run-to-run
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch.set_default_device(device)
-    random.seed(SEED)
-    torch.manual_seed(SEED)
 
-    # Data as bulk tensors (N, 3, 32, 32)
     train_ds, test_ds = CIFAR100Dataset(train=True), CIFAR100Dataset(train=False)
     train_imgs = (torch.tensor(train_ds.cifar.data).permute(0, 3, 1, 2).float() / 255).to(device)
     train_labels = torch.tensor(train_ds.cifar.targets, device=device)
     test_imgs = (torch.tensor(test_ds.cifar.data).permute(0, 3, 1, 2).float() / 255).to(device)
     test_labels = torch.tensor(test_ds.cifar.targets, device=device)
-    eval_tr = torch.randperm(len(train_imgs))[:N_TRAIN_EVAL]
-    eval_te = torch.arange(N_TEST_EVAL)
-    ytr, yte = train_labels[eval_tr], test_labels[eval_te]
-
-    # Learning agent and a frozen control sharing the SAME random init
-    torch.manual_seed(SEED)
-    learn_agt = CIFARAgt()
-    torch.manual_seed(SEED)
-    control_agt = CIFARAgt()
-    agents = {"learn": (learn_agt, True), "control": (control_agt, False)}
-
-    # ZCA-whiten the patches: input preprocessing, fit once and SHARED by both
-    # agents (identical for learn and control, so the only difference stays use_lrn)
-    learn_agt.fit_whitening(train_imgs[:2000])
-    control_agt.whiten_mu, control_agt.whiten_W = learn_agt.whiten_mu, learn_agt.whiten_W
-
-    # Probes on the raw flattened pixels, once, as the image baseline (the floor)
-    base_tr, base_te = standardize(
-        train_imgs[eval_tr].reshape(N_TRAIN_EVAL, -1),
-        test_imgs[eval_te].reshape(N_TEST_EVAL, -1))
-    baseline = {name: probe(base_tr, ytr, base_te, yte) for name, probe in PROBES.items()}
+    n_train = len(train_imgs)
+    gen = torch.Generator(device=device).manual_seed(SEED)
+    eval_tr = torch.randperm(n_train, generator=torch.Generator(device=device).manual_seed(0))[:N_TRAIN_EVAL]
+    ytr, yte = train_labels[eval_tr], test_labels[:N_TEST_EVAL]
+    etr, ete = train_imgs[eval_tr], test_imgs[:N_TEST_EVAL]
+    warm = torch.randint(0, n_train, (WARMUP,), generator=gen, device=device)
+    order = torch.randint(0, n_train, (N_STEPS,), generator=gen, device=device)
 
     writer = SummaryWriter("runs/cifar100")
-    print("\nImage baseline:  " + "   ".join(f"{n} {baseline[n]:.1f}%" for n in PROBES))
     print("tensorboard --logdir runs/cifar100\n")
+    torch.manual_seed(SEED)
+    learn_agt = CIFARAgt()
+    torch.manual_seed(SEED)                                   # SAME init as the control
+    control_agt = CIFARAgt()                                  # never gets use_lrn=True -> stays frozen
+    for agt in (learn_agt, control_agt):                      # warm up BN stats before learning
+        for i in warm:
+            agt.step([train_imgs[i]], use_lrn=False, training=True)
+    control = evaluate(control_agt, etr, ytr, ete, yte)       # frozen baseline (constant)
+    print("frozen baseline:  " + "   ".join(f"{p} {control[p]:.1f}" for p in PROBES), flush=True)
 
-    for step in range(N_STEPS + 1):
-        i = random.randrange(len(train_imgs))
-        for agt, lrn in agents.values():
-            agt.step([train_imgs[i]], use_lrn=lrn, disable_print=True)
-
+    for step, i in enumerate(order, 1):
+        learn_agt.step([train_imgs[i]], use_lrn=True, training=True)
         if step % EVAL_INTERVAL == 0:
-            feats = {
-                cond: standardize(representations(agt, train_imgs[eval_tr]),
-                                  representations(agt, test_imgs[eval_te]))
-                for cond, (agt, _) in agents.items()}
-            print(f"Step {step}")
-            for pname, probe in PROBES.items():
-                accs = {cond: probe(feats[cond][0], ytr, feats[cond][1], yte) for cond in agents}
-                accs["image"] = baseline[pname]
-                print(f"  {pname:9} learn {accs['learn']:5.1f}%   control {accs['control']:5.1f}%   "
-                      f"(image {accs['image']:.1f}%)   gap {accs['learn'] - accs['control']:+.1f}")
-                writer.add_scalars(pname, accs, step)
-            writer.flush()
+            acc = evaluate(learn_agt, etr, ytr, ete, yte)
+            print(f"step {step:>6}:  " + "   ".join(
+                f"{p} {acc[p]:5.1f} ({acc[p] - control[p]:+.1f})" for p in PROBES), flush=True)
+            for p in PROBES:
+                writer.add_scalars(p, {"learn": acc[p], "control": control[p]}, step)
+    writer.flush()
