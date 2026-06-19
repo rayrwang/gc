@@ -75,7 +75,7 @@ def test_cifar_agt_smoke():
     assert len(out) == 1
     assert out[0].shape == (10,)
     rep = agt.get_representations()
-    assert rep.shape == (16 * 2 * 2,)   # last layer 16 ch, final adaptive-pool 2x2
+    assert rep.shape == (16 * 4 * 4,)   # last layer 16 ch, final adaptive-pool 4x4 (default)
     assert torch.isfinite(rep).all()
     assert any(not torch.allclose(w, w_old) for w, w_old in zip(agt.W, w0))  # learning moved weights
 

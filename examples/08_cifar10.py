@@ -8,9 +8,10 @@ SAME-INIT frozen control; the gap is what learning adds.
 ARCHITECTURE (identical to SoftHebb's, ~5.65M conv params -- same network, param for param):
 three conv layers, 96 -> 384 -> 1536 channels, kernels 5/3/3, stride-1 + padding; spatial
 reduced 32 -> 16 -> 8 -> 4 by MaxPool(4, stride 2) after layers 1-2 and AvgPool(2) after layer
-3; affine-free BatchNorm before each conv; final adaptive-avg-pool to 2x2 -> 6144-dim rep. The
-only gc-vs-SoftHebb differences are in TRAINING (gc: fixed LR, no per-layer temperature/power/LR
-schedule). The recipe itself lives in src.agents.CIFARAgt; this script is just the harness.
+3; affine-free BatchNorm before each conv; the final 4x4 feature map is read whole -> 24576-dim
+rep (= SoftHebb's flatten, so the comparison below is dim-matched). The only gc-vs-SoftHebb
+differences are in TRAINING (gc: fixed LR, no per-layer temperature/power/LR schedule). The
+recipe itself lives in src.agents.CIFARAgt; this script is just the harness.
 
 RULE -- oja-signed, which IS SoftHebb's update: a prototype rule gated by a SIGNED soft-WTA.
 Per location, softmax over channels; the winner moves its weight TOWARD the input (Hebbian),
@@ -30,11 +31,12 @@ FOUR INGREDIENTS, each load-bearing (drop any and it breaks):
  - NO whitening -- BN does all the normalization. Whitening (even an online ZCA) actually
    SUPPRESSES the kNN learning (it pre-captures the structure the prototype would learn).
 
-RESULTS (CIFAR-10, kNN/ridge/logistic %, matched on training: 50k=1 epoch, 200k=4 epochs):
+RESULTS (CIFAR-10, kNN/ridge/logistic %, matched on training [50k=1 epoch, 200k=4] AND on rep
+dim [both 24576] -- gc and SoftHebb read the same 4x4x1536 feature map):
     config                     kNN    ridge   logistic
-    gc no-learning (frozen)    41.7   52.0    59.2
-    gc            50k          48.2   53.5    59.8
-    gc           200k          47.3   58.8    63.3
+    gc no-learning (frozen)    44.3   57.1    57.7
+    gc            50k          51.2   60.6    59.6
+    gc           200k          49.5   64.2    61.9
     SoftHebb b1   50k          50.9   63.4    61.8
     SoftHebb b1  200k          47.7   59.6    58.9
     SoftHebb b10  50k          53.9   65.9    62.9
@@ -43,18 +45,18 @@ RESULTS (CIFAR-10, kNN/ridge/logistic %, matched on training: 50k=1 epoch, 200k=
     (50k-sample + dropout + 50-epoch linear)
 
 KEY: SoftHebb is tuned for 1 epoch and DEGRADES with more training (b1 50.9->47.7 kNN); gc is
-STABLE -- no collapse, ridge/logistic even rise. So at 1 epoch SoftHebb leads, but at 4 epochs
-(the continual regime gc targets) gc TIES SoftHebb-online on kNN/ridge and BEATS it on logistic
-(63.3 vs 58.9). gc's edge is stability under indefinite training; SoftHebb's is the early-stop
-peak plus its per-layer schedule (temperature/power/LR), deliberately not ported here.
+STABLE -- no collapse, ridge/logistic even RISE with training. At 1 epoch gc already wins kNN
+(51.2 vs 50.9) and trails ridge/logistic by ~2-3; at 4 epochs (the continual regime gc targets)
+gc BEATS SoftHebb-online on ALL THREE (49.5/64.2/61.9 vs 47.7/59.6/58.9) and out-does even
+BATCHED SoftHebb on ridge/logistic. gc's edge is stability under indefinite training; SoftHebb's
+is the early-stop peak plus its per-layer schedule (temperature/power/LR), not ported here.
 
 Other findings, in brief: gc's own rules (BCM, plain instar/oja) all FAIL here -- the signed
 anti-Hebbian gate is required. The four ingredients above are each necessary -- hard-WTA
 activation collapses with depth; hard weight-norm makes learning destructive; without online
 BN the kNN gain is a transient peak that COLLAPSES (52->36) under continued training; and
 whitening (even an online ZCA matching the offline oracle) SUPPRESSES the kNN gain, so none is
-used. Per-neuron adaptive-LR was tested and HURTS kNN. SoftHebb's larger linear-probe gaps are
-mostly its BatchNorm conditioning + channel count, not representation quality.
+used. Per-neuron adaptive-LR was tested and HURTS kNN.
 
 float32 (the Oja outer products overflow float16 over many patches).
   tensorboard --logdir runs/cifar
@@ -131,6 +133,7 @@ def evaluate(agt, etr, ytr, ete, yte):
 
 if __name__ == "__main__":
     torch.set_default_dtype(torch.float32)
+    torch.use_deterministic_algorithms(True)              # fully reproducible run-to-run
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch.set_default_device(device)
 

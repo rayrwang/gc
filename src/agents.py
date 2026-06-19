@@ -1218,6 +1218,8 @@ class CIFARAgt:
 
     layers: list of (in_ch, out_ch, kernel, pool), pool in {max, avg, none} --
     max=MaxPool(4,s2,p1), avg=AvgPool(2), none=hold spatial (for extra depth).
+    pool: side of the final adaptive-avg-pool; default 4 keeps the full 4x4 map
+    (24576-dim rep, matching SoftHebb's readout -- reducing it to 2x2 costs ridge & kNN).
 
     Standalone (a conv doesn't fit the vector-col Col framework); step() /
     get_representations() interface like the probe examples. `training` (BN mode)
@@ -1226,13 +1228,13 @@ class CIFARAgt:
     """
     def __init__(self, layers: list | None = None, base_lr: float = 0.03,
                  power: float = 0.7, signed_t: float = 1.0, scale: float = 3.0,
-                 bn_mom: float = 0.01, pool: int = 2):
+                 bn_mom: float = 0.01, pool: int = 4):
         self.layers = DEFAULT_CIFAR_LAYERS if layers is None else layers
         self.base_lr = base_lr
         self.power = power            # Triangle activation exponent
         self.signed_t = signed_t      # soft-WTA gate temperature
         self.bn_mom = bn_mom          # online-BN running-stat momentum
-        self.pool = pool              # final adaptive-avg-pool side
+        self.pool = pool              # final adaptive-avg-pool side (4 -> full 4x4 = 24576-dim rep)
         # He-ish init per layer; weight (in*k*k, out) projects unfolded patches
         self.W = [scale * torch.randn(ic * k * k, oc) / (ic * k * k) ** 0.5
                   for ic, oc, k, _ in self.layers]
