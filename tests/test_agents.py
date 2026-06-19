@@ -45,6 +45,7 @@ def test_agent_save_and_load(tmp_path, case):
     for loc1, col1 in agt1.cols.items():
         assert loc1 in agt2.cols
         col2 = agt2.cols[loc1]
+        assert type(col1) is type(col2)  # Load must reconstruct the same col subclass
         assert len(vars(col1)) == len(vars(col2))
         assert col1.cfg == col2.cfg
         for name1, value1 in vars(col1).items():
