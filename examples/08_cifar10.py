@@ -48,9 +48,10 @@ differ ~3-4pt) and the LR (TRAINING: gc fixed) -- plus minor padding/init/BN-mom
 Recipe in src.agents.CIFARAgt; this script is the harness. float32 (Oja products overflow fp16).
 
 ABSOLUTE NUMBERS (kNN/ridge/logistic %; gains above are vs each frozen row):
-    gc:       frozen 44.3/57.1/57.7   50k 51.2/60.6/59.6     200k 49.5/64.2/61.9
-    SoftHebb: frozen 43.2/53.8/53.4   b1 50k 50.9/63.4/61.8  b1 200k 47.7/59.6/58.9
-                                      b10 50k 53.9/65.9/62.9 b10 200k 50.2/61.7/58.8
+    gc:       frozen 44.3/57.1/57.7        50k 51.2/60.6/59.6        200k 49.5/64.2/61.9
+    SoftHebb: frozen 43.2/53.8/53.4    b1  50k 50.9/63.4/61.8    b1  200k 47.7/59.6/58.9
+                                       b10 50k 53.9/65.9/62.9    b10 200k 50.2/61.7/58.8
+
     SoftHebb native readout 79.9 logistic (50k-sample + dropout + 50-epoch linear -- a much
     harder probe, not comparable). Frozen rows differ ~3-4pt from those forward-path differences
     (above), not from architecture.

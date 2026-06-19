@@ -21,8 +21,9 @@ ported, so its 4-epoch decay may be un-annealed overtraining, not a property of 
 a scheduled baseline + more seeds. Single config, ~1 seed.
 
 ABSOLUTE NUMBERS (kNN/ridge/logistic %, chance 1%; gains above are vs each frozen row):
-    gc:       frozen 15.1/23.7/20.1   50k 19.2/25.7/21.7   200k 17.5/31.0/23.8
-    SoftHebb: frozen 15.8/25.3/18.1   b1 50k 19.4/28.2/27.1   b1 200k 18.0/23.6/24.0
+    gc:       frozen 15.1/23.7/20.1       50k 19.2/25.7/21.7       200k 17.5/31.0/23.8
+    SoftHebb: frozen 15.8/25.3/18.1    b1 50k 19.4/28.2/27.1    b1 200k 18.0/23.6/24.0
+
 Frozen rows differ slightly (same architecture; forward-path/seed, see 08). The recipe lives in
 src.agents.CIFARAgt; this script is the harness. float32 (Oja products overflow fp16).
 """
