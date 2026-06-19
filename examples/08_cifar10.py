@@ -46,7 +46,12 @@ dim [both 24576] -- gc and SoftHebb read the same 4x4x1536 feature map):
     (50k-sample + dropout + 50-epoch linear)
 
     no-learning rows = random conv, BN warmed (matched both sides); native readout = a much
-    harder-trained linear probe than our kNN/ridge/logistic, not comparable to the rest.
+    harder-trained linear probe than our kNN/ridge/logistic, not comparable to the rest. The two
+    no-learning rows differ slightly (gc a touch higher) NOT from architecture (identical) but
+    the forward path: gc uses Triangle power 0.7 at EVERY layer vs SoftHebb's per-layer 0.7/1.4/
+    1.0 (its schedule, deliberately not ported), plus zero-vs-reflect padding, weight-init scale
+    (mostly BN-absorbed), BN momentum, and random-seed noise. This does not distort the learned
+    comparison -- each learning gain is measured against its OWN frozen baseline.
 
 KEY: SoftHebb is tuned for 1 epoch and DEGRADES with more training (b1 50.9->47.7 kNN); gc is
 STABLE -- no collapse, ridge/logistic even RISE with training. At 1 epoch gc already wins kNN
