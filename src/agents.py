@@ -1266,7 +1266,7 @@ class CIFARAgt:
         if training is None:          # BN trains iff we are learning (override for warmup)
             training = use_lrn
         fmap = ipt[0].to(torch.get_default_device()).to(torch.get_default_dtype())  # (C, H, W)
-        for li, (ic, oc, k, pool) in enumerate(self.layers):
+        for li, (_ic, oc, k, pool) in enumerate(self.layers):
             fmap = self._bn(fmap, li, training)
             h, w = fmap.shape[1], fmap.shape[2]
             x = F.unfold(fmap.unsqueeze(0), k, stride=1, padding=(k - 1) // 2)[0].T  # (h*w, ic*k*k)

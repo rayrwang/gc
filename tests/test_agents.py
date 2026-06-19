@@ -77,7 +77,7 @@ def test_cifar_agt_smoke():
     rep = agt.get_representations()
     assert rep.shape == (16 * 4 * 4,)   # last layer 16 ch, final adaptive-pool 4x4 (default)
     assert torch.isfinite(rep).all()
-    assert any(not torch.allclose(w, w_old) for w, w_old in zip(agt.W, w0))  # learning moved weights
+    assert any(not torch.allclose(w, w_old) for w, w_old in zip(agt.W, w0, strict=True))  # learning moved weights
 
 
 def test_cifar_agt_bn_modes():
@@ -88,8 +88,8 @@ def test_cifar_agt_bn_modes():
     m0 = [m.clone() for m in agt.bn_m]
     for _ in range(5):  # warmup: BN stats update, weights do not learn
         agt.step([torch.rand(3, 32, 32)], use_lrn=False, training=True)
-    assert any(not torch.allclose(m, m_old) for m, m_old in zip(agt.bn_m, m0))
+    assert any(not torch.allclose(m, m_old) for m, m_old in zip(agt.bn_m, m0, strict=True))
     w_before = [w.clone() for w in agt.W]
     agt.step([torch.rand(3, 32, 32)], use_lrn=False)  # eval: training defaults to use_lrn=False
     assert torch.isfinite(agt.get_representations()).all()
-    assert all(torch.allclose(w, w_old) for w, w_old in zip(agt.W, w_before))  # no learning in eval
+    assert all(torch.allclose(w, w_old) for w, w_old in zip(agt.W, w_before, strict=True))  # no learning in eval

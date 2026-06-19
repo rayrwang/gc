@@ -77,7 +77,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
-from src.agents import CIFARAgt          # the recipe lives in the agent; this script is the harness
+from src.agents import CIFARAgt
 from src.envs import CIFARDataset
 
 SEED = 0
