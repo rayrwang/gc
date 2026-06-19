@@ -9,10 +9,10 @@ measures representation quality from local unsupervised learning, nothing more.
 
 FINDING -- read LEARNING GAINS (Δ vs each arm's OWN frozen); absolute numbers are confounded by
 a ~3-4pt frozen head-start (forward-path/seed; see bottom). Δ kNN / ridge / logistic:
-    config                   1 epoch (50k)        4 epochs (200k)
-    gc                       +6.9 /+3.5 /+1.9     +5.2 /+7.1 /+4.2
-    SoftHebb b1 (online)     +7.7 /+9.6 /+8.4     +4.5 /+5.8 /+5.5
-    SoftHebb b10 (batched)  +10.7 /+12.1/+9.5     +7.0 /+7.9 /+5.4
+    config                    1 epoch (50k)           4 epochs (200k)
+    gc                         +6.9 / +3.5  / +1.9    +5.2 / +7.1 / +4.2
+    SoftHebb b1 (online)       +7.7 / +9.6  / +8.4    +4.5 / +5.8 / +5.5
+    SoftHebb b10 (batched)    +10.7 / +12.1 / +9.5    +7.0 / +7.9 / +5.4
 
 At 1 epoch SoftHebb learns FAR more -- gc is NOT competitive at a single pass. The one thing gc
 does that SoftHebb (as run) doesn't is hold up under CONTINUED training: gc's gains are stable-
