@@ -5,6 +5,13 @@ gc's online/single-sample constraint, with NO offline oracles. Three conv layers
 ONLY by a local rule, read as a pooled feature map and probed (kNN/ridge/logistic) vs a
 SAME-INIT frozen control; the gap is what learning adds.
 
+ARCHITECTURE (identical to SoftHebb's, ~5.65M conv params -- same network, param for param):
+three conv layers, 96 -> 384 -> 1536 channels, kernels 5/3/3, stride-1 + padding; spatial
+reduced 32 -> 16 -> 8 -> 4 by MaxPool(4, stride 2) after layers 1-2 and AvgPool(2) after layer
+3; affine-free BatchNorm before each conv; final adaptive-avg-pool to 2x2 -> 6144-dim rep. The
+only gc-vs-SoftHebb differences are in TRAINING (gc: fixed LR, no per-layer temperature/power/LR
+schedule). The recipe itself lives in src.agents.CIFARAgt; this script is just the harness.
+
 RULE -- oja-signed, which IS SoftHebb's update: a prototype rule gated by a SIGNED soft-WTA.
 Per location, softmax over channels; the winner moves its weight TOWARD the input (Hebbian),
 losers move AWAY (anti-Hebbian). Loser repulsion makes channels tile instead of collapsing
