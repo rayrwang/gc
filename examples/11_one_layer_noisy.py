@@ -34,6 +34,7 @@ os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")  # deterministic cuB
 
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
 
 SEED = 0
 D, K, WIDTH = 256, 10, 512        # input dim, n clusters, layer width (rep dim)
@@ -149,17 +150,21 @@ if __name__ == "__main__":
                             torch.Generator(device=device).manual_seed(1)).rep)  # random projection
     print(f"R={R} (noisy)  raw {raw:.1f} | oracle {oracle:.1f} | frozen {frozen:.1f}   [kNN %, chance 10]\n")
 
+    cells = [(hname, bn, adaptlr, rule, comp, sign)
+             for hname, bn, adaptlr in HOMEO
+             for rule in ("oja", "instar", "bcm")
+             for comp in ("none", "triangle", "inhibit", "wta")
+             for sign in ("unsigned", "signed")]
     results = []
-    for hname, bn, adaptlr in HOMEO:
-        for rule in ("oja", "instar", "bcm"):
-            for comp in ("none", "triangle", "inhibit", "wta"):
-                for sign in ("unsigned", "signed"):
-                    agt = OneLayer(rule, comp, sign, bn, adaptlr,
-                                   torch.Generator(device=device).manual_seed(1))
-                    for s in order:
-                        agt.learn(Xtr[s])
-                    val = probe(agt.rep) if torch.isfinite(agt.rep(Xev)).all() else float("nan")
-                    results.append((val, rule, comp, sign, hname))
+    bar = tqdm(cells, desc="sweep", ncols=88)
+    for hname, bn, adaptlr, rule, comp, sign in bar:
+        bar.set_postfix_str(f"{rule}/{comp}/{sign}/{hname}")
+        agt = OneLayer(rule, comp, sign, bn, adaptlr,
+                       torch.Generator(device=device).manual_seed(1))
+        for s in order:
+            agt.learn(Xtr[s])
+        val = probe(agt.rep) if torch.isfinite(agt.rep(Xev)).all() else float("nan")
+        results.append((val, rule, comp, sign, hname))
 
     print(f"{'rank':<5}{'kNN':>6}  {'rule':<7}{'competition':<12}{'sign':<10}{'homeostasis'}")
     finite = sorted([r for r in results if r[0] == r[0]], key=lambda r: -r[0])
