@@ -68,13 +68,14 @@ def inhibit(x):
     - Other ways of integrating expectations e.g. Outstar, predictive coding
     - Structured (distance-tuned) surround: sum over neighbours instead of all
     """
+    from src.agents import Activs  # Avoid circular import
     A = 5.0
     THRESHOLD = 0.8
-    d = x[0].shape[0]
+    d = x.actual.shape[0]
     # Where both activations AND expectations are above threshold
-    expected = spike(x[0]) * torch.where(x[1] < THRESHOLD, 0.0, 1.0)
+    expected = spike(x.actual) * torch.where(x.expect < THRESHOLD, 0.0, 1.0)
     inhib = (A / (d - 1)) * (expected - expected.sum())
-    return [x[0] + inhib, *x[1:]]
+    return Activs(x.actual + inhib, x.expect, x.avg, x.avg_sq)
 
 
 def triangle(u, power=0.7):
@@ -223,19 +224,20 @@ def lrn_adaptive(x, w, y, ss=1e-2):
 
     Δw ∝ x * y * (y-y_avg)
     """
-    d_x, = x[0].shape
-    d_y, = y[0].shape
+    d_x, = x.actual.shape
+    d_y, = y.actual.shape
 
     check_shapes(d_x, tuple(w.shape), d_y, "adaptive learning rule")
 
-    xu = x[0][:, None]       # (d_x 1)
-    yu = y[0][None, :]       # (1 d_y)
-    y_avg_u = y[3][None, :]  # (1 d_y)
+    xu = x.actual[:, None]       # (d_x 1)
+    yu = y.actual[None, :]       # (1 d_y)
+    y_avg_u = y.avg_sq[None, :]  # (1 d_y)
 
     return w + ss * xu * yu * (yu-y_avg_u)
 @torch.compile(disable=disable_compile)
 def lrn_adaptive_d(x, w, y, ss=1e-2):
-    return lrn_adaptive([spike(x[0]), *x[1:]], w, y, ss=ss)
+    from src.agents import Activs  # Avoid circular import
+    return lrn_adaptive(Activs(spike(x.actual), x.expect, x.avg, x.avg_sq), w, y, ss=ss)
 
 
 # Default learning rule to expose

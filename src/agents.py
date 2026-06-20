@@ -66,7 +66,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, fields
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Literal
 
 import dacite
 import numpy as np
@@ -83,14 +83,10 @@ from . import funcs as fc
 class Dir(Enum):  # Direction (kind) of connection
     A = 0  # Actual / "prediction errors" : connects actual to actual activations
     E = 1  # Expectations / "predictions" : connected actual to expectations activations
-torch.serialization.add_safe_globals([Dir])
 
 
 # Type hints ##################################################################
 Loc = tuple[int, int]  # Location of col (module)
-# 4 copies of activations (actual, expectations, average, average of squares)
-Activs = Annotated[list[torch.Tensor], 4]
-Weights = torch.Tensor
 
 Input = torch.Tensor
 Output = torch.Tensor
@@ -98,19 +94,25 @@ Inputs = list[Input]
 Outputs = list[Output]
 
 
+# Activations and weights classes #############################################
+@dataclass(slots=True)
+class Activs:
+    actual: torch.Tensor  # actual activations
+    expect: torch.Tensor  # expectations
+    avg: torch.Tensor     # time average of activations
+    avg_sq: torch.Tensor  # time average of squares of activations
+    # TODO per activation plasticity/step size, batchnorm statistics?
+torch.serialization.add_safe_globals([Dir, Activs])
+
+
+Weights = torch.Tensor  # TODO use dataclass? if need to attach more info
+
+
 # Activations and weights inits ###############################################
 # Activations
 def activs(d: int) -> Activs:
-    """
-    nr_<name>[0] : actual activations
-    nr_<name>[1] : expectations
-    nr_<name>[2] : time average of activations
-    nr_<name>[3] : time average of squares of activations
-
-    TODO use dataclass?
-    """
     activations = torch.randn(d)
-    return [activations, torch.zeros(d), activations.clone(), activations**2]
+    return Activs(activations, torch.zeros(d), activations.clone(), activations**2)
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
@@ -179,14 +181,24 @@ class ColBase(ABC):
     def __getattr__(self, name):
         if name in self.conn_layer_dict:
             layer_name, i = self.conn_layer_dict[name]
-            return getattr(self, layer_name)[i]
+            if i == 0:  # TODO temporary hack
+                return getattr(self, layer_name).actual
+            elif i == 1:
+                return getattr(self, layer_name).expect
+            else:
+                raise NotImplementedError
         else:
             raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if name in self.conn_layer_dict:
             layer_name, i = self.conn_layer_dict[name]
-            getattr(self, layer_name)[i] = value
+            if i == 0:  # TODO temporary hack
+                getattr(self, layer_name).actual = value
+            elif i == 1:
+                getattr(self, layer_name).expect = value
+            else:
+                raise NotImplementedError
         else:
             super().__setattr__(name, value)  # Default behavior
 
@@ -198,7 +210,7 @@ class ColBase(ABC):
         esyns = 0  # External (to other cols) weights
         for name, value in vars(self).items():
             if name.startswith("nr_") and name[-1] != "_":
-                nrns += value[0].numel()
+                nrns += value.actual.numel()
             elif name.startswith("is_"):
                 isyns += value.numel()
 
@@ -348,42 +360,46 @@ class BareCol(ColBase):  # 1 layer, no internal weights
 
     def update_activations(self):
         # Compute new activations averages
-        new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
-        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
+        new_avg_1 = ALPHA*self.nr_1_.actual + (1-ALPHA)*self.nr_1.avg
+        new_avg_sq_1 = ALPHA*self.nr_1_.actual**2 + (1-ALPHA)*self.nr_1.avg_sq
 
         # Move new activations to current
-        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
-        self.nr_1[2] = new_avg_1
-        self.nr_1[3] = new_avg_sq_1
+            # Intentional shallow copy
+        self.nr_1.actual = self.nr_1_.actual
+        self.nr_1.expect = self.nr_1_.expect
+        self.nr_1.avg = new_avg_1
+        self.nr_1.avg_sq = new_avg_sq_1
 
         # Reset new activations
-        self.nr_1_[0] = fc.update(self.nr_1_[0])
-        self.nr_1_[1] = fc.update_e(self.nr_1_[1])
+        self.nr_1_.actual = fc.update(self.nr_1_.actual)
+        self.nr_1_.expect = fc.update_e(self.nr_1_.expect)
 
 
 I_VectorColCfg = BareColCfg
 class I_VectorCol(BareCol, I_ColBase):
     def update_activations(self):
         # Compute new activations averages
-        new_avg_1 = ALPHA*self.nr_1_[0] + (1-ALPHA)*self.nr_1[2]
-        new_avg_sq_1 = ALPHA*self.nr_1_[0]**2 + (1-ALPHA)*self.nr_1[3]
+        new_avg_1 = ALPHA*self.nr_1_.actual + (1-ALPHA)*self.nr_1.avg
+        new_avg_sq_1 = ALPHA*self.nr_1_.actual**2 + (1-ALPHA)*self.nr_1.avg_sq
 
         # Move new activations to current
-        self.nr_1 = self.nr_1_.copy()  # Intentional shallow copy
-        self.nr_1[2] = new_avg_1
-        self.nr_1[3] = new_avg_sq_1
+            # Intentional shallow copy
+        self.nr_1.actual = self.nr_1_.actual
+        self.nr_1.expect = self.nr_1_.expect
+        self.nr_1.avg = new_avg_1
+        self.nr_1.avg_sq = new_avg_sq_1
 
         # Receives perceptual input, don't reset
 
     def ipt(self, x: Input) -> None:
         x = x.to(torch.get_default_device()).to(torch.get_default_dtype())
-        self.nr_1_[0] = x
+        self.nr_1_.actual = x
 
 
 O_VectorColCfg = BareColCfg
 class O_VectorCol(BareCol, O_ColBase):
     def out(self) -> Output:
-        return self.nr_1[0].clone().cpu()
+        return self.nr_1.actual.clone().cpu()
 
 
 @dataclass
@@ -433,7 +449,9 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
     def inhibit(self):
         # Lateral inhibition for winner take all, by combining actual and expected
         for new in (self.nr_1_, self.nr_2_, self.nr_3_, self.nr_4_, self.nr_5_):
-            new[:] = fc.inhibit(new)
+            after_inhibit = fc.inhibit(new)
+            for f in fields(new):
+                setattr(new, f.name, getattr(after_inhibit, f.name))
 
     conn_layer_dict = {
         "a_pre": ("nr_4", 0),
@@ -448,19 +466,19 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
 
     def step(self):
         # Apply learning rules
-        self.is_1_2   = fc.lrn(self.nr_1[0], self.is_1_2, self.nr_2[0])
-        self.is_2_3_f = fc.lrn(self.nr_2[0], self.is_2_3_f, self.nr_3[0])
-        self.is_2_3_b = fc.lrn(self.nr_3[0], self.is_2_3_b, self.nr_2[0])
-        self.is_2_4   = fc.lrn(self.nr_2[0], self.is_2_4, self.nr_4[0])
-        self.is_4_5   = fc.lrn(self.nr_4[0], self.is_4_5, self.nr_5[0])
+        self.is_1_2   = fc.lrn(self.nr_1.actual, self.is_1_2, self.nr_2.actual)
+        self.is_2_3_f = fc.lrn(self.nr_2.actual, self.is_2_3_f, self.nr_3.actual)
+        self.is_2_3_b = fc.lrn(self.nr_3.actual, self.is_2_3_b, self.nr_2.actual)
+        self.is_2_4   = fc.lrn(self.nr_2.actual, self.is_2_4, self.nr_4.actual)
+        self.is_4_5   = fc.lrn(self.nr_4.actual, self.is_4_5, self.nr_5.actual)
 
         # Apply activity rule (propagate activations)
-        self.nr_1_[0]  # No local inputs
-        self.nr_2_[0] += fc.atv(self.nr_1[0], self.is_1_2, self.nr_2_[0]) \
-            + fc.atv(self.nr_3[0], self.is_2_3_b, self.nr_2_[0])
-        self.nr_3_[0] += fc.atv(self.nr_2[0], self.is_2_3_f, self.nr_3_[0])
-        self.nr_4_[0] += fc.atv(self.nr_2[0], self.is_2_4, self.nr_4_[0])
-        self.nr_5_[0] += fc.atv(self.nr_4[0], self.is_4_5, self.nr_5_[0])
+        # self.nr_1_.actual  # No local inputs
+        self.nr_2_.actual += fc.atv(self.nr_1.actual, self.is_1_2, self.nr_2_.actual) \
+            + fc.atv(self.nr_3.actual, self.is_2_3_b, self.nr_2_.actual)
+        self.nr_3_.actual += fc.atv(self.nr_2.actual, self.is_2_3_f, self.nr_3_.actual)
+        self.nr_4_.actual += fc.atv(self.nr_2.actual, self.is_2_4, self.nr_4_.actual)
+        self.nr_5_.actual += fc.atv(self.nr_4.actual, self.is_4_5, self.nr_5_.actual)
 
     def update_activations(self):
         for curr, new in zip(
@@ -468,17 +486,19 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
                 (self.nr_1_, self.nr_2_, self.nr_3_, self.nr_4_, self.nr_5_),
                 strict=True):
             # Compute new activations averages
-            new_avg = ALPHA*new[0] + (1-ALPHA)*curr[2]
-            new_avg_sq = ALPHA*new[0]**2 + (1-ALPHA)*curr[3]
+            new_avg = ALPHA*new.actual + (1-ALPHA)*curr.avg
+            new_avg_sq = ALPHA*new.actual**2 + (1-ALPHA)*curr.avg_sq
 
             # Move new activations to current
-            curr[:] = new  # Intentional shallow copy
-            curr[2] = new_avg
-            curr[3] = new_avg_sq
+                # Intentional shallow copy
+            curr.actual = new.actual
+            curr.expect = new.expect
+            curr.avg = new_avg
+            curr.avg_sq = new_avg_sq
 
             # Reset new activations
-            new[0] = fc.update(new[0])
-            new[1] = fc.update_e(new[1])
+            new.actual = fc.update(new.actual)
+            new.expect = fc.update_e(new.expect)
 
 
 CFG_REGISTRY = {}
@@ -695,8 +715,8 @@ class AgtBase(ABC):
                 for name, x in vars(col).items():
                     # Only count current activations, not new
                     if name.startswith("nr_") and name[-1] != "_":
-                        copies = len(x)  # Assume is same for all activations
-                        x = x[0]
+                        copies = len(fields(x))  # Assume is same for all activations
+                        x = x.actual
                         nrns += x.numel()
                         threshold = 1.0
                         sum_density += torch.sum(torch.where(x < threshold, 0.0, 1.0)).item()
@@ -731,7 +751,8 @@ class AgtBase(ABC):
             for name, x in vars(col).items():
                 # Only send current activations, not new
                 if name.startswith("nr_") and name[-1] != "_":
-                    info[name] = [stats(x_i, False) for x_i in x]
+                    # NOTE Depends on Activs dataclass preserving order
+                    info[name] = [stats(getattr(x, x_i.name), False) for x_i in fields(x)]
                 elif name.startswith("is_"):
                     info[name] = stats(x, True)
 
@@ -772,7 +793,9 @@ class AgtBase(ABC):
 
             loc, i = request
             if hasattr(self.cols[loc], f"nr_{i}"):
-                x, _, x_avg, *_ = getattr(self.cols[loc], f"nr_{i}")
+                full_activs = getattr(self.cols[loc], f"nr_{i}")
+                x = full_activs.actual
+                x_avg = full_activs.avg
                 info = {}
                 info["timestamp"] = time.time()
                 info["request"] = request  # for debugger to verify info is up to date
