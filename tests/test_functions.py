@@ -21,7 +21,7 @@ def test_activity_rule_shapes():
     func
     for name, func in inspect.getmembers(fc, inspect.isfunction)
     if name.startswith("lrn") and func.__module__ == fc.__name__ \
-        and not name.startswith("lrn_adaptive")  # TODO make signature consistent
+        and not name.startswith(("lrn_adaptive", "lrn_oja_signed"))  # different signatures
 ])
 def test_learning_rule_shapes_basic(func):
     D_X = 233
@@ -215,3 +215,48 @@ def test_density_and_dist():
     assert fc.density(torch.tensor([0.5, 1.5, 2.0, 0.9])) == 0.5
     assert fc.density(torch.tensor([2.0, 2.0]), 1.0) == 1.0
     assert fc.dist([0.0, 0.0], [3.0, 4.0]) == pytest.approx(5.0)
+
+
+def test_triangle_centers_and_grades():
+    """`triangle` = relu(u - row_mean) ** power: below-mean units are zeroed, the
+    above-mean remainder is graded (not one-hot)."""
+    out = fc.triangle(torch.tensor([[3.0, 1.0, 2.0]]), power=1.0)   # mean 2 -> diff [1,-1,0]
+    assert torch.allclose(out, torch.tensor([[1.0, 0.0, 0.0]]))
+    out07 = fc.triangle(torch.tensor([[4.0, 0.0]]), power=0.7)      # mean 2 -> diff [2,-2]
+    assert out07[0, 0].item() == pytest.approx(2.0 ** 0.7)
+    assert out07[0, 1].item() == 0.0
+
+
+def test_softmax_wta_unsigned():
+    """Unsigned gate = softmax over the last dim: non-negative, sums to 1, winner largest."""
+    u = torch.tensor([[2.0, 1.0, 0.0]])
+    g = fc.softmax_wta(u, t=1.0, signed=False)
+    assert torch.allclose(g, torch.softmax(u, dim=-1))
+    assert torch.all(g >= 0)
+    assert g.sum().item() == pytest.approx(1.0)
+    assert g.argmax().item() == 0
+
+
+def test_softmax_wta_signed():
+    """Signed gate (SoftHebb): winner = +softmax, every loser = -softmax (anti-Hebbian).
+    Magnitudes are still the softmax responsibilities."""
+    u = torch.tensor([[2.0, 1.0, 0.0]])
+    g = fc.softmax_wta(u, t=1.0, signed=True)
+    resp = torch.softmax(u, dim=-1)
+    assert g[0, 0] > 0                          # winner positive
+    assert torch.all(g[0, 1:] < 0)             # losers negative
+    assert torch.allclose(g.abs(), resp)       # magnitudes = softmax
+    assert torch.allclose(g[0, 1:], -resp[0, 1:])
+
+
+def test_lrn_oja_signed_matches_formula():
+    """Batched gated-Oja dW = (x^T gate - w * sum_n(gate*u)) / n, normalized by n samples."""
+    torch.manual_seed(0)
+    n, d_x, d_y = 5, 4, 3
+    x = torch.randn(n, d_x)
+    w = torch.randn(d_x, d_y)
+    u = x @ w
+    g = fc.softmax_wta(u, signed=True)
+    dW = fc.lrn_oja_signed(x, w, g, u)
+    assert tuple(dW.shape) == (d_x, d_y)
+    assert torch.allclose(dW, (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n)

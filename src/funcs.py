@@ -77,6 +77,36 @@ def inhibit(x):
     return [x[0] + inhib, *x[1:]]
 
 
+def triangle(u, power=0.7):
+    """
+    `(n d), () -> (n d)`
+
+    Triangle activation (SoftHebb): relu(u - mean_d(u)) ** power, centering each
+    row across its d units. A graded soft-competition -- units above the local mean
+    fire, raised to `power` -- that propagates a distributed code instead of the
+    one-hot a hard winner-take-all would collapse to.
+    """
+    return torch.relu(u - u.mean(-1, keepdim=True)) ** power
+
+
+def softmax_wta(u, t=1.0, signed=False):
+    """
+    `(n d), (), () -> (n d)`
+
+    Soft winner-take-all gate over the d units of each row -- the learning credit
+    each unit gets for the input. `signed=False`: softmax(t*u), all non-negative
+    (winner most, losers a little). `signed=True` (SoftHebb): the winner keeps
+    +softmax, every loser is negated -> anti-Hebbian repulsion. `t` is the inverse
+    temperature (sharpness). Pair with `lrn_oja_signed` as the gate.
+    """
+    resp = torch.softmax(t * u, dim=-1)
+    if not signed:
+        return resp
+    gate = -resp
+    gate[torch.arange(u.shape[0]), u.argmax(-1)] *= -1
+    return gate
+
+
 @torch.compile(disable=disable_compile)
 def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     """
@@ -167,6 +197,21 @@ def lrn_oja(x, w, y, ss=1e-2):
 @torch.compile(disable=disable_compile)
 def lrn_oja_d(x, w, y, ss=1e-2):
     return lrn_oja(spike(x), w, y, ss=ss)
+
+
+def lrn_oja_signed(x, w, gate, u):
+    """
+    `(n d_x), (d_x d_y), (n d_y), (n d_y) -> (d_x d_y)`
+
+    Batched gated-Oja weight CHANGE (dW, before the learning rate) = SoftHebb's
+    update: the Hebbian/anti-Hebbian outer product x^T·gate minus the Oja decay
+    w·sum_n(gate*u), averaged over the n samples (e.g. conv patches). Use `gate`
+    from `softmax_wta(u, signed=True)` and `u = x @ w`: the winner's weight moves
+    toward x, losers away, and the decay bounds ||w|| (soft weight-norm, no hard
+    projection). Returns dW; caller applies `w += lr * dW`.
+    """
+    n = x.shape[0]
+    return (x.T @ gate - w * (gate * u).sum(0, keepdim=True)) / n
 
 
 @torch.compile(disable=disable_compile)

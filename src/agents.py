@@ -1254,13 +1254,6 @@ class CIFARAgt:
             m, v = self.bn_m[li], self.bn_v[li]
         return (fmap - m[:, None, None]) / (v[:, None, None] + 1e-5).sqrt()
 
-    def _signed_gate(self, u: torch.Tensor) -> torch.Tensor:
-        """SoftHebb gate: winner Hebbian (+), losers anti-Hebbian (-), magnitude =
-        softmax responsibility (per spatial location, across channels)."""
-        gate = -torch.softmax(u * self.signed_t, dim=1)
-        gate[torch.arange(u.shape[0]), u.argmax(1)] *= -1
-        return gate
-
     def step(self, ipt: Inputs, use_lrn: bool = True, training: bool | None = None,
              disable_print: bool = False) -> Outputs:
         if training is None:          # BN trains iff we are learning (override for warmup)
@@ -1271,10 +1264,10 @@ class CIFARAgt:
             h, w = fmap.shape[1], fmap.shape[2]
             x = F.unfold(fmap.unsqueeze(0), k, stride=1, padding=(k - 1) // 2)[0].T  # (h*w, ic*k*k)
             u = x @ self.W[li]
-            y = F.relu(u - u.mean(1, keepdim=True)) ** self.power   # Triangle activation (graded)
+            y = fc.triangle(u, self.power)                          # Triangle activation (graded)
             if use_lrn:
-                g = self._signed_gate(u)
-                dW = (x.T @ g - self.W[li] * (g * u).sum(0, keepdim=True)) / x.shape[0]  # oja-signed
+                g = fc.softmax_wta(u, self.signed_t, signed=True)   # signed soft-WTA gate
+                dW = fc.lrn_oja_signed(x, self.W[li], g, u)         # SoftHebb update (dW)
                 self.W[li] = self.W[li] + self.base_lr * dW         # soft norm: no hard projection
             fmap = y.T.reshape(oc, h, w).unsqueeze(0)
             if pool == "max":     # MaxPool 4x4/s2 (early layers, halve spatial)
