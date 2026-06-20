@@ -1,5 +1,5 @@
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 import pytest
 import torch
@@ -51,9 +51,9 @@ def test_agent_save_and_load(tmp_path, case):
         for name1, value1 in vars(col1).items():
             assert name1 in vars(col2)
             if name1.startswith("nr_"):
-                assert len(value1) == len(getattr(col2, name1))
-                for a1, a2 in zip(value1, getattr(col2, name1), strict=True):
-                    assert torch.allclose(a1, a2)
+                activs2 = getattr(col2, name1)  # Activs dataclass: compare field-by-field
+                for f in fields(value1):
+                    assert torch.allclose(getattr(value1, f.name), getattr(activs2, f.name))
             elif name1.startswith("is_"):
                 assert torch.allclose(value1, getattr(col2, name1))
         assert len(col1.conns) == len(col2.conns)
@@ -108,7 +108,7 @@ def test_mnist_agt_learning_golden(tmp_path):
     gen = torch.Generator().manual_seed(0)  # inputs: independent of init's RNG draws
     for _ in range(10):
         agt.step([torch.rand(784, generator=gen)], use_lrn=True, disable_print=True)
-    rep = agt.cols[1, 0].nr_1[0]  # post-step hidden actual activation
+    rep = agt.cols[1, 0].nr_1.actual  # post-step hidden actual activation
 
     col_in = agt.cols[0, 0]
     assert col_in.conns is not None  # ColBase types conns as dict|None; narrow it

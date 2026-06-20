@@ -5,7 +5,7 @@ import pytest
 import torch
 
 import src.funcs as fc
-from src.agents import activs
+from src.agents import Activs, activs
 
 
 def test_activity_rule_shapes():
@@ -125,16 +125,16 @@ def test_lrn_oja_behavior():
 
 def test_lrn_adaptive_behavior():
     """
-    `lrn_adaptive` (BCM): Δw = ss * x * y * (y - θ), sliding threshold θ = y[3].
+    `lrn_adaptive` (BCM): Δw = ss * x * y * (y - θ), sliding threshold θ = y.avg_sq.
     A response above threshold potentiates (Δw > 0), below threshold depresses
-    (Δw < 0). Takes the full activations lists.
+    (Δw < 0). Takes the full activations.
     """
     ss = 0.1
     x0 = torch.tensor([1.0, 1.0])
-    theta = torch.tensor([1.0, 1.0])       # the sliding threshold (y[3])
-    y0 = torch.tensor([2.0, 0.5])          # output 0 above theta, output 1 below
-    x = [x0, torch.zeros(2), x0, x0 ** 2]  # activs layout: [actual, exp, avg, avg_sq]
-    y = [y0, torch.zeros(2), y0, theta]    # y[3] = threshold
+    theta = torch.tensor([1.0, 1.0])              # the sliding threshold (y.avg_sq)
+    y0 = torch.tensor([2.0, 0.5])                 # output 0 above theta, output 1 below
+    x = Activs(x0, torch.zeros(2), x0, x0 ** 2)
+    y = Activs(y0, torch.zeros(2), y0, theta)     # avg_sq = threshold
 
     w = torch.zeros(2, 2)
     dw = fc.lrn_adaptive(x, w, y, ss=ss) - w
@@ -169,21 +169,21 @@ def test_atv_discretizes_then_projects():
 def test_inhibit_equals_rank1_matmul():
     """Lateral inhibition's O(d) scale-and-sum form must equal the full O(d^2) matmul
     against W = A/(d-1) * (I - 11^T) (the optimization the inhibit() comment claims).
-    Only the actual activations (x[0]) change; expectations/averages pass through."""
+    Only the actual activations (x.actual) change; expectations/averages pass through."""
     torch.manual_seed(0)
     d, A = 8, 5.0
     x0 = torch.randn(d) + 1.0                          # straddles the spike threshold
     x1 = torch.rand(d) + 0.3                           # straddles the 0.8 expectation gate
-    x = [x0, x1, torch.randn(d), torch.randn(d)]       # activs: [actual, expectation, avg, avg_sq]
+    x = Activs(x0, x1, torch.randn(d), torch.randn(d))
 
     out = fc.inhibit(x)
 
     expected = fc.spike(x0) * torch.where(x1 < 0.8, 0.0, 1.0)
     W = (A / (d - 1)) * (torch.eye(d) - torch.ones(d, d))
-    assert torch.allclose(out[0], x0 + expected @ W, atol=1e-5)   # rank-1 form == full matmul
-    assert torch.equal(out[1], x1)        # expectation passes through
-    assert torch.equal(out[2], x[2])      # average passes through
-    assert torch.equal(out[3], x[3])      # average-of-squares passes through
+    assert torch.allclose(out.actual, x0 + expected @ W, atol=1e-5)   # rank-1 form == full matmul
+    assert torch.equal(out.expect, x1)        # expectation passes through
+    assert torch.equal(out.avg, x.avg)        # average passes through
+    assert torch.equal(out.avg_sq, x.avg_sq)  # average-of-squares passes through
 
 
 def test_lrn_discrete_truth_table():
