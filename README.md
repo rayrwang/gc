@@ -63,7 +63,9 @@ MNIST using the BCM (Bienenstock–Cooper–Munro) rule learns (rescues the repr
 | -------------------------------- | ---- | ------ | ------ |
 | gc no learning (frozen baseline) | 83.9 | 79.0   | 80.6   |
 | gc (BCM rule)                    | 84.3 | 81.9   | 82.8   |
-| the raw image                    | 84.5 | 77.9   | 84.4   |
+|                                  |      |        |        |
+| the raw images                   | 84.5 | 77.9   | 84.4   |
+|                                  |      |        |        |
 | MLP using gradient descent       | much | higher | (90s)  |
 | CNN                              | not  | even   | close  |
 
@@ -76,6 +78,8 @@ CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn.
 |                                  |      | CIFAR-10 |        |     |      | CIFAR-100 |        |
 | -------------------------------- | ---- | -------- | ------ | --- | ---- | --------- | ------ |
 |                                  | kNN  | Ridge    | Linear |     | kNN  | Ridge     | Linear |
+| the raw images                   | 34.8 | 26.9     | 25.4   |     | 9.6  | 6.5       | 7.8    |
+|                                  |      |          |        |     |      |           |        |
 | gc no learning                   | 44.3 | 57.1     | 57.7   |     | 15.1 | 23.7      | 20.1   |
 | gc online 200k steps (4 epochs)  | 49.5 | 64.2     | 61.9   |     | 17.5 | 31.0      | 23.8   |
 |                                  |      |          |        |     |      |           |        |
