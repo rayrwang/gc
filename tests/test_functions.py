@@ -146,3 +146,72 @@ def test_lrn_adaptive_behavior():
     assert dw[0, 0] > 0
     # Below threshold (y=0.5 < theta=1) depresses
     assert dw[0, 1] < 0
+
+
+def test_spike_threshold():
+    """`spike` binarizes at the threshold: x >= threshold -> 1, x < threshold -> 0."""
+    x = torch.tensor([0.5, 0.99, 1.0, 1.5, -3.0])
+    assert torch.equal(fc.spike(x), torch.tensor([0.0, 0.0, 1.0, 1.0, 0.0]))   # default thr=1.0
+    assert torch.equal(fc.spike(x, threshold=0.5), torch.tensor([1.0, 1.0, 1.0, 1.0, 0.0]))
+
+
+def test_atv_discretizes_then_projects():
+    """Activity rule is spike-then-matmul: the *input* is binarized at the threshold
+    before the projection, so sub-threshold inputs contribute nothing."""
+    x = torch.tensor([0.5, 2.0])          # unit 0 sub-threshold, unit 1 active
+    w = torch.tensor([[1.0, 2.0],
+                      [3.0, 4.0]])
+    # spike(x) = [0, 1] -> only row 1 of w survives
+    assert torch.allclose(fc.atv(x, w), torch.tensor([3.0, 4.0]))
+    assert torch.allclose(fc.atv(x, w), fc.spike(x) @ w)
+
+
+def test_inhibit_equals_rank1_matmul():
+    """Lateral inhibition's O(d) scale-and-sum form must equal the full O(d^2) matmul
+    against W = A/(d-1) * (I - 11^T) (the optimization the inhibit() comment claims).
+    Only the actual activations (x[0]) change; expectations/averages pass through."""
+    torch.manual_seed(0)
+    d, A = 8, 5.0
+    x0 = torch.randn(d) + 1.0                          # straddles the spike threshold
+    x1 = torch.rand(d) + 0.3                           # straddles the 0.8 expectation gate
+    x = [x0, x1, torch.randn(d), torch.randn(d)]       # activs: [actual, expectation, avg, avg_sq]
+
+    out = fc.inhibit(x)
+
+    expected = fc.spike(x0) * torch.where(x1 < 0.8, 0.0, 1.0)
+    W = (A / (d - 1)) * (torch.eye(d) - torch.ones(d, d))
+    assert torch.allclose(out[0], x0 + expected @ W, atol=1e-5)   # rank-1 form == full matmul
+    assert torch.equal(out[1], x1)        # expectation passes through
+    assert torch.equal(out[2], x[2])      # average passes through
+    assert torch.equal(out[3], x[3])      # average-of-squares passes through
+
+
+def test_lrn_discrete_truth_table():
+    """`lrn_discrete` (in-band weight, so the regulation gate ~= 1): when the presynaptic
+    unit fires (x >= 1), y >= 1 potentiates, y <= -1 depresses, |y| < 1 decays toward 0;
+    a silent presynaptic unit (x < 1) leaves the weight unchanged regardless of y."""
+    x_on, x_off = torch.tensor([2.0]), torch.tensor([0.5])
+    w = torch.tensor([[0.01]])                         # small -> inside the regulation band
+
+    assert (fc.lrn_discrete(x_on, w, torch.tensor([2.0])) - w).item() > 0     # y>=1 -> up
+    assert (fc.lrn_discrete(x_on, w, torch.tensor([-2.0])) - w).item() < 0    # y<=-1 -> down
+    assert (fc.lrn_discrete(x_on, w, torch.tensor([0.0])) - w).item() < 0     # |y|<1 -> decay to 0
+    assert torch.allclose(fc.lrn_discrete(x_off, w, torch.tensor([2.0])), w)  # x<1 -> no change
+
+
+def test_lrn_discrete_regulation_gate_attenuates_large_weights():
+    """The Gaussian regulation gate exp(-(w/band)^2) suppresses updates for weights well
+    outside the band, so an out-of-band weight barely moves where an in-band one would."""
+    x, y = torch.tensor([2.0]), torch.tensor([2.0])    # x active, y>=1 -> would potentiate
+    in_band = (fc.lrn_discrete(x, torch.tensor([[0.05]]), y) - 0.05).abs().item()
+    out_band = (fc.lrn_discrete(x, torch.tensor([[1.0]]), y) - 1.0).abs().item()
+    assert in_band > 1e-3            # in-band weight gets a real update
+    assert out_band < 1e-6           # out-of-band weight is essentially frozen by the gate
+    assert out_band < in_band / 1000
+
+
+def test_density_and_dist():
+    """`density` = fraction of entries >= threshold; `dist` = Euclidean distance."""
+    assert fc.density(torch.tensor([0.5, 1.5, 2.0, 0.9])) == 0.5
+    assert fc.density(torch.tensor([2.0, 2.0]), 1.0) == 1.0
+    assert fc.dist([0.0, 0.0], [3.0, 4.0]) == pytest.approx(5.0)
