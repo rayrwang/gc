@@ -104,7 +104,7 @@ def test_cifar_agt_bn_modes():
 # legitimately re-baseline (an intended math change), re-capture all values from one run.
 def test_mnist_agt_learning_golden(tmp_path):
     torch.manual_seed(0)  # seeds the weight init inside __init__
-    agt = MNISTAgt(MNISTCfg([I_Vector(784)], [O_Vector(10)]), tmp_path)
+    agt = MNISTAgt(MNISTCfg([I_Vector(784)], [O_Vector(10)]), str(tmp_path))
     gen = torch.Generator().manual_seed(0)  # inputs: independent of init's RNG draws
     rep = None
     for _ in range(10):
