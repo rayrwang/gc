@@ -53,6 +53,50 @@ python simple_nets.py
 - Then right click to select an outgoing connection or an activation layer, to see detailed information in the middle pane.
 - Press Esc or click off the grid to clear.
 
+## Current Results
+
+### MNIST
+
+MNIST using the BCM (Bienenstock–Cooper–Munro) rule learns (rescues the representations compared to the frozen baseline) but doesn't even beat the raw image.
+
+| @ 5000 steps                     | kNN  | Ridge  | Linear |
+| -------------------------------- | ---- | ------ | ------ |
+| gc no learning (frozen baseline) | 83.9 | 79.0   | 80.6   |
+| gc (BCM rule)                    | 84.3 | 81.9   | 82.8   |
+| the raw image                    | 84.5 | 77.9   | 84.4   |
+| MLP using gradient descent       | much | higher | (90s)  |
+| CNN                              | not  | even   | close  |
+(see `examples/05_mnist_all_probes.py`)
+
+### CIFAR
+
+CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn. Basically using SoftHebb (Moraitis et al., arXiv:2209.11883) adapted for online, and without the ad hoc tricks.
+
+|                                  |      | CIFAR-10 |        |     |      | CIFAR-100 |        |
+| -------------------------------- | ---- | -------- | ------ | --- | ---- | --------- | ------ |
+|                                  | kNN  | Ridge    | Linear |     | kNN  | Ridge     | Linear |
+| gc no learning                   | 44.3 | 57.1     | 57.7   |     | 15.1 | 23.7      | 20.1   |
+| gc online 200k steps (4 epochs)  | 49.5 | 64.2     | 61.9   |     | 17.5 | 31.0      | 23.8   |
+|                                  |      |          |        |     |      |           |        |
+| SoftHebb no learning             | 43.2 | 53.8     | 53.4   |     | 15.8 | 25.3      | 18.1   |
+| SoftHebb online 200k             | 47.7 | 59.6     | 58.9   |     | 18.0 | 23.6      | 24.0   |
+| SoftHebb tuned full training run |      |          | 79.9   |     |      |           |        |
+(see `examples/{08_cifar10, 09_cifar100}.py`)
+
+### Abstract Data
+
+Abstract clustered vectors (Gaussian blobs in a noisy high-dim space — *data*, not images) genuinely learn under online softmax-WTA, reaching most of the way to the oracle (kNN on the true signal dimensions). The catch is the **sign**, which must match the data's geometry: discrete clusters want **unsigned** WTA (pure competition, ≈ online k-means); the continuous image manifolds above want **signed** WTA (anti-Hebbian repulsion, à la SoftHebb).
+
+The rule barely matters once WTA is in place — Oja and instar stay within a point or two: Oja gives the clean number (93.1), instar the noisy one (50.5, helped by a per-activation adaptive learning rate when the signal is weak). BCM trails both and ignores the sign.
+
+| kNN %                    | clean | noisy |
+| ------------------------ | ----- | ----- |
+| the raw vector           | 66.0  | 32.3  |
+| gc no learning (frozen)  | 74.2  | 26.5  |
+| gc online unsigned WTA   | 93.1  | 50.5  |
+| oracle (signal subspace) | 95.7  | 58.7  |
+(see `examples/{10_one_layer_clean, 11_one_layer_noisy}.py`)
+
 ## Files
 
 ```
