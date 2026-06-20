@@ -66,6 +66,7 @@ MNIST using the BCM (Bienenstock–Cooper–Munro) rule learns (rescues the repr
 | the raw image                    | 84.5 | 77.9   | 84.4   |
 | MLP using gradient descent       | much | higher | (90s)  |
 | CNN                              | not  | even   | close  |
+
 (see `examples/05_mnist_all_probes.py`)
 
 ### CIFAR
@@ -81,6 +82,7 @@ CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn.
 | SoftHebb no learning             | 43.2 | 53.8     | 53.4   |     | 15.8 | 25.3      | 18.1   |
 | SoftHebb online 200k             | 47.7 | 59.6     | 58.9   |     | 18.0 | 23.6      | 24.0   |
 | SoftHebb tuned full training run |      |          | 79.9   |     |      |           |        |
+
 (see `examples/{08_cifar10, 09_cifar100}.py`)
 
 ### Abstract Data
@@ -95,6 +97,7 @@ The rule barely matters once WTA is in place — Oja and instar stay within a po
 | gc no learning (frozen)  | 74.2  | 26.5  |
 | gc online unsigned WTA   | 93.1  | 50.5  |
 | oracle (signal subspace) | 95.7  | 58.7  |
+
 (see `examples/{10_one_layer_clean, 11_one_layer_noisy}.py`)
 
 ## Files
