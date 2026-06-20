@@ -106,12 +106,13 @@ def test_mnist_agt_learning_golden(tmp_path):
     torch.manual_seed(0)  # seeds the weight init inside __init__
     agt = MNISTAgt(MNISTCfg([I_Vector(784)], [O_Vector(10)]), str(tmp_path))
     gen = torch.Generator().manual_seed(0)  # inputs: independent of init's RNG draws
-    rep = None
     for _ in range(10):
         agt.step([torch.rand(784, generator=gen)], use_lrn=True, disable_print=True)
-        rep = agt.cols[1, 0].nr_1[0]  # post-step hidden actual activation
+    rep = agt.cols[1, 0].nr_1[0]  # post-step hidden actual activation
 
-    w = agt.cols[0, 0].conns[(1, 0), Dir.A]  # the learned input->hidden connection
+    col_in = agt.cols[0, 0]
+    assert col_in.conns is not None  # ColBase types conns as dict|None; narrow it
+    w = col_in.conns[(1, 0), Dir.A]  # the learned input->hidden connection
     assert w.dtype is torch.float32          # a float16 leak would silently break the golden
     assert tuple(w.shape) == (784, 128)
     # rel=1e-5 tolerates the literals' rounding; a real behavior change moves these by O(1)
