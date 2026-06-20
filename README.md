@@ -57,7 +57,7 @@ python simple_nets.py
 
 ### MNIST
 
-MNIST using the BCM (Bienenstock–Cooper–Munro) rule learns (rescues the representations compared to the frozen baseline) but doesn't even beat the raw image.
+MNIST using the BCM (Bienenstock-Cooper-Munro) rule learns (rescues the representations compared to the frozen baseline) but doesn't even beat the raw image.
 
 | @ 5000 steps                     | kNN  | Ridge  | Linear |
 | -------------------------------- | ---- | ------ | ------ |
@@ -91,15 +91,15 @@ CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn.
 
 ### Abstract Data
 
-Abstract clustered vectors (Gaussian blobs in a noisy high-dim space — *data*, not images) genuinely learn under online softmax-WTA, reaching most of the way to the oracle (kNN on the true signal dimensions). The catch is the **sign**, which must match the data's geometry: discrete clusters want **unsigned** WTA (pure competition, ≈ online k-means); the continuous image manifolds above want **signed** WTA (anti-Hebbian repulsion, à la SoftHebb).
+Abstract clustered vectors (Gaussian blobs in a noisy high-dim space, *data* rather than images) genuinely learn under online softmax-WTA, reaching most of the way to the oracle (kNN on the true signal dimensions). The catch is the **sign**, which must match the data's geometry: discrete clusters want **unsigned** WTA (pure competition, ≈ online k-means); the continuous image manifolds above want **signed** WTA (anti-Hebbian repulsion, à la SoftHebb).
 
 <p align="center">
 	<img width="480" alt="Competition sign must match data geometry" src="assets/wta_geometry.png">
 </p>
 
-*2-D illustration: unsigned WTA converges **onto** structure, signed spreads to **cover** it — the right sign is whichever the geometry needs.*
+*2-D illustration: unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs.*
 
-The rule barely matters once WTA is in place — Oja and instar stay within a point or two: Oja gives the clean number (93.1), instar the noisy one (50.5, helped by a per-activation adaptive learning rate when the signal is weak). BCM trails both and ignores the sign.
+The rule barely matters once WTA is in place. Oja and instar stay within a point or two: Oja gives the clean number (93.1), instar the noisy one (50.5, helped by a per-activation adaptive learning rate when the signal is weak). BCM trails both and ignores the sign.
 
 | kNN %                    | clean | noisy |
 | ------------------------ | ----- | ----- |
