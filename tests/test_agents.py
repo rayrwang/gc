@@ -6,7 +6,7 @@ import torch
 
 # isort: off
 from src.iotypes import I_Vector, O_Vector
-from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt, CIFARAgt
+from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt, CIFARAgt, Dir
 
 N_COLS = 4
 
@@ -94,3 +94,33 @@ def test_cifar_agt_bn_modes():
     agt.step([torch.rand(3, 32, 32)], use_lrn=False)  # eval: training defaults to use_lrn=False
     assert torch.isfinite(agt.get_representations()).all()
     assert all(torch.allclose(w, w_old) for w, w_old in zip(agt.W, w_before, strict=True))  # no learning in eval
+
+
+# MNISTAgt is the ONLY thing that exercises the Col/conns/activs/lrn_adaptive path
+# (CIFARAgt and the abstract examples are standalone). This is a bit-identical golden
+# of that path, captured pre-refactor on CPU/float32/seed-0, so the planned structural
+# refactor (activations -> dataclass, conns -> endpoint addresses) can prove it changed
+# shape, not behavior. If these numbers move, the refactor altered computation. To
+# legitimately re-baseline (an intended math change), re-capture all values from one run.
+def test_mnist_agt_learning_golden(tmp_path):
+    torch.manual_seed(0)  # seeds the weight init inside __init__
+    agt = MNISTAgt(MNISTCfg([I_Vector(784)], [O_Vector(10)]), tmp_path)
+    gen = torch.Generator().manual_seed(0)  # inputs: independent of init's RNG draws
+    rep = None
+    for _ in range(10):
+        agt.step([torch.rand(784, generator=gen)], use_lrn=True, disable_print=True)
+        rep = agt.cols[1, 0].nr_1[0]  # post-step hidden actual activation
+
+    w = agt.cols[0, 0].conns[(1, 0), Dir.A]  # the learned input->hidden connection
+    assert w.dtype is torch.float32          # a float16 leak would silently break the golden
+    assert tuple(w.shape) == (784, 128)
+    # rel=1e-5 tolerates the literals' rounding; a real behavior change moves these by O(1)
+    assert w.sum().item() == pytest.approx(-54.4567222595, rel=1e-5)
+    assert w.abs().sum().item() == pytest.approx(8587.6699218750, rel=1e-5)
+    assert w[0, 0].item() == pytest.approx(0.0038963521, rel=1e-5)
+    assert w[500, 64].item() == pytest.approx(0.1359269172, rel=1e-5)
+    assert w[783, 127].item() == pytest.approx(-0.0241337400, rel=1e-5)
+    # forward path: pin the resulting hidden representation too
+    assert tuple(rep.shape) == (128,)
+    assert rep.sum().item() == pytest.approx(57.5112113953, rel=1e-5)
+    assert rep.max().item() == pytest.approx(2.9827098846, rel=1e-5)
