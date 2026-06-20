@@ -11,7 +11,7 @@ Objective-free, modular, feedback neural networks that learn via association.
 
 ## Install and Run
 
-Install `pyproject.toml`.
+Install `pyproject.toml` (using `pip`, `uv`, or whatever).
 
 Run the main network:
 ```
