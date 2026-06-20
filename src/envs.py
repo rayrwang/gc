@@ -16,8 +16,6 @@ from torch.utils.data import Dataset
 
 from . import iotypes as T
 
-torch.set_default_dtype(torch.float16)  # TODO sync with main process
-
 Specs = tuple[list[T.I_Base], list[T.O_Base]]
 Aux = Any  # Additional info e.g. labels
 Percepts = list[torch.Tensor]
@@ -69,6 +67,10 @@ def run_env(
         percept_queue,
         action_queue,
         show: bool):
+    # Match the main process's dtype in this spawned subprocess. (Was a module-level import
+    # side-effect that silently flipped torch's global default to fp16 for ANY importer of
+    # envs; set here instead so importing a Dataset no longer mutates global state.)
+    torch.set_default_dtype(torch.float16)
     # Suppress keyboard interrupt traceback
     signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
 
