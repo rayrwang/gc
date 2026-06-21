@@ -1290,10 +1290,10 @@ class CIFARAgt:
             h, w = fmap.shape[1], fmap.shape[2]
             x = F.unfold(fmap.unsqueeze(0), k, stride=1, padding=(k - 1) // 2)[0].T  # (h*w, ic*k*k)
             u = x @ self.W[li]
-            y = fc.triangle(u, self.power)                          # Triangle activation (graded)
+            y = fc.triangle_batched(u, self.power)                  # Triangle activation (graded)
             if use_lrn:
-                g = fc.softmax_wta(u, self.signed_t, signed=True)   # signed soft-WTA gate
-                dW = fc.lrn_oja_signed(x, self.W[li], g, u)         # SoftHebb update (dW)
+                g = fc.softmax_wta_batched(u, self.signed_t, signed=True)  # signed soft-WTA gate
+                dW = fc.lrn_oja_signed_batched(x, self.W[li], g, u)        # SoftHebb update (dW)
                 self.W[li] = self.W[li] + self.base_lr * dW         # soft norm: no hard projection
             fmap = y.T.reshape(oc, h, w).unsqueeze(0)
             if pool == "max":     # MaxPool 4x4/s2 (early layers, halve spatial)

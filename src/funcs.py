@@ -80,26 +80,41 @@ def inhibit(x):
 
 def triangle(u, power=0.7):
     """
-    `(n d), () -> (n d)`
+    `(d,), () -> (d,)`
 
-    Triangle activation (SoftHebb): relu(u - mean_d(u)) ** power, centering each
-    row across its d units. A graded soft-competition -- units above the local mean
+    Triangle activation (SoftHebb): relu(u - mean(u)) ** power, centering the d
+    units of a single sample. A graded soft-competition -- units above the mean
     fire, raised to `power` -- that propagates a distributed code instead of the
-    one-hot a hard winner-take-all would collapse to.
+    one-hot a hard winner-take-all would collapse to. See `triangle_batched`.
     """
+    return torch.relu(u - u.mean()) ** power
+
+
+def triangle_batched(u, power=0.7):
+    """`(n d), () -> (n d)`. Batched `triangle`, centering each row over its d units."""
     return torch.relu(u - u.mean(-1, keepdim=True)) ** power
 
 
 def softmax_wta(u, t=1.0, signed=False):
     """
-    `(n d), (), () -> (n d)`
+    `(d,), (), () -> (d,)`
 
-    Soft winner-take-all gate over the d units of each row -- the learning credit
-    each unit gets for the input. `signed=False`: softmax(t*u), all non-negative
-    (winner most, losers a little). `signed=True` (SoftHebb): the winner keeps
-    +softmax, every loser is negated -> anti-Hebbian repulsion. `t` is the inverse
-    temperature (sharpness). Pair with `lrn_oja_signed` as the gate.
+    Soft winner-take-all gate over the d units of a single sample -- the learning
+    credit each unit gets. `signed=False`: softmax(t*u), all non-negative (winner
+    most, losers a little). `signed=True` (SoftHebb): the winner keeps +softmax,
+    every loser is negated -> anti-Hebbian repulsion. `t` is the inverse temperature
+    (sharpness). Pair with `lrn_oja_signed` as the gate. See `softmax_wta_batched`.
     """
+    resp = torch.softmax(t * u, dim=-1)
+    if not signed:
+        return resp
+    gate = -resp
+    gate[u.argmax()] *= -1
+    return gate
+
+
+def softmax_wta_batched(u, t=1.0, signed=False):
+    """`(n d), (), () -> (n d)`. Batched `softmax_wta`, gating each row independently."""
     resp = torch.softmax(t * u, dim=-1)
     if not signed:
         return resp
@@ -202,14 +217,23 @@ def lrn_oja_d(x, w, y, ss=1e-2):
 
 def lrn_oja_signed(x, w, gate, u):
     """
-    `(n d_x), (d_x d_y), (n d_y), (n d_y) -> (d_x d_y)`
+    `(d_x,), (d_x d_y), (d_y,), (d_y,) -> (d_x d_y)`
 
-    Batched gated-Oja weight CHANGE (dW, before the learning rate) = SoftHebb's
-    update: the Hebbian/anti-Hebbian outer product x^T·gate minus the Oja decay
-    w·sum_n(gate*u), averaged over the n samples (e.g. conv patches). Use `gate`
-    from `softmax_wta(u, signed=True)` and `u = x @ w`: the winner's weight moves
-    toward x, losers away, and the decay bounds ||w|| (soft weight-norm, no hard
-    projection). Returns dW; caller applies `w += lr * dW`.
+    Single-sample gated-Oja weight CHANGE (dW, before the learning rate) = SoftHebb's
+    update: the Hebbian/anti-Hebbian outer product outer(x, gate) minus the Oja decay
+    w*(gate*u). Use `gate` from `softmax_wta(u, signed=True)` and `u = x @ w`: the
+    winner's weight moves toward x, losers away, and the decay bounds ||w|| (soft
+    weight-norm, no hard projection). Returns dW; caller applies `w += lr * dW`. See
+    `lrn_oja_signed_batched`.
+    """
+    return torch.outer(x, gate) - w * (gate * u)
+
+
+def lrn_oja_signed_batched(x, w, gate, u):
+    """
+    `(n d_x), (d_x d_y), (n d_y), (n d_y) -> (d_x d_y)`. Batched `lrn_oja_signed`: the
+    per-sample dW (x^T·gate minus w·sum_n(gate*u)) averaged over the n samples (e.g.
+    conv patches).
     """
     n = x.shape[0]
     return (x.T @ gate - w * (gate * u).sum(0, keepdim=True)) / n
