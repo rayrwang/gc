@@ -34,7 +34,7 @@ def spike(x, threshold=1.0):
 
     Activation function
     """
-    return torch.where(x < threshold, 0.0, 1.0)
+    return torch.sigmoid(x - threshold)
 
 
 def atv(x, w, y=None, threshold=1.0):
