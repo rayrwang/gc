@@ -29,7 +29,7 @@ if __name__ == "__main__":
     assert not (args.load and args.size), \
         "Size argument is only valid when initializing."
 
-    torch.set_default_dtype(torch.float16)
+    torch.set_default_dtype(torch.float32)
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Create environment
