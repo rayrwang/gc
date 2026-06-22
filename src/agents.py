@@ -544,6 +544,13 @@ class AgtBase(ABC):
             self.bar.close()
         self.save()
 
+    @abstractmethod
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
+        # Step all cols.
+        # Lives in each subclass since the loops diverge.
+        # Subclasses may add kwargs.
+        ...
+
     def is_i(self, loc):
         return any(loc == col.loc for col in self.I_cols)
     def is_o(self, loc):
