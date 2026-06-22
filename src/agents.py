@@ -544,72 +544,6 @@ class AgtBase(ABC):
             self.bar.close()
         self.save()
 
-    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
-        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
-
-        # Receive inputs
-        for col, x in zip(self.I_cols, ipt, strict=True):
-            col.ipt(x)
-
-        # First pass: compute new weights and activations
-        self.bar = tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)
-        for col in self.bar:
-            # Used to communicate debugger exited
-            if self.use_debug and self.pipes["overview"][0].poll():
-                sys.exit(0)
-
-            self.load_col(col)
-
-            # Apply learning and activity rules internally
-            col.step()
-
-            # Apply learning rule to connections
-            lrn = fc.lrn
-            for (loc, direction), weight in col.conns.items():
-                if direction == Dir.A:
-                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
-                elif direction == Dir.E:
-                    ...  # TODO
-                col.conns[(loc, direction)] = weight
-
-            # Do output to other cols
-            for (loc, direction), weight in col.conns.items():
-                if self.is_i(col.loc):  # Don't discretize inputs
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += col.a_pre @ weight
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += col.e_pre @ weight
-                else:
-                    if direction == Dir.A:
-                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
-                    elif direction == Dir.E:
-                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
-
-            self.free_col(col)
-
-            if self.use_debug:
-                self.debug_update()
-
-        # Second pass: set current activations equal to new, and reset new
-            # Activations only, don't need to load weights
-        self.bar = tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)
-        for col in self.bar:
-            # Used to communicate debugger exited
-            if self.use_debug and self.pipes["overview"][0].poll():  # TODO not here?
-                sys.exit(0)
-
-            # Use lateral inhibition to combine actual and expected activations
-            if hasattr(col, "inhibit"):
-                col.inhibit()
-
-            col.update_activations()
-
-            if self.use_debug:  # TODO not here?
-                self.debug_update()
-
-        # Return outputs
-        return [col.out() for col in self.O_cols]
-
     def is_i(self, loc):
         return any(loc == col.loc for col in self.I_cols)
     def is_o(self, loc):
@@ -997,6 +931,72 @@ class Agt(AgtBase):  # Agent
 
             print("done init.")
 
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
+        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
+
+        # Receive inputs
+        for col, x in zip(self.I_cols, ipt, strict=True):
+            col.ipt(x)
+
+        # First pass: compute new weights and activations
+        self.bar = tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)
+        for col in self.bar:
+            # Used to communicate debugger exited
+            if self.use_debug and self.pipes["overview"][0].poll():
+                sys.exit(0)
+
+            self.load_col(col)
+
+            # Apply learning and activity rules internally
+            col.step()
+
+            # Apply learning rule to connections
+            lrn = fc.lrn
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    ...  # TODO
+                col.conns[(loc, direction)] = weight
+
+            # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
+                if self.is_i(col.loc):  # Don't discretize inputs
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += col.a_pre @ weight
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += col.e_pre @ weight
+                else:
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Second pass: set current activations equal to new, and reset new
+            # Activations only, don't need to load weights
+        self.bar = tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)
+        for col in self.bar:
+            # Used to communicate debugger exited
+            if self.use_debug and self.pipes["overview"][0].poll():  # TODO not here?
+                sys.exit(0)
+
+            # Use lateral inhibition to combine actual and expected activations
+            if hasattr(col, "inhibit"):
+                col.inhibit()
+
+            col.update_activations()
+
+            if self.use_debug:  # TODO not here?
+                self.debug_update()
+
+        # Return outputs
+        return [col.out() for col in self.O_cols]
+
     def verify(self) -> None:
         print("\nChecking agent has right number of columns...", end="")
         assert (self.n_cols + len(self.ispec) + len(self.ospec)) \
@@ -1124,6 +1124,72 @@ class BareAgt(AgtBase):
 
             print("done init.")
 
+    def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
+        assert len(ipt) == len(self.ispec), f"Expected input of length {len(self.ispec)} but got length {len(ipt)}"
+
+        # Receive inputs
+        for col, x in zip(self.I_cols, ipt, strict=True):
+            col.ipt(x)
+
+        # First pass: compute new weights and activations
+        self.bar = tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)
+        for col in self.bar:
+            # Used to communicate debugger exited
+            if self.use_debug and self.pipes["overview"][0].poll():
+                sys.exit(0)
+
+            self.load_col(col)
+
+            # Apply learning and activity rules internally
+            col.step()
+
+            # Apply learning rule to connections
+            lrn = fc.lrn
+            for (loc, direction), weight in col.conns.items():
+                if direction == Dir.A:
+                    weight = lrn(col.a_pre, weight, self.cols[loc].a_post)
+                elif direction == Dir.E:
+                    ...  # TODO
+                col.conns[(loc, direction)] = weight
+
+            # Do output to other cols
+            for (loc, direction), weight in col.conns.items():
+                if self.is_i(col.loc):  # Don't discretize inputs
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += col.a_pre @ weight
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += col.e_pre @ weight
+                else:
+                    if direction == Dir.A:
+                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                    elif direction == Dir.E:
+                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+
+            self.free_col(col)
+
+            if self.use_debug:
+                self.debug_update()
+
+        # Second pass: set current activations equal to new, and reset new
+            # Activations only, don't need to load weights
+        self.bar = tqdm(self.cols.values(), desc="Updating and resetting activations...", disable=disable_print)
+        for col in self.bar:
+            # Used to communicate debugger exited
+            if self.use_debug and self.pipes["overview"][0].poll():  # TODO not here?
+                sys.exit(0)
+
+            # Use lateral inhibition to combine actual and expected activations
+            if hasattr(col, "inhibit"):
+                col.inhibit()
+
+            col.update_activations()
+
+            if self.use_debug:  # TODO not here?
+                self.debug_update()
+
+        # Return outputs
+        return [col.out() for col in self.O_cols]
+
 
 @dataclass
 class MNISTCfg(CfgBase):
@@ -1175,7 +1241,7 @@ class MNISTAgt(AgtBase):
 
     def step(self, ipt: Inputs, use_lrn: bool = True, disable_print: bool = False) -> Outputs:
         """
-        Override default `step`, since using default results in
+        Different from Agt's step: using that would result in
         mismatched learning, with new input and old representations.
 
         In the general case this is unavoidable (?),
