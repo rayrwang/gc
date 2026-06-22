@@ -41,7 +41,7 @@ if __name__ == "__main__":
     output_queue = ctx.Queue()
     env_process = ctx.Process(
         target=run_env,
-        args=(cfg, MNISTEnv, input_queue, output_queue, True,),
+        args=(cfg, MNISTEnv, input_queue, output_queue, True, torch.get_default_dtype()),
         daemon=True)
     env_process.start()
 

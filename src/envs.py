@@ -6,6 +6,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
+import multiprocessing
 from typing import Any, Literal
 
 import cv2
@@ -64,13 +65,13 @@ def get_default(iospec: Sequence[T.I_Base | T.O_Base]) -> Percepts | Actions:
 def run_env(
         cfg: EnvCfgBase,
         env: type[EnvBase],
-        percept_queue,
-        action_queue,
-        show: bool):
-    # Match the main process's dtype in this spawned subprocess. (Was a module-level import
-    # side-effect that silently flipped torch's global default to fp16 for ANY importer of
-    # envs; set here instead so importing a Dataset no longer mutates global state.)
-    torch.set_default_dtype(torch.float16)
+        percept_queue: multiprocessing.Queue,
+        action_queue: multiprocessing.Queue,
+        show: bool,
+        dtype: torch.dtype = torch.float16):
+    # Match the main process's dtype
+    torch.set_default_dtype(dtype)
+
     # Suppress keyboard interrupt traceback
     signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
 
