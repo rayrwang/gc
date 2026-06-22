@@ -97,7 +97,7 @@ Abstract clustered vectors (Gaussian blobs in a noisy high-dim space, *data* rat
 	<img width="480" alt="Competition sign must match data geometry" src="assets/wta_geometry.png">
 </p>
 
-*2-D illustration: unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs.*
+*2-D illustration: unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs. Regenerate diagram using `examples/12_wta_geometry.py`.*
 
 The rule barely matters once WTA is in place. Oja and instar stay within a point or two: Oja gives the clean number (93.1), instar the noisy one (50.5, helped by a per-activation adaptive learning rate when the signal is weak). BCM trails both and ignores the sign.
 
