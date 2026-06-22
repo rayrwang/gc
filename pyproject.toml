@@ -15,6 +15,7 @@ dependencies = [
     "pygame-ce",
     "tqdm",
     "dacite",
+    "matplotlib"
 ]
 
 [project.optional-dependencies]
@@ -49,9 +50,6 @@ ignore = [
     "B027",   # EnvBase.__init__ is an intentional signature-only base stub
     "SIM108", # ternary rewrites can hurt readability
 ]
-
-[tool.ty.src]
-exclude = ["assets/"]
 
 [tool.ty.environment]
 python = "venv"
