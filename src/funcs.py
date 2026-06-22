@@ -128,7 +128,7 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     """
     `d_x, (d_x d_y), d_y, (), (), () -> (d_x d_y)`
 
-    (Discrete) learning rule
+    TODO old, mostly inert, placeholder (discrete) learning rule
 
        x  y             Δw  
      < 1, any        -> 0  
