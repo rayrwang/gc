@@ -10,7 +10,8 @@ script maps that plane.
 
 Self-contained on purpose: it defines a minimal vectorized recurrent BCM network
 (BCMAgt) instead of importing the Col/Agt framework, so it is decoupled from upcoming
-BareAgt changes. BCMAgt defaults to the stability-optimal decay.
+BareAgt changes. The whole (decay, ss) grid is then run as ONE batched sweep, so a fine
+phase diagram regenerates in a couple of seconds.
 """
 
 import os
@@ -33,22 +34,24 @@ torch.set_default_dtype(torch.float32)
 # diagram, the star). The optimum is architecture-dependent: too low -> theta freezes
 # and stops braking; too high -> the homeostatic loop over-corrects. ~0.05 here.
 OPTIMAL_DECAY = 0.05
+N_UNITS = 256
+DRIVE = 2.0
 
 
 class BCMAgt:
-    """Minimal vectorized recurrent BCM network.
+    """Minimal vectorized recurrent BCM network (one cell of the phase diagram).
 
-    Captures the substrate's stability behaviour without the agent framework:
-    synchronous (Jacobi) update into a buffer, spike-thresholded recurrent
+    Synchronous (Jacobi) update into a buffer, spike-thresholded recurrent
     propagation, and local BCM plasticity
 
         dW_ij = ss * a_i * a_j * (a_j - theta_j),     theta = EMA(a^2, decay)
 
     on a random recurrent weight matrix. No objective, no backprop. It diverges
-    when potentiation outruns the sliding threshold.
+    when potentiation outruns the sliding threshold. `divergence_grid` below is the
+    batched form of this same step, run over every (decay, ss) pair at once.
     """
 
-    def __init__(self, n_units=256, decay=OPTIMAL_DECAY, ss=3e-5, drive=2.0, seed=0):
+    def __init__(self, n_units=N_UNITS, decay=OPTIMAL_DECAY, ss=3e-5, drive=DRIVE, seed=0):
         g = torch.Generator(device=DEV).manual_seed(seed)
         self.W = 2.0 * torch.randn(n_units, n_units, generator=g, device=DEV) / n_units**0.5
         self.W.fill_diagonal_(0.0)  # no self-connections
@@ -73,44 +76,55 @@ class BCMAgt:
         return (not torch.isfinite(self.a).all()) or (self.a.abs().max() > 1e4)
 
 
-def divergence_step(decay, ss, n_units=256, steps=200):
-    """Run until the network blows up; return the step it diverged, or None if stable."""
-    net = BCMAgt(n_units=n_units, decay=decay, ss=ss)
+def divergence_grid(decays, sss, n_units=N_UNITS, steps=200, drive=DRIVE, seed=0):
+    """Batched form of BCMAgt.step over every (decay, ss) cell at once: one big recurrent
+    BCM net per cell, all stepped together as batched matmuls so the whole grid is a
+    single GPU sweep. Returns array[len(decays), len(sss)] of the step each cell diverged
+    (NaN where it stayed bounded through `steps`)."""
+    g = torch.Generator(device=DEV).manual_seed(seed)
+    nd, ns = len(decays), len(sss)
+    B = nd * ns
+    dec = torch.tensor(decays, device=DEV).repeat_interleave(ns)[:, None]  # [B,1]
+    ss = torch.tensor(sss, device=DEV).repeat(nd)[:, None]                 # [B,1]
+    W = 2.0 * torch.randn(B, n_units, n_units, generator=g, device=DEV) / n_units**0.5
+    W *= ~torch.eye(n_units, dtype=torch.bool, device=DEV)                 # zero diagonals
+    a = torch.randn(B, n_units, generator=g, device=DEV)
+    theta = torch.ones(B, n_units, device=DEV)
+    div = torch.full((B,), -1, dtype=torch.long, device=DEV)              # -1 = still stable
     for t in range(1, steps + 1):
-        net.step()
-        if net.diverged():
-            return t
-    return None
+        post = a * (a - theta)                                            # [B,n]
+        W = torch.baddbmm(W, (ss * a).unsqueeze(2), post.unsqueeze(1))    # W += ss * outer(a, post), per cell
+        u = torch.bmm(torch.where(a < 1.0, 0.0, 1.0).unsqueeze(1), W).squeeze(1)  # spike-bounded propagation
+        u = u + drive * torch.rand(B, n_units, generator=g, device=DEV)
+        theta = (1 - dec) * theta + dec * u**2
+        a = u
+        bad = (~torch.isfinite(a).all(1)) | (a.abs().amax(1) > 1e4)       # [B]
+        div = torch.where(bad & (div < 0), torch.full_like(div, t), div)
+    Z = div.float().cpu().numpy()
+    Z[Z < 0] = np.nan
+    return Z.reshape(nd, ns)
+
+
+def _edges_log(v):
+    v = np.asarray(v, float)
+    m = np.sqrt(v[:-1] * v[1:])
+    return np.r_[v[0] ** 2 / m[0], m, v[-1] ** 2 / m[-1]]
 
 
 def main():
-    DECAYS = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 0.9]
-    SS = [1e-5, 3e-5, 1e-4, 3e-4, 1e-3, 3e-3, 1e-2]
-    Z = np.full((len(DECAYS), len(SS)), np.nan)  # NaN = stable
-    for i, dec in enumerate(DECAYS):
-        for j, ss in enumerate(SS):
-            d = divergence_step(dec, ss)
-            Z[i, j] = np.nan if d is None else d
-            print(f"decay={dec:<6} ss={ss:.0e} -> {'stable' if d is None else 'div@' + str(d)}", flush=True)
-
-    def _edges_log(v):
-        v = np.asarray(v, float)
-        m = np.sqrt(v[:-1] * v[1:])
-        return np.r_[v[0] ** 2 / m[0], m, v[-1] ** 2 / m[-1]]
+    DECAYS = np.geomspace(3e-3, 0.95, 64)
+    SS = np.geomspace(1e-5, 3e-2, 64)
+    Z = divergence_grid(DECAYS.tolist(), SS.tolist())
+    n_stable = int(np.isnan(Z).sum())
+    print(f"swept {Z.size} cells ({len(DECAYS)} decays x {len(SS)} ss); {n_stable} stable", flush=True)
 
     fig, ax = plt.subplots(figsize=(9, 6))
     cmap = plt.cm.YlOrRd_r.copy()
     cmap.set_bad("#2ca6a4")  # stable cells
     norm = mcolors.LogNorm(vmin=np.nanmin(Z), vmax=np.nanmax(Z))
     pcm = ax.pcolormesh(_edges_log(SS), _edges_log(DECAYS), np.ma.masked_invalid(Z),
-                        cmap=cmap, norm=norm, shading="flat", edgecolors="white", lw=0.4)
-    for i, dec in enumerate(DECAYS):
-        for j, ss in enumerate(SS):
-            stable = np.isnan(Z[i, j])
-            ax.scatter(ss, dec, s=40, zorder=5, linewidths=1.3,
-                       marker=("o" if stable else "x"),
-                       c=("#0b3d3b" if stable else "black"))
-    ax.scatter(3e-5, OPTIMAL_DECAY, s=280, marker="*", facecolor="cyan", edgecolor="black",
+                        cmap=cmap, norm=norm, shading="flat")
+    ax.scatter(3e-5, OPTIMAL_DECAY, s=300, marker="*", facecolor="cyan", edgecolor="black",
                zorder=6, label=f"BCMAgt default (decay={OPTIMAL_DECAY}, ss=3e-5)")
     ax.set_xscale("log")
     ax.set_yscale("log")
