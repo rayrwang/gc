@@ -97,7 +97,7 @@ def triangle_batched(u, power=0.7):
 
 def softmax_wta(u, t=1.0, signed=False):
     """
-    `(d,), (), () -> (d,)`
+    `d, (), () -> d`
 
     Soft winner-take-all gate over the d units of a single sample -- the learning
     credit each unit gets. `signed=False`: softmax(t*u), all non-negative (winner

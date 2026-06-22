@@ -102,6 +102,7 @@ class Activs:
     avg: torch.Tensor     # time average of activations
     avg_sq: torch.Tensor  # time average of squares of activations
     # TODO super cheap next to weights, add as many as you want:
+        # softmaxed
         # time derivatives
         # per activation plasticity/step size
         # batchnorm statistics
