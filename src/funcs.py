@@ -217,7 +217,7 @@ def lrn_oja_d(x, w, y, ss=1e-2):
 
 def lrn_oja_signed(x, w, gate, u):
     """
-    `(d_x,), (d_x d_y), (d_y,), (d_y,) -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, d_y -> (d_x d_y)`
 
     Single-sample gated-Oja weight CHANGE (dW, before the learning rate) = SoftHebb's
     update: the Hebbian/anti-Hebbian outer product outer(x, gate) minus the Oja decay
