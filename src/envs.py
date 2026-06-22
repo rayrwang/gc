@@ -1,4 +1,5 @@
 
+import multiprocessing
 import random
 import signal
 import sys
@@ -6,7 +7,6 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
-import multiprocessing
 from typing import Any, Literal
 
 import cv2
