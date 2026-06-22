@@ -1302,7 +1302,7 @@ class CIFARAgt:
     Deep local-Hebbian conv stack for CIFAR -- no backprop, no objective, online and
     single-sample. Reproduces the SoftHebb recipe (Moraitis et al., arXiv:2209.11883)
     under gc's online constraint with no offline oracles. Three conv layers trained
-    ONLY by a local rule; the pooled final feature map is the rep. See 08_cifar10.py.
+    ONLY by a local rule; the pooled final feature map is the rep. See 09_cifar10.py.
 
     RULE = oja-signed (SoftHebb's update): an Oja prototype rule gated by a SIGNED
     soft-WTA -- the winner moves its weight TOWARD the input (Hebbian), losers AWAY

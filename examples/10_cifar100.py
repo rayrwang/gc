@@ -1,5 +1,5 @@
 """
-CIFAR-100 substrate probe: the CIFAR-10 example (08_cifar10.py) on the harder 100-class task
+CIFAR-100 substrate probe: the CIFAR-10 example (09_cifar10.py) on the harder 100-class task
 (1% chance). Same recipe (src.agents.CIFARAgt -- oja-signed + Triangle + soft-norm + online BN,
 no whitening, 24576-dim rep), same online single-sample protocol, same probes (kNN/ridge/
 logistic) vs a SAME-INIT frozen control. See 08 for the recipe, the four load-bearing

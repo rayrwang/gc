@@ -1,10 +1,10 @@
 """
 One-layer local-learning sweep on CLEAN (well-separated) abstract clusters.
 
-This is the DISCRETE-geometry counterpart to the conv image examples (08/09). It tests, on
+This is the DISCRETE-geometry counterpart to the conv image examples (09/10). It tests, on
 synthetic vectors instead of images, which single dense layer trained by a LOCAL rule (no
 backprop, online, single-sample) best recovers cluster structure -- i.e. the regime gc's
-conns actually live in (dense vector->vector maps). 11_one_layer_noisy is the same sweep at
+conns actually live in (dense vector->vector maps). 12_one_layer_noisy is the same sweep at
 low SNR; keep the two in sync.
 
 DATA: K=10 Gaussian clusters whose centroids live in a 16-dim SIGNAL subspace, with isotropic
@@ -25,7 +25,7 @@ FINDINGS (chance 10%; raw 66.0 | frozen 74.2 | LEARNED-best 93.1 | oracle 95.7):
   - SIGN must match geometry: for DISCRETE separated clusters, UNSIGNED wins big -- it is
     online k-means, prototypes converge ONTO centroids. SIGNED (anti-Hebbian repulsion)
     scatters them OFF the centroids and trails badly. (Opposite of images: on a CONTINUOUS
-    manifold, 08/09, signed is required to stop collapse. Separation is the hidden variable.)
+    manifold, 09/10, signed is required to stop collapse. Separation is the hidden variable.)
   - RULE form is second-order given WTA: oja ~= instar; bcm trails (~77) and ignores sign.
   - HOMEOSTASIS is second-order: online-BN HURTS (per-feature scaling washes out the subspace
     signal); per-activation adaptive-LR is ~neutral for the unsigned winner, a mild stabilizer

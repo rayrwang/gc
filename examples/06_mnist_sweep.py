@@ -16,7 +16,7 @@ layernorm/topk), weight-norm, hidden dims (-> depth), init scale, input norm
 (raw/bin/std/zca), activation (relu/tanh/id/spike). Competition shapes the local
 update (ylearn) while the uncompeted activation is propagated and read as the rep.
 
-Scope/caveats: MNIST and fully-connected only (the conv line lives in 08/09); ridge
+Scope/caveats: MNIST and fully-connected only (the conv line lives in 09/10); ridge
 probe only; BATCHED (B=500) -- a fast approximation of the agent's per-sample online
 stepping, so learning-rate effects can differ (selftest checks the batched instar/oja
 math matches fc per-sample at B=1). Headline finding (reproduced by __main__): without

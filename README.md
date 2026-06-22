@@ -79,7 +79,7 @@ BCM is potentiation-dominated (roughly cubic in activity) and self-stabilizes on
 	<img width="560" alt="BCM stability phase diagram" src="assets/bcm_stability.png">
 </p>
 
-(regenerate using `examples/13_bcm_stability.py`)
+(regenerate using `examples/08_bcm_stability.py`)
 
 `ss` is the dominant axis (too large outruns the threshold). `ALPHA` has an *interior* optimum: too low and `θ` freezes and stops braking, too high and the homeostatic loop over-corrects. Both the stable region and the `ALPHA` optimum are **architecture-dependent**: they shift with column count and connectivity, so a stable `(ss, ALPHA)` for one network is not stable for another. This knife-edge is a reason the shipped substrate uses Oja-signed / SoftHebb instead, whose decay term bounds `‖w‖` at any learning rate, so it has no stability surface to tune.
 
@@ -99,7 +99,7 @@ CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn.
 | SoftHebb online 200k             | 47.7 | 59.6     | 58.9   |     | 18.0 | 23.6      | 24.0   |
 | SoftHebb tuned full training run |      |          | 79.9   |     |      |           |        |
 
-(see `examples/{08_cifar10, 09_cifar100}.py`)
+(see `examples/{09_cifar10, 10_cifar100}.py`)
 
 ### Abstract Data
 
@@ -109,7 +109,7 @@ Abstract clustered vectors (Gaussian blobs in a noisy high-dim space, *data* rat
 	<img width="480" alt="Competition sign must match data geometry" src="assets/wta_geometry.png">
 </p>
 
-*Unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs. Regenerate diagram using `examples/12_wta_geometry.py`.*
+*Unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs. Regenerate diagram using `examples/13_wta_geometry.py`.*
 
 The rule barely matters once WTA is in place. Oja and instar stay within a point or two: Oja gives the clean number (93.1), instar the noisy one (50.5, helped by a per-activation adaptive learning rate when the signal is weak). BCM trails both and ignores the sign.
 
@@ -120,7 +120,7 @@ The rule barely matters once WTA is in place. Oja and instar stay within a point
 | gc online unsigned WTA   | 93.1  | 50.5  |
 | oracle (signal subspace) | 95.7  | 58.7  |
 
-(see `examples/{10_one_layer_clean, 11_one_layer_noisy}.py`)
+(see `examples/{11_one_layer_clean, 12_one_layer_noisy}.py`)
 
 ## Files
 
