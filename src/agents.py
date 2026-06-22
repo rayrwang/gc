@@ -1154,7 +1154,7 @@ class BareAgt(AgtBase):
             # Apply learning rule to connections
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    weight = fc.lrn_adaptive(col.nr_1, weight, self.cols[loc].nr_1, ss=6e-5)
+                    weight = fc.lrn_adaptive(col.nr_1, weight, self.cols[loc].nr_1, ss=1e-5)
                 elif direction == Dir.E:
                     ...  # TODO
                 col.conns[(loc, direction)] = weight
