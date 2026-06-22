@@ -71,6 +71,18 @@ MNIST using the BCM (Bienenstock-Cooper-Munro) rule learns (rescues the represen
 
 (see `examples/05_mnist_all_probes.py`)
 
+### BCM stability
+
+BCM is potentiation-dominated (roughly cubic in activity) and self-stabilizes only through its sliding threshold `θ = ⟨y²⟩`. In the **recurrent** substrate this is a binding constraint: stability holds only inside a narrow band of the learning-rate (`ss`) and threshold-decay (`ALPHA`) plane, and outside it the activations run away.
+
+<p align="center">
+	<img width="560" alt="BCM stability phase diagram" src="assets/bcm_stability.png">
+</p>
+
+(regenerate using `examples/13_bcm_stability.py`)
+
+`ss` is the dominant axis (too large outruns the threshold). `ALPHA` has an *interior* optimum: too low and `θ` freezes and stops braking, too high and the homeostatic loop over-corrects. Both the stable region and the `ALPHA` optimum are **architecture-dependent**: they shift with column count and connectivity, so a stable `(ss, ALPHA)` for one network is not stable for another. This knife-edge is a reason the shipped substrate uses Oja-signed / SoftHebb instead, whose decay term bounds `‖w‖` at any learning rate, so it has no stability surface to tune.
+
 ### CIFAR
 
 CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn. Basically using SoftHebb (Moraitis et al., arXiv:2209.11883) adapted for online, and without the ad hoc tricks.
@@ -97,7 +109,7 @@ Abstract clustered vectors (Gaussian blobs in a noisy high-dim space, *data* rat
 	<img width="480" alt="Competition sign must match data geometry" src="assets/wta_geometry.png">
 </p>
 
-*2-D illustration: unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs. Regenerate diagram using `examples/12_wta_geometry.py`.*
+*Unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs. Regenerate diagram using `examples/12_wta_geometry.py`.*
 
 The rule barely matters once WTA is in place. Oja and instar stay within a point or two: Oja gives the clean number (93.1), instar the noisy one (50.5, helped by a per-activation adaptive learning rate when the signal is weak). BCM trails both and ignores the sign.
 
