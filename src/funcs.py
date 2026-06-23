@@ -95,6 +95,15 @@ def triangle_batched(u, power=0.7):
     return torch.relu(u - u.mean(-1, keepdim=True)) ** power
 
 
+def atv_triangle(x, w, power=0.7):
+    """
+    `d_x, (d_x d_y), () -> d_y` 
+    
+    Activity rule using triangle activation function
+    """
+    return triangle(x, power=power) @ w
+
+
 def softmax_wta(u, t=1.0, signed=False):
     """
     `d, (), () -> d`
