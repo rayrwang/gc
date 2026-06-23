@@ -1366,7 +1366,7 @@ class CIFARAgt:
             y = fc.triangle_batched(u, self.power)                  # Triangle activation (graded)
             if use_lrn:
                 g = fc.softmax_wta_batched(u, self.signed_t, signed=True)  # signed soft-WTA gate
-                self.W[li] = fc.lrn_oja_signed_batched(x, self.W[li], g, u, ss=self.base_lr)  # SoftHebb update (soft norm, no hard projection)
+                self.W[li] = fc.lrn_oja_gated_batched(x, self.W[li], g, u, ss=self.base_lr)  # SoftHebb update (soft norm, no hard projection)
             fmap = y.T.reshape(oc, h, w).unsqueeze(0)
             if pool == "max":     # MaxPool 4x4/s2 (early layers, halve spatial)
                 fmap = F.max_pool2d(fmap, 4, stride=2, padding=1)[0]

@@ -21,7 +21,7 @@ def test_activity_rule_shapes():
     func
     for name, func in inspect.getmembers(fc, inspect.isfunction)
     if name.startswith("lrn") and func.__module__ == fc.__name__ \
-        and not name.startswith(("lrn_adaptive", "lrn_oja_signed"))  # different signatures
+        and not name.startswith(("lrn_adaptive", "lrn_oja_gated"))  # different signatures
 ])
 def test_learning_rule_shapes_basic(func):
     D_X = 233
@@ -260,7 +260,7 @@ def test_softmax_wta_signed():
     assert torch.allclose(gs.abs(), torch.softmax(torch.tensor([2.0, 1.0, 0.0]), dim=-1))
 
 
-def test_lrn_oja_signed_matches_formula():
+def test_lrn_oja_gated_matches_formula():
     """Both variants return the UPDATED weights w + ss*dW (module convention). Batched
     dW = (x^T gate - w * sum_n(gate*u)) / n; single-sample = the n=1 case."""
     torch.manual_seed(0)
@@ -270,12 +270,12 @@ def test_lrn_oja_signed_matches_formula():
     u = x @ w
     g = fc.softmax_wta_batched(u, signed=True)
     dW = (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n        # raw averaged update
-    w_b = fc.lrn_oja_signed_batched(x, w, g, u)                  # default ss = 1e-2
+    w_b = fc.lrn_oja_gated_batched(x, w, g, u)                  # default ss = 1e-2
     assert tuple(w_b.shape) == (d_x, d_y)
     assert torch.allclose(w_b, w + 1e-2 * dW)
     # single sample = the n=1 case; both return the updated weights, so they agree
     xs, gs, us = x[0], g[0], u[0]
-    w_new = fc.lrn_oja_signed(xs, w, gs, us)
+    w_new = fc.lrn_oja_gated(xs, w, gs, us)
     assert tuple(w_new.shape) == (d_x, d_y)
     assert torch.allclose(w_new, w + 1e-2 * (torch.outer(xs, gs) - w * (gs * us)))
-    assert torch.allclose(w_new, fc.lrn_oja_signed_batched(x[:1], w, g[:1], u[:1]))
+    assert torch.allclose(w_new, fc.lrn_oja_gated_batched(x[:1], w, g[:1], u[:1]))
