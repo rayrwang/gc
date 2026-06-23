@@ -261,22 +261,21 @@ def test_softmax_wta_signed():
 
 
 def test_lrn_oja_signed_matches_formula():
-    """Batched gated-Oja dW = (x^T gate - w * sum_n(gate*u)) / n, normalized by n samples.
-    Single-sample `lrn_oja_signed` = the n=1 case (outer(x, gate) - w*(gate*u))."""
+    """Both variants return the UPDATED weights w + ss*dW (module convention). Batched
+    dW = (x^T gate - w * sum_n(gate*u)) / n; single-sample = the n=1 case."""
     torch.manual_seed(0)
     n, d_x, d_y = 5, 4, 3
     x = torch.randn(n, d_x)
     w = torch.randn(d_x, d_y)
     u = x @ w
     g = fc.softmax_wta_batched(u, signed=True)
-    dW = fc.lrn_oja_signed_batched(x, w, g, u)
-    assert tuple(dW.shape) == (d_x, d_y)
-    assert torch.allclose(dW, (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n)
-    # single sample: returns the UPDATED weights w + ss*dW (module convention), where
-    # dW is the outer-product form and equals the n=1 batched dW.
+    dW = (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n        # raw averaged update
+    w_b = fc.lrn_oja_signed_batched(x, w, g, u)                  # default ss = 1e-2
+    assert tuple(w_b.shape) == (d_x, d_y)
+    assert torch.allclose(w_b, w + 1e-2 * dW)
+    # single sample = the n=1 case; both return the updated weights, so they agree
     xs, gs, us = x[0], g[0], u[0]
-    w_new = fc.lrn_oja_signed(xs, w, gs, us)  # default ss = 1e-2
-    dWs = torch.outer(xs, gs) - w * (gs * us)
+    w_new = fc.lrn_oja_signed(xs, w, gs, us)
     assert tuple(w_new.shape) == (d_x, d_y)
-    assert torch.allclose(w_new, w + 1e-2 * dWs)
-    assert torch.allclose(w_new, w + 1e-2 * fc.lrn_oja_signed_batched(x[:1], w, g[:1], u[:1]))
+    assert torch.allclose(w_new, w + 1e-2 * (torch.outer(xs, gs) - w * (gs * us)))
+    assert torch.allclose(w_new, fc.lrn_oja_signed_batched(x[:1], w, g[:1], u[:1]))

@@ -224,20 +224,20 @@ def lrn_oja_signed(x, w, gate, u, ss=1e-2):
     w*(gate*u). Use `gate` from `softmax_wta(u, signed=True)` and `u = x @ w`: the
     winner's weight moves toward x, losers away, and the decay bounds ||w|| (soft
     weight-norm, no hard projection). Returns the UPDATED weights (this module's
-    convention), so it drops straight into a `w = lrn(...)` step. The batched variant
-    `lrn_oja_signed_batched` instead returns the raw dW (caller applies `w += lr*dW`).
+    convention), so it drops straight into a `w = lrn(...)` step. See
+    `lrn_oja_signed_batched` for the multi-sample variant.
     """
     return w + ss * (torch.outer(x, gate) - w * (gate * u))
 
 
-def lrn_oja_signed_batched(x, w, gate, u):
+def lrn_oja_signed_batched(x, w, gate, u, ss=1e-2):
     """
-    `(n d_x), (d_x d_y), (n d_y), (n d_y) -> (d_x d_y)`. Batched `lrn_oja_signed`: the
-    per-sample dW (x^T·gate minus w·sum_n(gate*u)) averaged over the n samples (e.g.
-    conv patches).
+    `(n d_x), (d_x d_y), (n d_y), (n d_y), () -> (d_x d_y)`. Batched `lrn_oja_signed`:
+    the new weights w + ss*dW, where dW is the per-sample gated-Oja update (x^T·gate
+    minus w·sum_n(gate*u)) averaged over the n samples (e.g. conv patches).
     """
     n = x.shape[0]
-    return (x.T @ gate - w * (gate * u).sum(0, keepdim=True)) / n
+    return w + ss * (x.T @ gate - w * (gate * u).sum(0, keepdim=True)) / n
 
 
 @torch.compile(disable=disable_compile)
