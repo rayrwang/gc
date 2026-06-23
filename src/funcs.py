@@ -215,18 +215,19 @@ def lrn_oja_d(x, w, y, ss=1e-2):
     return lrn_oja(spike(x), w, y, ss=ss)
 
 
-def lrn_oja_signed(x, w, gate, u):
+def lrn_oja_signed(x, w, gate, u, ss=1e-2):
     """
-    `d_x, (d_x d_y), d_y, d_y -> (d_x d_y)`
+    `d_x, (d_x d_y), d_y, d_y, () -> (d_x d_y)`
 
-    Single-sample gated-Oja weight CHANGE (dW, before the learning rate) = SoftHebb's
-    update: the Hebbian/anti-Hebbian outer product outer(x, gate) minus the Oja decay
+    Single-sample gated-Oja weight update (SoftHebb): the new weights w + ss*dW, where
+    dW is the Hebbian/anti-Hebbian outer product outer(x, gate) minus the Oja decay
     w*(gate*u). Use `gate` from `softmax_wta(u, signed=True)` and `u = x @ w`: the
     winner's weight moves toward x, losers away, and the decay bounds ||w|| (soft
-    weight-norm, no hard projection). Returns dW; caller applies `w += lr * dW`. See
-    `lrn_oja_signed_batched`.
+    weight-norm, no hard projection). Returns the UPDATED weights (this module's
+    convention), so it drops straight into a `w = lrn(...)` step. The batched variant
+    `lrn_oja_signed_batched` instead returns the raw dW (caller applies `w += lr*dW`).
     """
-    return torch.outer(x, gate) - w * (gate * u)
+    return w + ss * (torch.outer(x, gate) - w * (gate * u))
 
 
 def lrn_oja_signed_batched(x, w, gate, u):

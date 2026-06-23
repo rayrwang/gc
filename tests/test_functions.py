@@ -272,9 +272,11 @@ def test_lrn_oja_signed_matches_formula():
     dW = fc.lrn_oja_signed_batched(x, w, g, u)
     assert tuple(dW.shape) == (d_x, d_y)
     assert torch.allclose(dW, (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n)
-    # single sample: outer-product form, and equals the n=1 batched update
+    # single sample: returns the UPDATED weights w + ss*dW (module convention), where
+    # dW is the outer-product form and equals the n=1 batched dW.
     xs, gs, us = x[0], g[0], u[0]
-    dWs = fc.lrn_oja_signed(xs, w, gs, us)
-    assert tuple(dWs.shape) == (d_x, d_y)
-    assert torch.allclose(dWs, torch.outer(xs, gs) - w * (gs * us))
-    assert torch.allclose(dWs, fc.lrn_oja_signed_batched(x[:1], w, g[:1], u[:1]))
+    w_new = fc.lrn_oja_signed(xs, w, gs, us)  # default ss = 1e-2
+    dWs = torch.outer(xs, gs) - w * (gs * us)
+    assert tuple(w_new.shape) == (d_x, d_y)
+    assert torch.allclose(w_new, w + 1e-2 * dWs)
+    assert torch.allclose(w_new, w + 1e-2 * fc.lrn_oja_signed_batched(x[:1], w, g[:1], u[:1]))
