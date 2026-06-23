@@ -80,7 +80,7 @@ def inhibit(x):
 
 def triangle(u, power=0.7):
     """
-    `(d,), () -> (d,)`
+    `d, () -> d`
 
     Triangle activation (SoftHebb): relu(u - mean(u)) ** power, centering the d
     units of a single sample. A graded soft-competition -- units above the mean
