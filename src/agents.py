@@ -1296,8 +1296,6 @@ class MNISTAgt(AgtBase):
 
 
 DEFAULT_CIFAR_LAYERS = [(3, 96, 5, "max"), (96, 384, 3, "max"), (384, 1536, 3, "avg")]
-
-
 class CIFARAgt:
     """
     Deep local-Hebbian conv stack for CIFAR -- no backprop, no objective, online and
