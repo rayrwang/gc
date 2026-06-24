@@ -1125,7 +1125,7 @@ class BareAgt(AgtBase):
                         for direction in allowed:
                             if random.random() < p:
                                 col.conns[(other_loc, direction)] = \
-                                    conn(col, self.cols[other_loc], direction, 1.0)
+                                    conn(col, self.cols[other_loc], direction, 1.1)
                                 break  # Only at most one conn per target?
                 self.free_col(col)
 
