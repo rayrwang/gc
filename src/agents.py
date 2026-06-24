@@ -1124,7 +1124,8 @@ class BareAgt(AgtBase):
                             allowed = list(Dir)
                         for direction in allowed:
                             if random.random() < p:
-                                col.conns[(other_loc, direction)] = conn(col, self.cols[other_loc], direction)
+                                col.conns[(other_loc, direction)] = \
+                                    conn(col, self.cols[other_loc], direction, 1.0)
                                 break  # Only at most one conn per target?
                 self.free_col(col)
 
@@ -1168,9 +1169,9 @@ class BareAgt(AgtBase):
                         self.cols[loc].e_post_ += col.e_pre @ weight
                 else:
                     if direction == Dir.A:
-                        self.cols[loc].a_post_ += fc.atv(col.a_pre, weight, self.cols[loc].a_post_)
+                        self.cols[loc].a_post_ += fc.atv_triangle(col.a_pre, weight)
                     elif direction == Dir.E:
-                        self.cols[loc].e_post_ += fc.atv(col.e_pre, weight, self.cols[loc].e_post_)
+                        self.cols[loc].e_post_ += fc.atv_triangle(col.e_pre, weight)
 
             self.free_col(col)
 
