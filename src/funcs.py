@@ -32,15 +32,15 @@ def spike(x, threshold=1.0):
     """
     `d, () -> d`
 
-    Activation function
+    Heaviside step activation function
     """
     return torch.where(x < threshold, 0.0, 1.0)
 
 
 def atv(x, w, y=None, threshold=1.0):
     """
-    `d_x, (d_x d_y), d_y | None, () -> d_y` 
-    
+    `d_x, (d_x d_y), d_y | None, () -> d_y`
+
     Activity rule
 
     TODO possible changes:
@@ -59,9 +59,9 @@ def inhibit(x):
     to have less (more) activity & change for (un)expected
 
     Global subtractive normalization: each unit is suppressed by A/(d-1) times
-    the total expected activity of all *other* units. The inhibition matrix is
+    the total expected activity of all other units. The inhibition matrix is
     `W = A/(d-1) * (I - 11^T)` (0 on the diagonal, -A/(d-1) elsewhere), which is
-    a diagonal + rank-1 map -- so `expected @ W == A/(d-1) * (expected - sum)`,
+    a diagonal + rank-1 map, so `expected @ W == A/(d-1) * (expected - sum)`,
     an O(d) scale-and-sum rather than an O(d^2) matmul.
 
     TODO possible changes:
@@ -82,39 +82,39 @@ def triangle(u, power=0.7):
     """
     `d, () -> d`
 
-    Triangle activation (SoftHebb): relu(u - mean(u)) ** power, centering the d
-    units of a single sample. A graded soft-competition -- units above the mean
-    fire, raised to `power` -- that propagates a distributed code instead of the
-    one-hot a hard winner-take-all would collapse to. See `triangle_batched`.
+    Triangle activation function
+
+    A graded soft competition: units above the mean fire
     """
     return torch.relu(u - u.mean()) ** power
 
 
 def triangle_batched(u, power=0.7):
-    """`(n d), () -> (n d)`. Batched `triangle`, centering each row over its d units."""
+    """`(n d), () -> (n d)`"""
     return torch.relu(u - u.mean(-1, keepdim=True)) ** power
 
 
 def atv_triangle(x, w, power=0.7):
     """
-    `d_x, (d_x d_y), () -> d_y` 
-    
+    `d_x, (d_x d_y), () -> d_y`
+
     Activity rule using triangle activation function
     """
     return triangle(x, power=power) @ w
 
 
-def softmax_wta(u, t=1.0, signed=False):
+def softmax_wta(u, beta=1.0, signed=False):
     """
     `d, (), () -> d`
 
-    Soft winner-take-all gate over the d units of a single sample -- the learning
-    credit each unit gets. `signed=False`: softmax(t*u), all non-negative (winner
-    most, losers a little). `signed=True` (SoftHebb): the winner keeps +softmax,
-    every loser is negated -> anti-Hebbian repulsion. `t` is the inverse temperature
-    (sharpness). Pair with `lrn_oja_gated` as the gate. See `softmax_wta_batched`.
+    Soft winner-take-all gate: computes the learning credit each unit gets.
+    - `signed=False`: all non-negative (winner most, losers a little).
+    - `signed=True` (SoftHebb): the winner keeps +softmax,
+        every loser is negated -> anti-Hebbian repulsion.
+
+    Pair with `lrn_oja_gated` which uses the gate to learn.
     """
-    resp = torch.softmax(t * u, dim=-1)
+    resp = torch.softmax(beta * u, dim=-1)
     if not signed:
         return resp
     gate = -resp
@@ -122,9 +122,9 @@ def softmax_wta(u, t=1.0, signed=False):
     return gate
 
 
-def softmax_wta_batched(u, t=1.0, signed=False):
-    """`(n d), (), () -> (n d)`. Batched `softmax_wta`, gating each row independently."""
-    resp = torch.softmax(t * u, dim=-1)
+def softmax_wta_batched(u, beta=1.0, signed=False):
+    """`(n d), (), () -> (n d)`"""
+    resp = torch.softmax(beta * u, dim=-1)
     if not signed:
         return resp
     gate = -resp
@@ -139,8 +139,8 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
 
     TODO old, mostly inert, placeholder (discrete) learning rule
 
-       x  y             Δw  
-     < 1, any        -> 0  
+       x  y             Δw
+     < 1, any        -> 0
     >= 1, <= -1      -> -
     >= 1, (-1, 1)    -> towards 0
     >= 1, >= 1       -> +
@@ -153,7 +153,7 @@ def lrn_discrete(x, w, y, ss=1e-2, decay=0.9, reg_width=0.1):
     d_y, = y.shape
 
     check_shapes(d_x, tuple(w.shape), d_y, "learning rule")
-    
+
     xu = x[:, None]  # (d_x 1)
     yu = y[None, :]  # (1 d_y)
 
@@ -228,24 +228,17 @@ def lrn_oja_gated(x, w, gate, u, ss=1e-2):
     """
     `d_x, (d_x d_y), d_y, d_y, () -> (d_x d_y)`
 
-    Single-sample gated-Oja weight update: the new weights w + ss*dW, where dW is the
-    outer product outer(x, gate) minus the Oja decay w*(gate*u). `gate` is the per-unit
-    learning credit from `softmax_wta(u, ...)` and `u = x @ w`; the decay bounds ||w||
-    (soft weight-norm, no hard projection). SIGN-AGNOSTIC, the gate carries it: a SIGNED
-    gate gives the SoftHebb update (winner moves toward x, losers away -> anti-Hebbian
-    tiling); an UNSIGNED gate gives pure competition (only winners move toward x).
-    Returns the UPDATED weights (module convention), so it drops straight into a
-    `w = lrn(...)` step. See `lrn_oja_gated_batched` for the multi-sample variant.
+    Gated Oja rule (SoftHebb), the gate carries the sign
+
+    Δw ∝ outer(x, gate) - w*(gate*u)
+
+    Pair with `softmax_wta` which provides the gate
     """
     return w + ss * (torch.outer(x, gate) - w * (gate * u))
 
 
 def lrn_oja_gated_batched(x, w, gate, u, ss=1e-2):
-    """
-    `(n d_x), (d_x d_y), (n d_y), (n d_y), () -> (d_x d_y)`. Batched `lrn_oja_gated`:
-    the new weights w + ss*dW, where dW is the per-sample gated-Oja update (x^T·gate
-    minus w·sum_n(gate*u)) averaged over the n samples (e.g. conv patches).
-    """
+    """`(n d_x), (d_x d_y), (n d_y), (n d_y), () -> (d_x d_y)`"""
     n = x.shape[0]
     return w + ss * (x.T @ gate - w * (gate * u).sum(0, keepdim=True)) / n
 
@@ -283,7 +276,7 @@ lrn = lrn_discrete
 def update(x, threshold=1.0):
     """
     `d_x, () -> d_x`
-    
+
     Reset activations after applying activity rule
     """
     return torch.zeros_like(x)
@@ -292,7 +285,7 @@ def update(x, threshold=1.0):
 def update_e(x):
     """
     `d_x -> d_x`
-    
+
     Reset expectations
     """
     return torch.zeros_like(x)

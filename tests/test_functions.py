@@ -233,7 +233,7 @@ def test_triangle_centers_and_grades():
 def test_softmax_wta_unsigned():
     """Unsigned gate = softmax over the last dim: non-negative, sums to 1, winner largest."""
     u = torch.tensor([[2.0, 1.0, 0.0]])
-    g = fc.softmax_wta_batched(u, t=1.0, signed=False)
+    g = fc.softmax_wta_batched(u, beta=1.0, signed=False)
     assert torch.allclose(g, torch.softmax(u, dim=-1))
     assert torch.all(g >= 0)
     assert g.sum().item() == pytest.approx(1.0)
@@ -247,7 +247,7 @@ def test_softmax_wta_signed():
     """Signed gate (SoftHebb): winner = +softmax, every loser = -softmax (anti-Hebbian).
     Magnitudes are still the softmax responsibilities."""
     u = torch.tensor([[2.0, 1.0, 0.0]])
-    g = fc.softmax_wta_batched(u, t=1.0, signed=True)
+    g = fc.softmax_wta_batched(u, beta=1.0, signed=True)
     resp = torch.softmax(u, dim=-1)
     assert g[0, 0] > 0                          # winner positive
     assert torch.all(g[0, 1:] < 0)             # losers negative

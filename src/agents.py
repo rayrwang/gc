@@ -1327,12 +1327,12 @@ class CIFARAgt:
     save/load/debugger.
     """
     def __init__(self, layers: list | None = None, base_lr: float = 0.03,
-                 power: float = 0.7, signed_t: float = 1.0, scale: float = 3.0,
+                 power: float = 0.7, signed_beta: float = 1.0, scale: float = 3.0,
                  bn_mom: float = 0.01, pool: int = 4):
         self.layers = DEFAULT_CIFAR_LAYERS if layers is None else layers
         self.base_lr = base_lr
         self.power = power            # Triangle activation exponent
-        self.signed_t = signed_t      # soft-WTA gate temperature
+        self.signed_beta = signed_beta  # soft-WTA gate inverse temperature (beta)
         self.bn_mom = bn_mom          # online-BN running-stat momentum
         self.pool = pool              # final adaptive-avg-pool side (4 -> full 4x4 = 24576-dim rep)
         # He-ish init per layer; weight (in*k*k, out) projects unfolded patches
@@ -1366,7 +1366,7 @@ class CIFARAgt:
             u = x @ self.W[li]
             y = fc.triangle_batched(u, self.power)                  # Triangle activation (graded)
             if use_lrn:
-                g = fc.softmax_wta_batched(u, self.signed_t, signed=True)  # signed soft-WTA gate
+                g = fc.softmax_wta_batched(u, self.signed_beta, signed=True)  # signed soft-WTA gate
                 self.W[li] = fc.lrn_oja_gated_batched(x, self.W[li], g, u, ss=self.base_lr)  # SoftHebb update (soft norm, no hard projection)
             fmap = y.T.reshape(oc, h, w).unsqueeze(0)
             if pool == "max":     # MaxPool 4x4/s2 (early layers, halve spatial)
