@@ -1331,10 +1331,10 @@ class CIFARAgt:
                  bn_mom: float = 0.01, pool: int = 4):
         self.layers = DEFAULT_CIFAR_LAYERS if layers is None else layers
         self.base_lr = base_lr
-        self.power = power            # Triangle activation exponent
+        self.power = power              # Triangle activation exponent
         self.signed_beta = signed_beta  # soft-WTA gate inverse temperature (beta)
-        self.bn_mom = bn_mom          # online-BN running-stat momentum
-        self.pool = pool              # final adaptive-avg-pool side (4 -> full 4x4 = 24576-dim rep)
+        self.bn_mom = bn_mom            # online-BN running-stat momentum
+        self.pool = pool                # final adaptive-avg-pool side (4 -> full 4x4 = 24576-dim rep)
         # He-ish init per layer; weight (in*k*k, out) projects unfolded patches
         self.W = [scale * torch.randn(ic * k * k, oc) / (ic * k * k) ** 0.5
                   for ic, oc, k, _ in self.layers]
@@ -1356,7 +1356,7 @@ class CIFARAgt:
 
     def step(self, ipt: Inputs, use_lrn: bool = True, training: bool | None = None,
              disable_print: bool = False) -> Outputs:
-        if training is None:          # BN trains iff we are learning (override for warmup)
+        if training is None:  # BN trains iff we are learning (override for warmup)
             training = use_lrn
         fmap = ipt[0].to(torch.get_default_device()).to(torch.get_default_dtype())  # (C, H, W)
         for li, (_ic, oc, k, pool) in enumerate(self.layers):
@@ -1364,19 +1364,19 @@ class CIFARAgt:
             h, w = fmap.shape[1], fmap.shape[2]
             x = F.unfold(fmap.unsqueeze(0), k, stride=1, padding=(k - 1) // 2)[0].T  # (h*w, ic*k*k)
             u = x @ self.W[li]
-            y = fc.triangle_batched(u, self.power)                  # Triangle activation (graded)
+            y = fc.triangle_batched(u, self.power)  # Triangle activation (graded)
             if use_lrn:
                 g = fc.softmax_wta_batched(u, self.signed_beta, signed=True)  # signed soft-WTA gate
                 self.W[li] = fc.lrn_oja_gated_batched(x, self.W[li], g, u, ss=self.base_lr)  # SoftHebb update (soft norm, no hard projection)
             fmap = y.T.reshape(oc, h, w).unsqueeze(0)
-            if pool == "max":     # MaxPool 4x4/s2 (early layers, halve spatial)
+            if pool == "max":  # MaxPool 4x4/s2 (early layers, halve spatial)
                 fmap = F.max_pool2d(fmap, 4, stride=2, padding=1)[0]
-            elif pool == "avg":   # AvgPool 2x2 (halve spatial)
+            elif pool == "avg":  # AvgPool 2x2 (halve spatial)
                 fmap = F.avg_pool2d(fmap, 2)[0]
-            else:                 # hold spatial (deeper layers)
+            else:  # hold spatial (deeper layers)
                 fmap = fmap[0]
         self.rep = F.adaptive_avg_pool2d(fmap.unsqueeze(0), self.pool).reshape(-1).clone()
-        return [torch.zeros(10)]   # dummy output; the offline experiment reads the rep
+        return [torch.zeros(10)]  # dummy output; the offline experiment reads the rep
 
     def get_representations(self) -> torch.Tensor:
         assert self.rep is not None
