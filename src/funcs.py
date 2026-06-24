@@ -41,7 +41,7 @@ def atv(x, w, y=None, threshold=1.0):
     """
     `d_x, (d_x d_y), d_y | None, () -> d_y`
 
-    Activity rule
+    Activity rule using step activation function
 
     TODO possible changes:
     - Adaptive thresholds by taking into account average values of activations
@@ -90,7 +90,11 @@ def triangle(u, power=0.7):
 
 
 def triangle_batched(u, power=0.7):
-    """`(n d), () -> (n d)`"""
+    """
+    `(n d), () -> (n d)`
+    
+    See `triangle`
+    """
     return torch.relu(u - u.mean(-1, keepdim=True)) ** power
 
 
@@ -238,7 +242,11 @@ def lrn_oja_gated(x, w, gate, u, ss=1e-2):
 
 
 def lrn_oja_gated_batched(x, w, gate, u, ss=1e-2):
-    """`(n d_x), (d_x d_y), (n d_y), (n d_y), () -> (d_x d_y)`"""
+    """
+    `(n d_x), (d_x d_y), (n d_y), (n d_y), () -> (d_x d_y)`
+    
+    See `lrn_oja_gated`
+    """
     n = x.shape[0]
     return w + ss * (x.T @ gate - w * (gate * u).sum(0, keepdim=True)) / n
 
