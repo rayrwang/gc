@@ -101,9 +101,9 @@ class Activs:
     expect: torch.Tensor  # expectations
     avg: torch.Tensor     # time average of activations
     avg_sq: torch.Tensor  # time average of squares of activations
-    # TODO super cheap next to weights, add as many as you want:
-        # softmaxed
-        # time derivatives
+    # TODO super cheap compared to weights, add as many as you want:
+        # cache of softmaxed actual activations used as learning gate
+        # difference through time (current - previous)
         # per activation plasticity/step size
         # batchnorm statistics
 torch.serialization.add_safe_globals([Dir, Activs])
@@ -116,7 +116,11 @@ Weights = torch.Tensor  # TODO use dataclass? if need to attach more info
 # Activations
 def activs(d: int) -> Activs:
     activations = torch.randn(d)
-    return Activs(activations, torch.zeros(d), activations.clone(), activations**2)
+    return Activs(
+        actual=activations,
+        expect=torch.zeros(d),
+        avg=activations.clone(),
+        avg_sq=activations**2)
 
 # Internal weights
 def weights(d_x: int, d_y: int, scale: float = 2.0) -> Weights:
@@ -130,6 +134,7 @@ def conn(c1: ColBase, c2: ColBase, direction: Dir, scale: float = 2.0) -> Weight
     elif direction == Dir.E:
         d1 = c1.e_pre.shape[0]
         d2 = c2.e_post.shape[0]
+    # TODO take into account number of incoming conns
     return scale * torch.randn(d1, d2) / (d1**0.5)
     
 
@@ -1125,7 +1130,7 @@ class BareAgt(AgtBase):
                         for direction in allowed:
                             if random.random() < p:
                                 col.conns[(other_loc, direction)] = \
-                                    conn(col, self.cols[other_loc], direction, 1.1)
+                                    conn(col, self.cols[other_loc], direction, 0.5)
                                 break  # Only at most one conn per target?
                 self.free_col(col)
 
@@ -1141,6 +1146,10 @@ class BareAgt(AgtBase):
             col.ipt(x)
 
         # First pass: compute new weights and activations
+        # TODO cache triangle & softmax activations rather than recomputing on the fly?
+            # triangle cache can be locally in the loop since it's sender,
+            # but softmaxed cache has to be attached to Activs since it's on the receiver end
+                # (would also require multiple passes)
         self.bar = tqdm(self.cols.values(), desc="Computing new weights and activations...", disable=disable_print)
         for col in self.bar:
             # Used to communicate debugger exited
@@ -1155,7 +1164,12 @@ class BareAgt(AgtBase):
             # Apply learning rule to connections
             for (loc, direction), weight in col.conns.items():
                 if direction == Dir.A:
-                    weight = fc.lrn_adaptive(col.nr_1, weight, self.cols[loc].nr_1, ss=1e-5)
+                    weight = fc.lrn_oja_gated(
+                        col.nr_1.actual,
+                        weight,
+                        fc.softmax_wta(self.cols[loc].nr_1.actual, signed=False),
+                        self.cols[loc].nr_1.actual,
+                        ss=1e-3)
                 elif direction == Dir.E:
                     ...  # TODO
                 col.conns[(loc, direction)] = weight
