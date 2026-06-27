@@ -371,6 +371,7 @@ class BareCol(ColBase):  # 1 layer, no internal weights
 
     def update_activations(self):
         # Compute new activations averages
+        # TODO compute averages of normalized activations not raw?
         new_avg_1 = ALPHA*self.nr_1_.actual + (1-ALPHA)*self.nr_1.avg
         new_avg_sq_1 = ALPHA*self.nr_1_.actual**2 + (1-ALPHA)*self.nr_1.avg_sq
         new_rms_avg = ALPHA_RMS*torch.sqrt(torch.mean(self.nr_1_.actual**2)).item() \
