@@ -101,6 +101,7 @@ class Activs:
     expect: torch.Tensor  # expectations
     avg: torch.Tensor     # time average of activations
     avg_sq: torch.Tensor  # time average of squares of activations
+    rms_avg: float = 1.0  # time average of layer's root mean square
     # TODO super cheap compared to weights, add as many as you want:
         # cache of softmaxed actual activations used as learning gate
         # difference through time (current - previous)
@@ -141,6 +142,7 @@ def conn(c1: ColBase, c2: ColBase, direction: Dir, scale: float = 2.0) -> Weight
 # Constants ###################################################################
 D_DEFAULT = 1024  # Layer dimensionality
 ALPHA = 0.2  # Decay factor for activations EMA
+ALPHA_RMS = 0.2  # Decay factor for activations whole layer RMS
 
 
 # Classes #####################################################################
@@ -371,13 +373,17 @@ class BareCol(ColBase):  # 1 layer, no internal weights
         # Compute new activations averages
         new_avg_1 = ALPHA*self.nr_1_.actual + (1-ALPHA)*self.nr_1.avg
         new_avg_sq_1 = ALPHA*self.nr_1_.actual**2 + (1-ALPHA)*self.nr_1.avg_sq
+        new_rms_avg = ALPHA_RMS*torch.sqrt(torch.mean(self.nr_1_.actual**2)).item() \
+            + (1-ALPHA_RMS)*self.nr_1.rms_avg
+        new_rms_avg = max(0.9, new_rms_avg)  # Don't amplify low activity
 
         # Move new activations to current
             # Intentional shallow copy
-        self.nr_1.actual = self.nr_1_.actual
+        self.nr_1.actual = self.nr_1_.actual / new_rms_avg
         self.nr_1.expect = self.nr_1_.expect
         self.nr_1.avg = new_avg_1
         self.nr_1.avg_sq = new_avg_sq_1
+        self.nr_1.rms_avg = new_rms_avg
 
         # Reset new activations
         self.nr_1_.actual = fc.update(self.nr_1_.actual)
@@ -702,7 +708,9 @@ class AgtBase(ABC):
                 # Only send current activations, not new
                 if name.startswith("nr_") and name[-1] != "_":
                     # NOTE Depends on Activs dataclass preserving order
-                    info[name] = [stats(getattr(x, x_i.name), False) for x_i in fields(x)]
+                    info[name] = [stats(getattr(x, x_i.name), False)
+                        for x_i in fields(x)
+                        if isinstance(getattr(x, x_i.name), torch.Tensor)]
                 elif name.startswith("is_"):
                     info[name] = stats(x, True)
 
@@ -1130,7 +1138,7 @@ class BareAgt(AgtBase):
                         for direction in allowed:
                             if random.random() < p:
                                 col.conns[(other_loc, direction)] = \
-                                    conn(col, self.cols[other_loc], direction, 0.5)
+                                    conn(col, self.cols[other_loc], direction, 2.0)
                                 break  # Only at most one conn per target?
                 self.free_col(col)
 
@@ -1169,7 +1177,7 @@ class BareAgt(AgtBase):
                         weight,
                         fc.softmax_wta(self.cols[loc].nr_1.actual, signed=False),
                         self.cols[loc].nr_1.actual,
-                        ss=1e-3)
+                        ss=1e-2)
                 elif direction == Dir.E:
                     ...  # TODO
                 col.conns[(loc, direction)] = weight
