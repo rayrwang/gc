@@ -53,7 +53,11 @@ def test_agent_save_and_load(tmp_path, case):
             if name1.startswith("nr_"):
                 activs2 = getattr(col2, name1)  # Activs dataclass: compare field-by-field
                 for f in fields(value1):
-                    assert torch.allclose(getattr(value1, f.name), getattr(activs2, f.name))
+                    v1, v2 = getattr(value1, f.name), getattr(activs2, f.name)
+                    if isinstance(v1, torch.Tensor):
+                        assert torch.allclose(v1, v2)
+                    else:
+                        assert v1 == v2  # non-Tensor Activs fields, e.g. rms_avg: float
             elif name1.startswith("is_"):
                 assert torch.allclose(value1, getattr(col2, name1))
         assert len(col1.conns) == len(col2.conns)
