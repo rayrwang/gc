@@ -1176,7 +1176,7 @@ class BareAgt(AgtBase):
                     weight = fc.lrn_oja_gated(
                         col.nr_1.actual,
                         weight,
-                        fc.softmax_wta(self.cols[loc].nr_1.actual, signed=False),
+                        fc.softmax_wta(self.cols[loc].nr_1.actual, beta=0.5, signed=True),
                         self.cols[loc].nr_1.actual,
                         ss=1e-2)
                 elif direction == Dir.E:
@@ -1192,9 +1192,9 @@ class BareAgt(AgtBase):
                         self.cols[loc].e_post_ += col.e_pre @ weight
                 else:
                     if direction == Dir.A:
-                        self.cols[loc].a_post_ += fc.atv_triangle(col.a_pre, weight)
+                        self.cols[loc].a_post_ += fc.atv_triangle(col.a_pre, weight, power=0.3)
                     elif direction == Dir.E:
-                        self.cols[loc].e_post_ += fc.atv_triangle(col.e_pre, weight)
+                        self.cols[loc].e_post_ += fc.atv_triangle(col.e_pre, weight, power=0.3)
 
             self.free_col(col)
 
