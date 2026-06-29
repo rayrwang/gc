@@ -369,14 +369,17 @@ class BareCol(ColBase):  # 1 layer, no internal weights
     def step(self):
         pass
 
-    def update_activations(self):
+    def update_activations(self, use_norm: bool = True):
         # Compute new activations averages
         # TODO compute averages of normalized activations not raw?
         new_avg_1 = ALPHA*self.nr_1_.actual + (1-ALPHA)*self.nr_1.avg
         new_avg_sq_1 = ALPHA*self.nr_1_.actual**2 + (1-ALPHA)*self.nr_1.avg_sq
-        new_rms_avg = ALPHA_RMS*torch.sqrt(torch.mean(self.nr_1_.actual**2)).item() \
-            + (1-ALPHA_RMS)*self.nr_1.rms_avg
-        new_rms_avg = max(0.9, new_rms_avg)  # Don't amplify low activity
+        if use_norm:
+            new_rms_avg = ALPHA_RMS*torch.sqrt(torch.mean(self.nr_1_.actual**2)).item() \
+                + (1-ALPHA_RMS)*self.nr_1.rms_avg
+            new_rms_avg = max(0.9, new_rms_avg)  # Don't amplify low activity
+        else:
+            new_rms_avg = 1.0
 
         # Move new activations to current
             # Intentional shallow copy
@@ -1280,6 +1283,7 @@ class MNISTAgt(AgtBase):
         """
         col1 = self.cols[0, 0]
         col2 = self.cols[1, 0]
+        assert isinstance(col2, BareCol)
 
         # Feed the raw grayscale input. BCM (lrn_adaptive) is continuous, so it
         # does not need the discretized input the old discrete rule did. Tested
@@ -1294,7 +1298,7 @@ class MNISTAgt(AgtBase):
         # Main net uses step activation function, here uses ReLU,
         # since ReLU would blow up main net, and step is overly restrictive here
         col2.a_post_ = F.relu(col2.a_post_)
-        col2.update_activations()
+        col2.update_activations(use_norm=False)
 
         if use_lrn:
             # BCM (adaptive): the only local rule that self-stabilizes without a
