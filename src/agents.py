@@ -448,6 +448,8 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             self.is_2_3_b = None
             self.is_2_4 = None
             self.is_4_5 = None
+
+            self.weights_loaded = False
         else:
             # Activations: current and new versions
             self.nr_1, self.nr_1_ = activs(1024), activs(1024)
