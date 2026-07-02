@@ -680,8 +680,8 @@ class AgtBase(ABC):
                         copies = len(fields(x))  # Assume is same for all activations
                         x = x.actual
                         nrns += x.numel()
-                        threshold = 1.0
-                        sum_density += torch.sum(torch.where(x < threshold, 0.0, 1.0)).item()
+                        # Any NaN poisons the global density to NaN (see fc.density)
+                        sum_density += fc.density(x) * x.numel()
                     elif name.startswith("is_"):
                         isyns += x.numel()
                 for weight in col.conns.values():

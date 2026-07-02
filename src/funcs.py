@@ -306,8 +306,10 @@ def dist(x, y, /):
 
 
 def density(x: torch.Tensor, threshold: float = 1.0, /) -> float:
-    """Proportion of elements of x over threshold"""
-    return (torch.sum(torch.where(x < threshold, 0.0, 1.0)) / x.numel()).item()
+    """Proportion of elements of x over threshold; NaN if x has any NaN"""
+    if torch.isnan(x).any():
+        return float("NaN")
+    return ((x >= threshold).sum() / x.numel()).item()
 
 
 # Archive #####################################################################
