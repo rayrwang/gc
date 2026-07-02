@@ -75,7 +75,7 @@ def inhibit(x):
     # Where both activations AND expectations are above threshold
     expected = spike(x.actual) * torch.where(x.expect < THRESHOLD, 0.0, 1.0)
     inhib = (A / (d - 1)) * (expected - expected.sum())
-    return Activs(x.actual + inhib, x.expect, x.avg, x.avg_sq)
+    return Activs(x.actual + inhib, x.expect, x.avg, x.avg_sq, x.rms_avg)
 
 
 def triangle(u, power=0.7):
