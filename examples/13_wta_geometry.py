@@ -79,7 +79,7 @@ if __name__ == "__main__":
                  fontsize=15, fontweight="bold", color="#1a1d22", y=0.985)
     fig.text(0.5, 0.945, "red = learned prototype     unsigned converges ONTO structure  ·  signed spreads to COVER it",
              ha="center", fontsize=10.5, color="#5b6675")
-    fig.tight_layout(rect=[0, 0, 1, 0.93], h_pad=3.2, w_pad=2.0)
+    fig.tight_layout(rect=(0, 0, 1, 0.93), h_pad=3.2, w_pad=2.0)
     out = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "wta_geometry.png")
     fig.savefig(out, dpi=140)
     print("saved", out)
