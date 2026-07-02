@@ -61,5 +61,15 @@ root = ["."]
 # as false positives, so scope them off rather than litter the code with
 # per-line ignores. Library code (envs, funcs, iotypes) stays fully checked.
 [[tool.ty.overrides]]
-include = ["src/agents.py", "simple/**", "examples/**"]
+include = ["src/agents.py", "simple/**"]
 rules = { "not-subscriptable" = "ignore", "not-iterable" = "ignore", "invalid-assignment" = "ignore", "unresolved-attribute" = "ignore", "invalid-method-override" = "ignore", "invalid-argument-type" = "ignore", "unsupported-operator" = "ignore" }
+
+# Examples get a NARROWER set: only the rules that fire on the lazy-None /
+# monkeypatch / step()-signature patterns they inherit from src/agents.py.
+# (A blanket suppression here once hid six examples broken by the Activs
+# refactor.) Caveat: ty cannot catch attribute misuse behind ColBase's
+# __getattr__ at all, so keeping examples running needs a smoke test, not
+# a type checker.
+[[tool.ty.overrides]]
+include = ["examples/**"]
+rules = { "not-subscriptable" = "ignore", "invalid-assignment" = "ignore", "invalid-method-override" = "ignore" }
