@@ -15,7 +15,7 @@ Findings (controlled same-init A/B, raw input, multiple seeds; sweep in 06_mnist
    CAVEAT (likely MNIST-specific): theta stabilizes each unit but doesn't stop two
    units learning the same feature -- the BCM literature adds lateral inhibition on
    natural images. "BCM needs no competition" is an easy-MNIST result; expect
-   competition to become necessary on harder data (now confirmed on CIFAR, see 08).
+   competition to become necessary on harder data (now confirmed on CIFAR, see 09).
 
 2. Learning beats random only a little and only in the right regime: BCM beats its
    frozen init +2.1% (ridge) at width 128, ~+3.5% at width 64, ~0 by 256-512 as

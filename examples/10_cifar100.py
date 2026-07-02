@@ -2,9 +2,9 @@
 CIFAR-100 substrate probe: the CIFAR-10 example (09_cifar10.py) on the harder 100-class task
 (1% chance). Same recipe (src.agents.CIFARAgt -- oja-signed + Triangle + soft-norm + online BN,
 no whitening, 24576-dim rep), same online single-sample protocol, same probes (kNN/ridge/
-logistic) vs a SAME-INIT frozen control. See 08 for the recipe, the four load-bearing
+logistic) vs a SAME-INIT frozen control. See 09 for the recipe, the four load-bearing
 ingredients, and the SoftHebb (Moraitis et al., arXiv:2209.11883) lineage. Kept deliberately
-parallel to 08 -- sync changes across both.
+parallel to 09 -- sync changes across both.
 
 The CIFAR-100 story mirrors CIFAR-10. Read LEARNING GAINS (Δ vs each arm's OWN frozen):
     config                  1 epoch (50k)         4 epochs (200k)
@@ -24,7 +24,7 @@ ABSOLUTE NUMBERS (kNN/ridge/logistic %, chance 1%; gains above are vs each froze
     gc:       frozen 15.1/23.7/20.1       50k 19.2/25.7/21.7       200k 17.5/31.0/23.8
     SoftHebb: frozen 15.8/25.3/18.1    b1 50k 19.4/28.2/27.1    b1 200k 18.0/23.6/24.0
 
-Frozen rows differ slightly (same architecture; forward-path/seed, see 08). The recipe lives in
+Frozen rows differ slightly (same architecture; forward-path/seed, see 09). The recipe lives in
 src.agents.CIFARAgt; this script is the harness. float32 (Oja products overflow fp16).
 """
 

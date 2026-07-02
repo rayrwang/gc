@@ -3,7 +3,7 @@ One-layer local-learning sweep on NOISY (overlapping) abstract clusters.
 
 Identical sweep to 11_one_layer_clean but at LOW SNR -- the clusters heavily overlap, so a raw
 random projection is near chance and the task is genuinely hard. Kept deliberately parallel to
-10; sync changes across both. See 10 for the full method/finding writeup; this file documents
+11; sync changes across both. See 11 for the full method/finding writeup; this file documents
 what changes when the signal gets buried.
 
 DATA: same K=10 Gaussian clusters in a 16-dim signal subspace + isotropic noise over 256 dims,
@@ -17,7 +17,7 @@ FINDINGS (chance 10%; raw 32.3 | frozen 26.5 | LEARNED-best 50.5 | oracle 58.7):
   - The ONE place homeostasis helps the champion: at low SNR, per-activation |w|-clocked
     adaptive-LR edges ahead. Best cell = instar + softmax-WTA + UNSIGNED + adaptive-LR = 50.5
     (vs 47.7 without it), and instar overtakes oja here. The per-unit annealing buys robustness
-    when each update is dominated by noise. (In the clean case 10, plain no-homeostasis wins.)
+    when each update is dominated by noise. (In the clean case 11, plain no-homeostasis wins.)
   - online-BN still HURTS (it equalizes the 16 signal dims with the 240 noise dims).
 
 SIGNIFICANCE: the winning recipe (WTA + unsigned for clustered data) is robust across SNR; the

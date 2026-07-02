@@ -82,7 +82,7 @@ from . import funcs as fc
 
 class Dir(Enum):  # Direction (kind) of connection
     A = 0  # Actual / "prediction errors" : connects actual to actual activations
-    E = 1  # Expectations / "predictions" : connected actual to expectations activations
+    E = 1  # Expectations / "predictions" : connects actual to expectations activations
 
 
 # Type hints ##################################################################
@@ -1303,8 +1303,8 @@ class MNISTAgt(AgtBase):
         if use_lrn:
             # BCM (adaptive): the only local rule that self-stabilizes without a
             # competition mechanism, via its sliding threshold (see examples/04).
-            # Pass full activations lists (nr_1), not nr_1[0], since BCM needs the
-            # avg-of-squares threshold y[3]. ss=1e-4: BCM is potentiation-dominated
+            # Pass the full Activs (nr_1), not nr_1.actual, since BCM needs the
+            # avg-of-squares threshold (avg_sq). ss=1e-4: BCM is potentiation-dominated
             # with no weight bound, and in float16 the default 1e-2 overflows to NaN
             # within a few steps; 1e-4 is the largest stable rate here.
             col1.conns[col2.loc, Dir.A] = fc.lrn_adaptive(
