@@ -70,14 +70,14 @@ class DebugLearningRuleAgt(AgtBase):
         self.input_locs = [(i, 0) for i in range(4+1)]
         for loc, init in zip(self.input_locs, inits, strict=True):
             col = BareCol(loc, BareColCfg(d))
-            col.nr_1[0] = init
+            col.nr_1.actual = init
             self.cols[loc] = col
 
         # Passive outputs
         passive_output_locs = [(i, 2) for i in range(4+1)]
         for loc, init in zip(passive_output_locs, inits, strict=True):
             col = BareCol(loc, BareColCfg(d))
-            col.nr_1[0] = init
+            col.nr_1.actual = init
             self.cols[loc] = col
 
         # Active outputs (without and with activation function)
@@ -86,7 +86,7 @@ class DebugLearningRuleAgt(AgtBase):
             + [(i, 4) for i in range(4+1)]
         for loc in active_output_locs:
             col = BareCol(loc, BareColCfg(d))
-            col.nr_1[0] = torch.zeros(d)
+            col.nr_1.actual = torch.zeros(d)
             self.cols[loc] = col
 
         # Conns
@@ -101,27 +101,27 @@ class DebugLearningRuleAgt(AgtBase):
     def step(self):
         # Refresh randns
         for loc in ((0, 0), (0, 2)):
-            self.cols[loc].nr_1_[0] = torch.randn(self.d)
+            self.cols[loc].nr_1_.actual = torch.randn(self.d)
 
         # Preserve non changing
         for loc_x in range(1, 4+1):
-            self.cols[(loc_x, 0)].nr_1_[0] = self.cols[(loc_x, 0)].nr_1[0]
-            self.cols[(loc_x, 2)].nr_1_[0] = self.cols[(loc_x, 2)].nr_1[0]
+            self.cols[(loc_x, 0)].nr_1_.actual = self.cols[(loc_x, 0)].nr_1.actual
+            self.cols[(loc_x, 2)].nr_1_.actual = self.cols[(loc_x, 2)].nr_1.actual
 
         # Compute new active outputs
         for loc_x in range(4+1):
             input_loc = (loc_x, 0)
-            input_layer = self.cols[input_loc].nr_1[0]
+            input_layer = self.cols[input_loc].nr_1.actual
 
             # Don't apply activation function
             output_loc = (loc_x, 3)
             weights = self.cols[input_loc].conns[(output_loc, Dir.A)]
-            self.cols[output_loc].nr_1_[0] = input_layer @ weights
+            self.cols[output_loc].nr_1_.actual = input_layer @ weights
 
             # Apply activation function
             func_output_loc = (loc_x, 4)
             weights = self.cols[input_loc].conns[(func_output_loc, Dir.A)]
-            self.cols[func_output_loc].nr_1_[0] = fc.atv(input_layer, weights)
+            self.cols[func_output_loc].nr_1_.actual = fc.atv(input_layer, weights)
 
         # Update activations
         for col in self.cols.values():
@@ -131,9 +131,9 @@ class DebugLearningRuleAgt(AgtBase):
         for input_loc in self.input_locs:
             for output_loc in self.output_locs:
                 self.cols[input_loc].conns[(output_loc, Dir.A)] = fc.lrn(
-                    self.cols[input_loc].nr_1[0],
+                    self.cols[input_loc].nr_1.actual,
                     self.cols[input_loc].conns[(output_loc, Dir.A)],
-                    self.cols[output_loc].nr_1[0])
+                    self.cols[output_loc].nr_1.actual)
 
         self.debug_update()
         

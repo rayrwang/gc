@@ -46,13 +46,13 @@ def no_lrn(x, w, y, *args, **kwargs):
     return w
 
 
-# All actual activations (nr_*[0]) across every col, flattened to one vector
+# All actual activations (nr_*.actual) across every col, flattened to one vector
 def state(agt):
     parts = []
     for col in agt.cols.values():
         for name, val in vars(col).items():
             if name.startswith("nr_") and not name.endswith("_"):
-                parts.append(val[0].flatten().float())
+                parts.append(val.actual.flatten().float())
     return torch.cat(parts)
 
 

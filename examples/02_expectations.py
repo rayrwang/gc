@@ -55,12 +55,12 @@ class ExpectationsAgt(AgtBase):
         col_diff = self.cols[1, 0]
 
         # Expectations align with actual
-        col_align.nr_1_[0] = actual
-        col_align.nr_1_[1] = actual
+        col_align.nr_1_.actual = actual
+        col_align.nr_1_.expect = actual
 
         # Expectations different from actual
-        col_diff.nr_1_[0] = actual
-        col_diff.nr_1_[1] = torch.randn(self.d)
+        col_diff.nr_1_.actual = actual
+        col_diff.nr_1_.expect = torch.randn(self.d)
 
         for col in self.cols.values():
             col.nr_1_ = fc.inhibit(col.nr_1_)
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     for step in itertools.count():
         agt.step()
 
-        density_expected = fc.density(agt.cols[0, 0].nr_1[0])
-        density_unexpected = fc.density(agt.cols[1, 0].nr_1[0])
+        density_expected = fc.density(agt.cols[0, 0].nr_1.actual)
+        density_unexpected = fc.density(agt.cols[1, 0].nr_1.actual)
         print(f"\nStep {step}")
         print(f"Expected activity: {density_expected:.4f}")
         print(f"Unexpected activity: {density_unexpected:.4f}")

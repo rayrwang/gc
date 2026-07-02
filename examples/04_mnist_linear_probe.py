@@ -64,7 +64,7 @@ from src.envs import MNISTEnvCfg, MNISTEnv
 
 
 def get_representations(agt: MNISTAgt):
-    return agt.cols[1, 0].nr_1[0].clone()  # the single post-ReLU hidden layer
+    return agt.cols[1, 0].nr_1.actual.clone()  # the single post-ReLU hidden layer
 
 
 if __name__ == "__main__":
