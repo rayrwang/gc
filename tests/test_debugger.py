@@ -15,9 +15,9 @@ import pytest
 # isort: off
 from src.agents import Dir
 from src.debugger import (
-    ATV_STATS, GRID, H, LINE_HEIGHT, MIDDLE, OVERVIEW, STATS_BLOCK_LINES,
-    STATS_TOP, W, WEIGHT_STATS, Debugger, get_color, parse_loc, screen2dir,
-    screen2loc,
+    ATV_STATS, GRID, H, LINE_HEIGHT, MIDDLE, OVERVIEW, PAGE_TABS,
+    STATS_BLOCK_LINES, STATS_TOP, W, WEIGHT_STATS, Debugger, get_color,
+    parse_loc, screen2dir, screen2loc,
 )
 
 LOCS = [(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)]
@@ -256,3 +256,52 @@ def test_stats_bands_match_block_geometry():
             else STATS_TOP + (STATS_BLOCK_LINES * (i - 1) - 0.5) * LINE_HEIGHT
         hi = STATS_TOP + (STATS_BLOCK_LINES * i - 0.5) * LINE_HEIGHT
         assert all(lo <= y < hi for y in rows), f"band {i} misses its block"
+
+
+# Cols/Stats page toggle ######################################################
+def test_page_defaults_to_cols(dbg):
+    assert dbg.page == "cols"
+
+
+def test_page_tabs_sit_inside_the_grid_panel():
+    assert GRID.contains(PAGE_TABS["cols"])
+    assert GRID.contains(PAGE_TABS["stats"])
+
+
+def test_tab_click_toggles_page_and_preserves_selection(dbg, monkeypatch):
+    dbg.gui_state["loc"] = (1, 1)
+    press(monkeypatch, PAGE_TABS["stats"].center, dbg.scale, buttons=(True, False, False))
+    dbg.handle_events()
+    assert dbg.page == "stats"
+    assert dbg.gui_state["loc"] == (1, 1)   # selection survives the flip
+    press(monkeypatch, PAGE_TABS["cols"].center, dbg.scale, buttons=(True, False, False))
+    dbg.handle_events()
+    assert dbg.page == "cols"
+    assert dbg.gui_state["loc"] == (1, 1)
+
+
+def test_stats_page_disables_col_selection(dbg, monkeypatch):
+    dbg.page = "stats"
+    w = dbg.COL_WIDTH
+    press(monkeypatch, (1.5 * w, 1.5 * w), dbg.scale, buttons=(True, False, False))
+    dbg.handle_events()
+    assert dbg.gui_state["loc"] is None
+
+
+def test_tab_key_toggles_page(dbg, monkeypatch):
+    press(monkeypatch, (0, 0), dbg.scale)
+    pg.event.post(pg.event.Event(pg.KEYDOWN, key=pg.K_TAB))
+    dbg.handle_events()
+    assert dbg.page == "stats"
+    pg.event.post(pg.event.Event(pg.KEYDOWN, key=pg.K_TAB))
+    dbg.handle_events()
+    assert dbg.page == "cols"
+
+
+def test_stats_page_renders_placeholder(dbg, monkeypatch):
+    press(monkeypatch, (0, 0), dbg.scale)
+    dbg.page = "stats"
+    dbg.frame()
+    center = pg.Rect(0, 0, 300, 100)
+    center.center = GRID.center
+    assert region_has_content(dbg.window, center)   # the TODO text

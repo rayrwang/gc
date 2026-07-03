@@ -45,6 +45,14 @@ STATS_TOP = 250    # first row of the per-tensor stats blocks
 LINE_HEIGHT = 30
 STATS_BLOCK_LINES = 5  # rows per stats block (4 text lines + 1 gap)
 
+# Cols/Stats page toggle: a segmented control at the bottom-center of the
+# grid panel, bottom edge flush with the grid/overview divider (drawn on top
+# of the grid, so grid geometry is unchanged)
+PAGE_TABS = {
+    "cols": pg.Rect(GRID.centerx - 130, GRID.bottom - 44, 130, 44),
+    "stats": pg.Rect(GRID.centerx, GRID.bottom - 44, 130, 44),
+}
+
 dir2pos = {
     Dir.A: "top",
     Dir.E: "bottom",
@@ -151,6 +159,10 @@ class Debugger:
             "small": pg.font.SysFont("Helvetica", 12)
         }
 
+        # Which page the grid panel shows ("cols" or "stats"); selection
+        # deliberately survives page flips, so the detail panels stay live
+        self.page = "cols"
+
         # Cache of which items user selected
         self.gui_state = {
             "loc": None,
@@ -167,6 +179,8 @@ class Debugger:
         }
 
     def draw_col(self, loc, highlight=None, colors=None):
+        if self.page != "cols":  # Grid (and its highlights) hidden on other pages
+            return
         x, y = loc
 
         col = pg.Surface((self.COL_WIDTH, self.COL_WIDTH))
@@ -293,6 +307,41 @@ class Debugger:
             if loc is not None:
                 self.draw_col(loc)
 
+    def draw_stats_page(self):
+        """Second page of the grid panel. TODO metrics / time series"""
+        txt = self.fonts["big"].render("TODO", True, (168, 172, 178))
+        self.window.blit(txt, txt.get_rect(center=GRID.center))
+
+    def draw_page_tabs(self):
+        """The Cols/Stats segmented control (drawn last, sits over the grid)."""
+        bar = PAGE_TABS["cols"].union(PAGE_TABS["stats"])
+
+        mx, my = pg.mouse.get_pos()
+        mx, my = mx / self.scale, my / self.scale
+        for name, rect in PAGE_TABS.items():
+            active = self.page == name
+            if active:
+                fill = (32, 36, 42)
+            elif rect.collidepoint(mx, my):  # Hover
+                fill = (221, 225, 230)
+            else:
+                fill = (243, 245, 247)
+            if rect.left == bar.left:  # Round only the control's outer corners
+                pg.draw.rect(self.window, fill, rect,
+                    border_top_left_radius=12, border_bottom_left_radius=12)
+            else:
+                pg.draw.rect(self.window, fill, rect,
+                    border_top_right_radius=12, border_bottom_right_radius=12)
+            label = self.fonts["debug"].render(name.capitalize(), True,
+                (255, 255, 255) if active else (70, 76, 84))
+            self.window.blit(label, label.get_rect(center=rect.center))
+
+        # Hairline border and segment divider
+        pg.draw.rect(self.window, (110, 116, 124), bar, width=1, border_radius=12)
+        pg.draw.line(self.window, (110, 116, 124),
+            (PAGE_TABS["stats"].left, bar.top + 6),
+            (PAGE_TABS["stats"].left, bar.bottom - 7))
+
     def _drain(self, name, is_current=lambda info: True):
         """Drain a pipe to the newest info accepted by is_current, caching it;
         fall back to the cache (if still current) when nothing new arrived."""
@@ -371,17 +420,24 @@ class Debugger:
                     self.scale = w_new / W
                 else:
                     self.scale = h_new / H
+            elif event.type == pg.KEYDOWN and event.key == pg.K_TAB:
+                self.page = "stats" if self.page == "cols" else "cols"
         buttons = pg.mouse.get_pressed(num_buttons=3)
         screen_x, screen_y = pg.mouse.get_pos()
         screen_x, screen_y = screen_x / self.scale, screen_y / self.scale
         keys = pg.key.get_pressed()
         if buttons[0]:  # Left click
-            # Get which col and conn mouse is clicking on
-            # Select col
-            loc = screen2loc(screen_x, screen_y, self.COL_WIDTH)
-            self.gui_state["loc"] = loc
-            self.gui_state["conn"] = None
-            self.gui_state["atv"] = None
+            if PAGE_TABS["cols"].collidepoint(screen_x, screen_y):
+                self.page = "cols"
+            elif PAGE_TABS["stats"].collidepoint(screen_x, screen_y):
+                self.page = "stats"
+            elif self.page == "cols":
+                # Get which col and conn mouse is clicking on
+                # Select col
+                loc = screen2loc(screen_x, screen_y, self.COL_WIDTH)
+                self.gui_state["loc"] = loc
+                self.gui_state["conn"] = None
+                self.gui_state["atv"] = None
         if keys[pg.K_ESCAPE]:
             self.gui_state["loc"] = None
             self.gui_state["conn"] = None
@@ -664,10 +720,14 @@ class Debugger:
     def frame(self):
         """One iteration: draw everything, process input, present."""
         self.draw_static_layout()
-        self.draw_cols()
+        if self.page == "cols":
+            self.draw_cols()
+        else:
+            self.draw_stats_page()
         self.draw_overview()
         self.handle_events()
         self.draw_detail()
+        self.draw_page_tabs()
         self.present()
 
     def run(self):
