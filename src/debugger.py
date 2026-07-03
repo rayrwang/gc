@@ -126,7 +126,7 @@ class Debugger:
         (desktop_w, desktop_h), = pg.display.get_desktop_sizes()
         self.scale = 0.8 * min(desktop_w/2560, desktop_h/1440)  # Fit to display
         self.true_window = pg.display.set_mode((self.scale*W, self.scale*H), pg.DOUBLEBUF|pg.RESIZABLE)
-        pg.display.set_caption(f"debugger - {os.path.basename(path.rstrip('/'))}")
+        pg.display.set_caption(f"debugger: {os.path.basename(path.rstrip('/'))}")
 
         # Frequently used graphical elements
         # Half size grey highlight for showing conns

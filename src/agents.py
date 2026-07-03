@@ -654,6 +654,7 @@ class AgtBase(ABC):
             all_nan = sum(h) == 0
             return (shape, d, n, m, s, (h, bin_width), has_nan, all_nan)
 
+        # TODO make adaptive
         COOLDOWN_OVERVIEW = 0.2
         COOLDOWN_COL = 0.5
         COOLDOWN_CONN = 0.1
