@@ -671,7 +671,7 @@ class AgtBase(ABC):
             isyns = 0  # Internal weights (within each col)
             esyns = 0  # External weights (between cols)
 
-            sum_density = 0
+            actuals = []  # Accumulate actual activations for computing global density
             for col in self.cols.values():
                 # This doesn't use col.count since also need to calculate density
                 for name, x in vars(col).items():
@@ -680,8 +680,7 @@ class AgtBase(ABC):
                         copies = len(fields(x))  # Assume is same for all activations
                         x = x.actual
                         nrns += x.numel()
-                        # Any NaN poisons the global density to NaN (see fc.density)
-                        sum_density += fc.density(x) * x.numel()
+                        actuals.append(x)
                     elif name.startswith("is_"):
                         isyns += x.numel()
                 for weight in col.conns.values():
@@ -692,7 +691,8 @@ class AgtBase(ABC):
             info["esyns"] = esyns
             info["syns"] = isyns + esyns
 
-            info["density"] = sum_density / nrns
+            info["density"] = fc.density(torch.cat(actuals))
+
             pipe.send(info)
 
         # Send information for single col #####################################

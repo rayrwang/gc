@@ -309,7 +309,7 @@ def density(x: torch.Tensor, threshold: float = 1.0, /) -> float:
     """Proportion of elements of x over threshold; NaN if x has any NaN"""
     if torch.isnan(x).any():
         return float("NaN")
-    return ((x >= threshold).sum() / x.numel()).item()
+    return (x >= threshold).sum().item() / x.numel()
 
 
 # Archive #####################################################################
