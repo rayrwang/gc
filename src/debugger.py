@@ -29,10 +29,21 @@ import pygame as pg
 
 from .agents import Dir
 
-# Draw on 2500 x 1300 virtual window, then scale to size of real window
+# Draw on 2500 x 1300 virtual window, then scale to size of real window.
+# All virtual-canvas geometry lives here; drawing AND hit-testing read from
+# these, so panel positions and click zones cannot drift apart.
 W, H = (2500, 1300)
+GRID = pg.Rect(0, 0, 1100, 1100)              # cols grid
+OVERVIEW = pg.Rect(0, 1100, 1100, 200)        # global overview
+MIDDLE = pg.Rect(1100, 0, 400, 1300)          # conn detail or activity values
+ATV_STATS = pg.Rect(1500, 0, 500, 1300)       # selected col's activations
+WEIGHT_STATS = pg.Rect(2000, 200, 500, 1100)  # selected col's weights
 
+PAD = 25           # text inset from a panel's edge
+HEADER_Y = 220     # baseline of the "Activations:" / "Weights:" headers
+STATS_TOP = 250    # first row of the per-tensor stats blocks
 LINE_HEIGHT = 30
+STATS_BLOCK_LINES = 5  # rows per stats block (4 text lines + 1 gap)
 
 dir2pos = {
     Dir.A: "top",
@@ -263,17 +274,17 @@ class Debugger:
         self.window.fill((255, 255, 255))
 
         # Horizontal lines
-        pg.draw.line(self.window, (0, 0, 0), (0, 1100), (1100, 1100))
+        pg.draw.line(self.window, (0, 0, 0), OVERVIEW.topleft, OVERVIEW.topright)
 
         # Vertical lines
-        pg.draw.line(self.window, (0, 0, 0), (1100, 0), (1100, 1300))
-        pg.draw.line(self.window, (0, 0, 0), (1500, 0), (1500, 1300))
-        pg.draw.line(self.window, (0, 0, 0), (2000, 200), (2000, 1300))
+        pg.draw.line(self.window, (0, 0, 0), MIDDLE.topleft, MIDDLE.bottomleft)
+        pg.draw.line(self.window, (0, 0, 0), ATV_STATS.topleft, ATV_STATS.bottomleft)
+        pg.draw.line(self.window, (0, 0, 0), WEIGHT_STATS.topleft, WEIGHT_STATS.bottomleft)
 
         txt = self.fonts["big"].render("Activations:", True, (0,0,0))
-        self.window.blit(txt, txt.get_rect(midbottom=(1750, 220)))
+        self.window.blit(txt, txt.get_rect(midbottom=(ATV_STATS.centerx, HEADER_Y)))
         txt = self.fonts["big"].render("Weights:", True, (0,0,0))
-        self.window.blit(txt, txt.get_rect(midbottom=(2250, 220)))
+        self.window.blit(txt, txt.get_rect(midbottom=(WEIGHT_STATS.centerx, HEADER_Y)))
 
     def draw_cols(self):
         """Draw the grid of cols read off disk."""
@@ -282,31 +293,36 @@ class Debugger:
             if loc is not None:
                 self.draw_col(loc)
 
-    def draw_overview(self):
-        """Draw the global overview panel (bottom left)."""
-        _, pipe = self.pipes["overview"]
-        # Try to get new info
+    def _drain(self, name, is_current=lambda info: True):
+        """Drain a pipe to the newest info accepted by is_current, caching it;
+        fall back to the cache (if still current) when nothing new arrived."""
+        _, pipe = self.pipes[name]
         info = None
         while pipe.poll():
             new_info = pipe.recv()
-            info = new_info
-            self.cache["overview"] = new_info
+            if is_current(new_info):
+                info = new_info
+                self.cache[name] = new_info
+        if info is None and self.cache[name] is not None \
+                and is_current(self.cache[name]):
+            info = self.cache[name]
+        return info
 
-        # If no new info, try to read from cache
-        if info is None and self.cache["overview"] is not None:
-            info = self.cache["overview"]
+    def draw_overview(self):
+        """Draw the global overview panel (bottom left)."""
+        info = self._drain("overview")
 
         if info is None:
             txt = self.fonts["debug"].render("waiting...", True, (0,0,0))
-            self.window.blit(txt, (25, 1125))
+            self.window.blit(txt, (OVERVIEW.x+PAD, OVERVIEW.y+PAD))
         else:
             txt = self.fonts["debug"].render("Active", True, (0,0,0))
-            self.window.blit(txt, (25, 1125))
+            self.window.blit(txt, (OVERVIEW.x+PAD, OVERVIEW.y+PAD))
 
             # Age of information
             age = time.time() - info["timestamp"]
             txt = self.fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
-            self.window.blit(txt, (25, 1125+1*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+PAD, OVERVIEW.y+PAD+1*LINE_HEIGHT))
 
             memory = 2 * (2*info["copies"]*info["nrns"] + info["syns"])
             #        ^ 2 bytes per element
@@ -314,33 +330,33 @@ class Debugger:
             #               ^ "copies" copies of activations for each version
             memory_gb = memory / 1e9
             txt = self.fonts["debug"].render("Memory:", True, (0,0,0))
-            self.window.blit(txt, (25, 1125+3*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+PAD, OVERVIEW.y+PAD+3*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"{memory_gb:.2f} GB", True, (0,0,0))
-            self.window.blit(txt, (25, 1125+4*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+PAD, OVERVIEW.y+PAD+4*LINE_HEIGHT))
 
             # Total number of activations and weights
             txt = self.fonts["debug"].render("# of:", True, (0,0,0))
-            self.window.blit(txt, (200, 1125+0*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+200, OVERVIEW.y+PAD+0*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"    activations: {info["nrns"]:,} ({info["copies"]} copies)", True, (0,0,0))
-            self.window.blit(txt, (200, 1125+1*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+200, OVERVIEW.y+PAD+1*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"    total weights: {info["syns"]:,}", True, (0,0,0))
-            self.window.blit(txt, (200, 1125+2*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+200, OVERVIEW.y+PAD+2*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"    |-- internal weights: {info["isyns"]:,}", True, (0,0,0))
-            self.window.blit(txt, (200, 1125+3*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+200, OVERVIEW.y+PAD+3*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"    |-- external weights: {info["esyns"]:,}", True, (0,0,0))
-            self.window.blit(txt, (200, 1125+4*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+200, OVERVIEW.y+PAD+4*LINE_HEIGHT))
 
             txt = self.fonts["debug"].render("ratios:", True, (0,0,0))
-            self.window.blit(txt, (650, 1125+0*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+650, OVERVIEW.y+PAD+0*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"{info["syns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-            self.window.blit(txt, (650, 1125+2*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+650, OVERVIEW.y+PAD+2*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"|-- {info["isyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-            self.window.blit(txt, (650, 1125+3*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+650, OVERVIEW.y+PAD+3*LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
-            self.window.blit(txt, (650, 1125+4*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+650, OVERVIEW.y+PAD+4*LINE_HEIGHT))
 
             txt = self.fonts["debug"].render(f"density: {info["density"]*100:.2f}%", True, (0,0,0))
-            self.window.blit(txt, (875, 1125+0*LINE_HEIGHT))
+            self.window.blit(txt, (OVERVIEW.x+875, OVERVIEW.y+PAD+0*LINE_HEIGHT))
 
     def handle_events(self):
         """Process the pygame event queue and mouse/keyboard input,
@@ -380,25 +396,17 @@ class Debugger:
                 self.gui_state["conn"] = (conn_loc, conn_dir)
             else:
                 self.gui_state["conn"] = None
-                if 1500 < screen_x < 2000:  # Try to select layer of activations
-                    if 250+0*LINE_HEIGHT <= screen_y < 250+4.5*LINE_HEIGHT:  # nr_1
-                        self.gui_state["atv"] = 1
-                    elif 250+4.5*LINE_HEIGHT <= screen_y < 250+9.5*LINE_HEIGHT:  # nr_2
-                        self.gui_state["atv"] = 2
-                    elif 250+9.5*LINE_HEIGHT <= screen_y < 250+14.5*LINE_HEIGHT:  # nr_3
-                        self.gui_state["atv"] = 3
-                    elif 250+14.5*LINE_HEIGHT <= screen_y < 250+19.5*LINE_HEIGHT:  # nr_4
-                        self.gui_state["atv"] = 4
-                    elif 250+19.5*LINE_HEIGHT <= screen_y < 250+24.5*LINE_HEIGHT:  # nr_5
-                        self.gui_state["atv"] = 5
-                    elif 250+24.5*LINE_HEIGHT <= screen_y < 250+29.5*LINE_HEIGHT:  # nr_6
-                        self.gui_state["atv"] = 6
-                    elif 250+29.5*LINE_HEIGHT <= screen_y < 250+34.5*LINE_HEIGHT:  # nr_7
-                        self.gui_state["atv"] = 7
-                    else:
-                        self.gui_state["atv"] = None
-                else:
-                    self.gui_state["atv"] = None
+                self.gui_state["atv"] = None
+                if ATV_STATS.left < screen_x < ATV_STATS.right:  # Try to select layer of activations
+                    # Band i covers stats block i (nr_i); boundaries sit half a
+                    # row into the gap between blocks
+                    for i in range(1, 8):
+                        lo = STATS_TOP if i == 1 \
+                            else STATS_TOP + (STATS_BLOCK_LINES*(i-1)-0.5)*LINE_HEIGHT
+                        hi = STATS_TOP + (STATS_BLOCK_LINES*i-0.5)*LINE_HEIGHT
+                        if lo <= screen_y < hi:
+                            self.gui_state["atv"] = i
+                            break
 
     def draw_col_detail(self, loc):
         """Draw the selected col's stats/histograms and highlight its conns.
@@ -406,37 +414,24 @@ class Debugger:
         if no info yet), for use by the conn/atv panels."""
         self.draw_col(loc, "border")
 
-        # Send request
-        _, pipe = self.pipes["col"]
-        pipe.send(loc)
-
-        # Try to get new information
-        info = None
-        while pipe.poll():
-            new_info = pipe.recv()
-            if new_info["loc"] == loc:
-                info = new_info
-                self.cache["col"] = new_info
-
-        # If no new information, try to read from cache
-        if info is None and self.cache["col"] is not None \
-                and self.cache["col"]["loc"] == loc:
-            info = self.cache["col"]
+        # Send request, then take the newest matching response (or the cache)
+        self.pipes["col"][1].send(loc)
+        info = self._drain("col", lambda info: info["loc"] == loc)
 
         if info is None:
             txt = self.fonts["debug"].render("waiting...", True, (0,0,0))
-            self.window.blit(txt, (1525, 25+0*LINE_HEIGHT))
+            self.window.blit(txt, (ATV_STATS.x+PAD,25+0*LINE_HEIGHT))
             return loc
 
         # Display debug info
         loc = info["loc"]  # As a way to verify information is coming from correct col
         txt = self.fonts["debug"].render(f"loc: {loc}", True, (0,0,0))
-        self.window.blit(txt, txt.get_rect(topleft=(1525, 25)))
+        self.window.blit(txt, txt.get_rect(topleft=(ATV_STATS.x+PAD,25)))
 
         # Age of information
         age = time.time() - info["timestamp"]
         txt = self.fonts["debug"].render(f"age: {age:.3f}s", True, (0,0,0))
-        self.window.blit(txt, txt.get_rect(topleft=(1525, 25+LINE_HEIGHT)))
+        self.window.blit(txt, txt.get_rect(topleft=(ATV_STATS.x+PAD,25+LINE_HEIGHT)))
 
         # Number of activations and weights
         txt = self.fonts["debug"].render(f"activations: {info["nrns"]:,}", True, (0,0,0))
@@ -475,24 +470,24 @@ class Debugger:
             _, _, _, _, _, (h_e, _), has_nan_e, all_nan_e = info[name][1]
             txt = f"{name}: {shape}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (ATV_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
             txt_line += 1
             txt = f"{math.prod(shape):,}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (ATV_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
             txt_line += 1
             txt = f"{d:.4f}, {n:.4f}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (ATV_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
             txt_line += 1
             txt = f"{m:.4f}, {s:.4f}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (1525, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (ATV_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
 
             txt_line -= 1
             histogram = self.get_histogram(h, 0.1, has_nan or has_nan_e, all_nan or all_nan_e, h_e=h_e)
             if histogram is not None:
-                self.window.blit(histogram, histogram.get_rect(midright=(1975, 250+(txt_line)*LINE_HEIGHT)))
+                self.window.blit(histogram, histogram.get_rect(midright=(ATV_STATS.right-PAD,STATS_TOP+(txt_line)*LINE_HEIGHT)))
             txt_line += 3
 
         weights = sorted([name for name in info if name.startswith("is_")])
@@ -501,24 +496,24 @@ class Debugger:
             shape, d, n, m, s, (h, bin_width), has_nan, all_nan = info[name]
             txt = f"{name}: {shape}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (WEIGHT_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
             txt_line += 1
             txt = f"{math.prod(shape):,}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (WEIGHT_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
             txt_line += 1
             txt = f"{d:.4f}, {n:.4f}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (WEIGHT_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
             txt_line += 1
             txt = f"{m:.4f}, {s:.4f}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (2025, 250+txt_line*LINE_HEIGHT))
+            self.window.blit(txt, (WEIGHT_STATS.x+PAD,STATS_TOP+txt_line*LINE_HEIGHT))
 
             txt_line -= 1
             histogram = self.get_histogram(h, bin_width, has_nan, all_nan)
             if histogram is not None:
-                self.window.blit(histogram, histogram.get_rect(midright=(2475, 250+(txt_line)*LINE_HEIGHT)))
+                self.window.blit(histogram, histogram.get_rect(midright=(WEIGHT_STATS.right-PAD,STATS_TOP+(txt_line)*LINE_HEIGHT)))
             txt_line += 3
 
         # Highlight outgoing connections
@@ -532,55 +527,43 @@ class Debugger:
         conn_loc, conn_dir = conn
         self.draw_col(conn_loc, highlight=f"border{dir2pos[conn_dir]}")
 
-        # Send request
-        _, pipe = self.pipes["conn"]
-        pipe.send((loc, conn_loc, conn_dir))
-
-        # Try to get new information
-        info = None
-        while pipe.poll():
-            new_info = pipe.recv()
-            if new_info is not None and new_info["request"] == (loc, conn_loc, conn_dir):
-                info = new_info
-                self.cache["conn"] = new_info
-
-        # If no new information, try to read from cache
-        if info is None and self.cache["conn"] is not None \
-                and self.cache["conn"]["request"] == (loc, conn_loc, conn_dir):
-            info = self.cache["conn"]
+        # Send request, then take the newest matching response (or the cache)
+        self.pipes["conn"][1].send((loc, conn_loc, conn_dir))
+        info = self._drain("conn", lambda info: info is not None
+            and info["request"] == (loc, conn_loc, conn_dir))
 
         if info is None:
             txt = self.fonts["debug"].render("waiting...", True, (0,0,0))
-            self.window.blit(txt, (1125, 25))
+            self.window.blit(txt, (MIDDLE.x+PAD,25))
         elif not info["valid"]:
             txt = self.fonts["debug"].render("conn does not exist", True, (0,0,0))
-            self.window.blit(txt, (1125, 25))
+            self.window.blit(txt, (MIDDLE.x+PAD,25))
         else:
             # Display debug info
             loc, conn_loc, conn_dir = info["request"]
             txt = self.fonts["debug"].render(f"from: {loc}", True, (0,0,0))
-            self.window.blit(txt, (1125, 25))
+            self.window.blit(txt, (MIDDLE.x+PAD,25))
             txt = self.fonts["debug"].render(f"to: {conn_loc}", True, (0,0,0))
-            self.window.blit(txt, (1125, 25+LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+LINE_HEIGHT))
             txt = self.fonts["debug"].render(f"direction: {conn_dir}", True, (0,0,0))
-            self.window.blit(txt, (1125, 25+2*LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+2*LINE_HEIGHT))
 
             txt = self.fonts["debug"].render(f"age: {time.time()-info["timestamp"]:.3f}s", True, (0,0,0))
-            self.window.blit(txt, (1125, 25+3*LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+3*LINE_HEIGHT))
 
             # Weight values
             txt = self.fonts["debug"].render("name: shape, numel", True, (0,0,0))
-            self.window.blit(txt, (1125, 25+5*LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+5*LINE_HEIGHT))
             txt = self.fonts["debug"].render("density, norm, mean, std", True, (0,0,0))
-            self.window.blit(txt, (1125, 25+6*LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+6*LINE_HEIGHT))
 
             shape, d, n, m, s, (h, bin_width), has_nan, all_nan = info["stats"]
             txt = f"conn: {shape}, {math.prod(shape):,}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (1125, 25+8*LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+8*LINE_HEIGHT))
             txt = f"{d:.4f}, {n:.4f}, {m:.4f}, {s:.4f}"
             txt = self.fonts["debug"].render(txt, True, (0,0,0))
-            self.window.blit(txt, (1125, 25+9*LINE_HEIGHT))
+            self.window.blit(txt, (MIDDLE.x+PAD,25+9*LINE_HEIGHT))
 
             histogram = self.get_histogram(h, bin_width, has_nan, all_nan)
             if histogram is not None:
@@ -588,39 +571,28 @@ class Debugger:
 
     def draw_atv(self, loc, atv):
         """Draw the selected activation layer's value grid (middle panel)."""
-        # Send request
-        _, pipe = self.pipes["atv"]
+        # Send request, then take the newest matching response (or the cache)
         request = (loc, atv)
-        pipe.send(request)
-
-        # Try to get new information
-        info = None
-        while pipe.poll():
-            new_info = pipe.recv()
-            if new_info is not None and new_info["request"] == request:
-                info = new_info
-                self.cache["atv"] = new_info
-
-        # If no new information, try to read from cache
-        if info is None and self.cache["atv"] is not None \
-                and self.cache["atv"]["request"] == request:
-            info = self.cache["atv"]
+        self.pipes["atv"][1].send(request)
+        info = self._drain("atv", lambda info: info is not None
+            and info["request"] == request)
 
         if info is None:
             txt = self.fonts["debug"].render("waiting...", True, (0,0,0))
-            self.window.blit(txt, (1125, 25))
+            self.window.blit(txt, (MIDDLE.x+PAD,25))
         else:
             txt = self.fonts["debug"].render(f"loc: {info["request"][0]}, layer: nr_{info["request"][1]}", True, (0,0,0))
-            self.window.blit(txt, (1125, 25))
+            self.window.blit(txt, (MIDDLE.x+PAD,25))
             txt = self.fonts["debug"].render(f"age: {time.time()-info["timestamp"]:.3f}s", True, (0,0,0))
-            self.window.blit(txt, (1125, 55))
+            self.window.blit(txt, (MIDDLE.x+PAD,55))
 
             # Draw pointer arrow
             arrow = pg.Surface((30, 20))
             arrow.fill((255, 255, 255))
             arrow.set_colorkey((255, 255, 255))
             pg.draw.polygon(arrow, (0, 181, 226), ((0, 0), (30, 10), (0, 20)))
-            self.window.blit(arrow, arrow.get_rect(midright=(1515, 305+150*(info["request"][1]-1))))
+            self.window.blit(arrow, arrow.get_rect(midright=(ATV_STATS.x+15,
+                STATS_TOP+55 + STATS_BLOCK_LINES*LINE_HEIGHT*(info["request"][1]-1))))
 
             # Draw activations grid
             x = info["x"]
@@ -635,13 +607,13 @@ class Debugger:
                 # Current value
                 color = get_color(xi)
                 pg.draw.rect(self.window, color,
-                    (1125 + WIDTH*px, 100 + WIDTH*py, WIDTH, WIDTH))
+                    (MIDDLE.x+PAD + WIDTH*px, 100 + WIDTH*py, WIDTH, WIDTH))
 
                 # Time average value
                 OVERLAY = 0.3
                 color = get_color(x_avg_i)
                 pg.draw.rect(self.window, color,
-                    (1125 + WIDTH*(px + (1-OVERLAY)/2),
+                    (MIDDLE.x+PAD + WIDTH*(px + (1-OVERLAY)/2),
                         100 + WIDTH*(py + (1-OVERLAY)/2),
                         OVERLAY*WIDTH, OVERLAY*WIDTH))
 
@@ -660,12 +632,12 @@ class Debugger:
             left = x.size // GRID_WIDTH + (x.size % GRID_WIDTH != 0)
             right = max(x.size // GRID_WIDTH, 1)
             bottom = x.size % GRID_WIDTH
-            pg.draw.aaline(self.window, (0, 0, 0), (1125, 100), (1125+WIDTH*top, 100))  # top
-            pg.draw.aaline(self.window, (0, 0, 0), (1125, 100), (1125, 100+WIDTH*left))  # left
-            pg.draw.aaline(self.window, (0, 0, 0), (1125+WIDTH*top, 100), (1125+WIDTH*top, 100+WIDTH*right))  # right
-            pg.draw.aaline(self.window, (0, 0, 0), (1125, 100+WIDTH*left), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom left portion
-            pg.draw.aaline(self.window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*top, 100+WIDTH*right))  # bottom right portion
-            pg.draw.aaline(self.window, (0, 0, 0), (1125+WIDTH*bottom, 100+WIDTH*right), (1125+WIDTH*bottom, 100+WIDTH*left))  # bottom vertical edge
+            pg.draw.aaline(self.window, (0, 0, 0), (MIDDLE.x+PAD,100), (MIDDLE.x+PAD+WIDTH*top, 100))  # top
+            pg.draw.aaline(self.window, (0, 0, 0), (MIDDLE.x+PAD,100), (MIDDLE.x+PAD,100+WIDTH*left))  # left
+            pg.draw.aaline(self.window, (0, 0, 0), (MIDDLE.x+PAD+WIDTH*top, 100), (MIDDLE.x+PAD+WIDTH*top, 100+WIDTH*right))  # right
+            pg.draw.aaline(self.window, (0, 0, 0), (MIDDLE.x+PAD,100+WIDTH*left), (MIDDLE.x+PAD+WIDTH*bottom, 100+WIDTH*left))  # bottom left portion
+            pg.draw.aaline(self.window, (0, 0, 0), (MIDDLE.x+PAD+WIDTH*bottom, 100+WIDTH*right), (MIDDLE.x+PAD+WIDTH*top, 100+WIDTH*right))  # bottom right portion
+            pg.draw.aaline(self.window, (0, 0, 0), (MIDDLE.x+PAD+WIDTH*bottom, 100+WIDTH*right), (MIDDLE.x+PAD+WIDTH*bottom, 100+WIDTH*left))  # bottom vertical edge
 
     def draw_detail(self):
         """Draw col/conn/atv detail panels for the currently selected col."""
