@@ -288,6 +288,21 @@ def test_stats_page_disables_col_selection(dbg, monkeypatch):
     assert dbg.gui_state["loc"] is None
 
 
+def test_stats_page_disables_right_click(dbg, monkeypatch):
+    """Right-click (conn and atv-layer selection) is grid-referenced, so it
+    only works on the cols page."""
+    dbg.page = "stats"
+    dbg.gui_state["loc"] = (1, 1)
+    w = dbg.COL_WIDTH
+    press(monkeypatch, (2.5 * w, 1.25 * w), dbg.scale, buttons=(False, False, True))
+    dbg.handle_events()
+    assert dbg.gui_state["conn"] is None
+    y = STATS_TOP + (STATS_BLOCK_LINES * 1.5 - 0.5) * LINE_HEIGHT
+    press(monkeypatch, (ATV_STATS.centerx, y), dbg.scale, buttons=(False, False, True))
+    dbg.handle_events()
+    assert dbg.gui_state["atv"] is None
+
+
 def test_tab_key_toggles_page(dbg, monkeypatch):
     press(monkeypatch, (0, 0), dbg.scale)
     pg.event.post(pg.event.Event(pg.KEYDOWN, key=pg.K_TAB))

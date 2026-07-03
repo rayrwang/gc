@@ -443,7 +443,7 @@ class Debugger:
             self.gui_state["conn"] = None
             self.gui_state["atv"] = None
 
-        if self.gui_state["loc"] and buttons[2]:  # Right click on a selected col
+        if self.page == "cols" and self.gui_state["loc"] and buttons[2]:  # Right click on a selected col
             # Try to stay on same col and select conn or activation layer
             conn_loc = screen2loc(screen_x, screen_y, self.COL_WIDTH)
             conn_dir = screen2dir(screen_x, screen_y, self.COL_WIDTH)
