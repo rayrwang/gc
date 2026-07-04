@@ -443,26 +443,31 @@ class Debugger:
             self.gui_state["conn"] = None
             self.gui_state["atv"] = None
 
-        if self.page == "cols" and self.gui_state["loc"] and buttons[2]:  # Right click on a selected col
-            # Try to stay on same col and select conn or activation layer
+        if self.gui_state["loc"] and buttons[2]:  # Right click on a selected col
+            # Try to stay on same col and select conn or activation layer.
+            # Conn selection references the grid, so cols page only; layer
+            # selection lives in the right panel, so it works on any page.
             conn_loc = screen2loc(screen_x, screen_y, self.COL_WIDTH)
-            conn_dir = screen2dir(screen_x, screen_y, self.COL_WIDTH)
-            if os.path.isdir(f"{self.path}/{conn_loc}"):  # Check if conn location is valid
+            if self.page == "cols" \
+                    and os.path.isdir(f"{self.path}/{conn_loc}"):  # Check if conn location is valid
                 self.gui_state["atv"] = None
-                self.gui_state["conn"] = (conn_loc, conn_dir)
-            else:
+                self.gui_state["conn"] = (conn_loc, screen2dir(screen_x, screen_y, self.COL_WIDTH))
+            elif ATV_STATS.left < screen_x < ATV_STATS.right:  # Try to select layer of activations
                 self.gui_state["conn"] = None
                 self.gui_state["atv"] = None
-                if ATV_STATS.left < screen_x < ATV_STATS.right:  # Try to select layer of activations
-                    # Band i covers stats block i (nr_i); boundaries sit half a
-                    # row into the gap between blocks
-                    for i in range(1, 8):
-                        lo = STATS_TOP if i == 1 \
-                            else STATS_TOP + (STATS_BLOCK_LINES*(i-1)-0.5)*LINE_HEIGHT
-                        hi = STATS_TOP + (STATS_BLOCK_LINES*i-0.5)*LINE_HEIGHT
-                        if lo <= screen_y < hi:
-                            self.gui_state["atv"] = i
-                            break
+                # Band i covers stats block i (nr_i); boundaries sit half a
+                # row into the gap between blocks
+                for i in range(1, 8):
+                    lo = STATS_TOP if i == 1 \
+                        else STATS_TOP + (STATS_BLOCK_LINES*(i-1)-0.5)*LINE_HEIGHT
+                    hi = STATS_TOP + (STATS_BLOCK_LINES*i-0.5)*LINE_HEIGHT
+                    if lo <= screen_y < hi:
+                        self.gui_state["atv"] = i
+                        break
+            elif self.page == "cols":
+                # Right-clicked empty grid space: clear, as before
+                self.gui_state["conn"] = None
+                self.gui_state["atv"] = None
 
     def draw_col_detail(self, loc):
         """Draw the selected col's stats/histograms and highlight its conns.

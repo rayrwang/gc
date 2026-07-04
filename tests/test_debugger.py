@@ -288,19 +288,19 @@ def test_stats_page_disables_col_selection(dbg, monkeypatch):
     assert dbg.gui_state["loc"] is None
 
 
-def test_stats_page_disables_right_click(dbg, monkeypatch):
-    """Right-click (conn and atv-layer selection) is grid-referenced, so it
-    only works on the cols page."""
+def test_stats_page_right_click_conn_disabled_atv_enabled(dbg, monkeypatch):
+    """Conn selection references the grid, so it's cols-page only; layer
+    selection lives in the right panel, so it works on any page."""
     dbg.page = "stats"
     dbg.gui_state["loc"] = (1, 1)
     w = dbg.COL_WIDTH
     press(monkeypatch, (2.5 * w, 1.25 * w), dbg.scale, buttons=(False, False, True))
     dbg.handle_events()
-    assert dbg.gui_state["conn"] is None
+    assert dbg.gui_state["conn"] is None       # grid right-click: dead on stats page
     y = STATS_TOP + (STATS_BLOCK_LINES * 1.5 - 0.5) * LINE_HEIGHT
     press(monkeypatch, (ATV_STATS.centerx, y), dbg.scale, buttons=(False, False, True))
     dbg.handle_events()
-    assert dbg.gui_state["atv"] is None
+    assert dbg.gui_state["atv"] == 2           # layer right-click: still works
 
 
 def test_tab_key_toggles_page(dbg, monkeypatch):
