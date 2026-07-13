@@ -5,7 +5,8 @@
 	<img width="500" alt="Screenshot of network debugger GUI" src="assets/debugger.png">
 </p>
 
-Objective-free, modular, feedback neural networks that learn via association.
+The bet:
+> It is possible to construct an agent whose knowledge grows predominantly by proposing new ideas in response to problems. New ideas that fail internal or external contradiction are discarded, while existing ideas that fail are replaced once a better alternative is found, only surviving as autobiographical memory. All of this operates without optimizing a (fixed) scalar. Run far enough, this generates the agent's own goals without collapsing into incoherence. Such an agent, if successfully implemented, is a person with the right to individual freedom.
 
 (*Disclaimer: Very rough/early/speculative work*)
 
