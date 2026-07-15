@@ -15,7 +15,9 @@ import pytest
 # isort: off
 from src.agents import Dir
 from src.debugger import (
-    ATV_STATS, GRID, H, LINE_HEIGHT, MIDDLE, OVERVIEW, PAGE_TABS,
+    ATV_STATS, DENSITY_COLOR, DENSITY_HISTORY_LIMIT, DENSITY_PLOT, GRID, H,
+    DENSITY_SUBTITLE, DENSITY_TILE, DENSITY_TIME_MARKERS,
+    DENSITY_WINDOW_SECONDS, LINE_HEIGHT, MIDDLE, OVERVIEW, PAGE_TABS,
     STATS_BLOCK_LINES, STATS_TOP, W, WEIGHT_STATS, Debugger, get_color,
     parse_loc, screen2dir, screen2loc,
 )
@@ -83,6 +85,15 @@ def col_info(loc):
         "nr_1": [make_stats(), make_stats(), make_stats(), make_stats()],
         "is_1_2": make_stats(shape=(1024, 1024)),
         "conns": {((2, 1), Dir.A): None, ((1, 2), Dir.E): None},
+    }
+
+
+def overview_info(timestamp=None, density=0.1113):
+    return {
+        "timestamp": time.time() if timestamp is None else timestamp,
+        "nrns": 844_820, "copies": 3,
+        "isyns": 681_574_400, "esyns": 1_458_667_520,
+        "syns": 2_140_241_920, "density": density,
     }
 
 
@@ -193,11 +204,7 @@ def test_quit_signals_agent_and_exits(dbg, monkeypatch):
 # each state draws SOMETHING into its panel region without raising.
 def test_frame_idle_renders(dbg, monkeypatch):
     press(monkeypatch, (0, 0), dbg.scale)
-    dbg.pipes["overview"][0].send({
-        "timestamp": time.time(), "nrns": 844_820, "copies": 3,
-        "isyns": 681_574_400, "esyns": 1_458_667_520,
-        "syns": 2_140_241_920, "density": 0.1113,
-    })
+    dbg.pipes["overview"][0].send(overview_info())
     dbg.frame()
     assert region_has_content(dbg.window, GRID)       # cols drawn
     assert region_has_content(dbg.window, OVERVIEW)   # overview stats drawn
@@ -313,10 +320,59 @@ def test_tab_key_toggles_page(dbg, monkeypatch):
     assert dbg.page == "cols"
 
 
-def test_stats_page_renders_placeholder(dbg, monkeypatch):
+def test_density_history_is_bounded_and_rejects_invalid_samples(dbg):
+    dbg._record_density({"timestamp": 1, "density": float("nan")})
+    assert not dbg.density_history
+    for i in range(DENSITY_HISTORY_LIMIT + 3):
+        dbg._record_density({"timestamp": i, "density": i % 100 / 100})
+    assert len(dbg.density_history) == DENSITY_HISTORY_LIMIT
+    assert dbg.density_history[0][0] == 3
+
+
+def test_draw_overview_records_each_fresh_density_once(dbg):
+    dbg.pipes["overview"][0].send(overview_info(timestamp=1, density=0.10))
+    dbg.pipes["overview"][0].send(overview_info(timestamp=2, density=0.12))
+    dbg.draw_overview()
+    assert list(dbg.density_history) == [(1.0, 0.10), (2.0, 0.12)]
+    dbg.draw_overview()  # cached overview is drawn but not recorded again
+    assert len(dbg.density_history) == 2
+
+
+def test_stats_page_renders_density_sparkline(dbg, monkeypatch):
     press(monkeypatch, (0, 0), dbg.scale)
     dbg.page = "stats"
+    now = 1_000.0
+    monkeypatch.setattr("src.debugger.time.time", lambda: now)
+    for timestamp, density in ((now - 10, 0.10), (now - 5, 0.14), (now, 0.12)):
+        dbg._record_density({"timestamp": timestamp, "density": density})
     dbg.frame()
-    center = pg.Rect(0, 0, 300, 100)
-    center.center = GRID.center
-    assert region_has_content(dbg.window, center)   # the TODO text
+    arr = pg.surfarray.array3d(dbg.window)
+    plot = arr[DENSITY_PLOT.left:DENSITY_PLOT.right,
+        DENSITY_PLOT.top:DENSITY_PLOT.bottom]
+    assert ((plot == DENSITY_COLOR).all(axis=2)).any()
+
+
+def test_density_tile_uses_left_half_with_fixed_time_axis(dbg, monkeypatch):
+    assert DENSITY_TILE.left < GRID.centerx
+    assert DENSITY_TILE.right <= GRID.centerx
+    assert DENSITY_TILE.height == (GRID.height - 4 * 25) // 3
+    assert DENSITY_TILE.contains(DENSITY_PLOT)
+    assert DENSITY_PLOT.width / DENSITY_PLOT.height == pytest.approx(
+        (1 + 5 ** 0.5) / 2, abs=0.005)
+    assert "≥" in DENSITY_SUBTITLE
+    assert DENSITY_TIME_MARKERS == (120, 90, 60, 30, 0)
+
+    now = 1_000.0
+    monkeypatch.setattr("src.debugger.time.time", lambda: now)
+    dbg._record_density({"timestamp": now - 10, "density": 0.10})
+    dbg._record_density({"timestamp": now, "density": 0.12})
+    dbg.draw_stats_page()
+
+    # Ten seconds occupies only the rightmost 1/12 of a fixed 120s axis. It
+    # must not stretch the two samples across the full plot width.
+    arr = pg.surfarray.array3d(dbg.window)
+    plot = arr[DENSITY_PLOT.left:DENSITY_PLOT.right,
+        DENSITY_PLOT.top:DENSITY_PLOT.bottom]
+    blue_xs = np.where((plot == DENSITY_COLOR).all(axis=2))[0]
+    assert blue_xs.min() > DENSITY_PLOT.width * 0.8
+    assert DENSITY_WINDOW_SECONDS == 120.0

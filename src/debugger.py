@@ -23,6 +23,7 @@ import os
 import signal
 import sys
 import time
+from collections import deque
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = ""
 import pygame as pg
@@ -52,6 +53,21 @@ PAGE_TABS = {
     "cols": pg.Rect(GRID.centerx - 130, GRID.bottom - 44, 130, 44),
     "stats": pg.Rect(GRID.centerx, GRID.bottom - 44, 130, 44),
 }
+
+DENSITY_HISTORY_LIMIT = 600
+DENSITY_WINDOW_SECONDS = 120.0
+DENSITY_TIME_MARKERS = (120, 90, 60, 30, 0)
+DENSITY_TILE = pg.Rect(PAD, PAD, (GRID.width - 3 * PAD) // 2,
+    (GRID.height - 4 * PAD) // 3)
+DENSITY_PLOT_WIDTH = DENSITY_TILE.width - 85
+DENSITY_PLOT_HEIGHT = round(DENSITY_PLOT_WIDTH / ((1 + math.sqrt(5)) / 2))
+DENSITY_PLOT = pg.Rect(DENSITY_TILE.left + 65,
+    DENSITY_TILE.bottom - DENSITY_PLOT_HEIGHT,
+    DENSITY_PLOT_WIDTH, DENSITY_PLOT_HEIGHT)
+DENSITY_COLOR = (42, 120, 214)
+DENSITY_SUBTITLE = "fraction of current activations ≥ 1.0"
+STATS_TEXT_COLOR = (0, 0, 0)
+STATS_GRID_COLOR = (210, 210, 210)
 
 dir2pos = {
     Dir.A: "top",
@@ -156,7 +172,10 @@ class Debugger:
             "big": pg.font.SysFont("Helvetica", 48),
             "med_bold": pg.font.SysFont("Helvetica", 36, True),
             "debug": pg.font.SysFont("Helvetica", 24),
-            "small": pg.font.SysFont("Helvetica", 12)
+            "small": pg.font.SysFont("Helvetica", 12),
+            "chart_title": pg.font.SysFont("Helvetica", 32, True),
+            "chart_subtitle": pg.font.SysFont("Helvetica", 18),
+            "chart_axis": pg.font.SysFont("Helvetica", 14),
         }
 
         # Which page the grid panel shows ("cols" or "stats"); selection
@@ -177,6 +196,10 @@ class Debugger:
             "conn": None,
             "atv": None,
         }
+
+        # Global overview updates arrive at 5 Hz. Keep about two minutes of
+        # density locally; this is display history, not persisted run data.
+        self.density_history = deque(maxlen=DENSITY_HISTORY_LIMIT)
 
     def draw_col(self, loc, highlight=None, colors=None):
         if self.page != "cols":  # Grid (and its highlights) hidden on other pages
@@ -307,10 +330,107 @@ class Debugger:
             if loc is not None:
                 self.draw_col(loc)
 
+    def _record_density(self, info):
+        """Record one fresh global-density sample from an overview message."""
+        try:
+            timestamp = float(info["timestamp"])
+            density = float(info["density"])
+        except (KeyError, TypeError, ValueError):
+            return
+        if math.isfinite(timestamp) and math.isfinite(density):
+            self.density_history.append((timestamp, min(max(density, 0.0), 1.0)))
+
     def draw_stats_page(self):
-        """Second page of the grid panel. TODO metrics / time series"""
-        txt = self.fonts["big"].render("TODO", True, (168, 172, 178))
-        self.window.blit(txt, txt.get_rect(center=GRID.center))
+        """Draw bounded global time-series metrics in the grid panel."""
+        tile = DENSITY_TILE
+        title = self.fonts["chart_title"].render("Activation density", True,
+            STATS_TEXT_COLOR)
+        self.window.blit(title, (tile.left + 18, tile.top))
+        subtitle = self.fonts["chart_subtitle"].render(DENSITY_SUBTITLE, True,
+            STATS_TEXT_COLOR)
+        self.window.blit(subtitle, (tile.left + 18, tile.top + 40))
+
+        plot = DENSITY_PLOT
+
+        # The newest sample is always at the right edge. Fixed time guides
+        # remain stationary while the trace fills from right to left.
+        for seconds_ago in DENSITY_TIME_MARKERS:
+            x = plot.right - 1 - seconds_ago / DENSITY_WINDOW_SECONDS \
+                * (plot.width - 1)
+            pg.draw.line(self.window, STATS_GRID_COLOR,
+                (round(x), plot.top), (round(x), plot.bottom - 1))
+            marker = "now" if seconds_ago == 0 else f"-{seconds_ago}s"
+            label = self.fonts["chart_axis"].render(marker, True,
+                STATS_TEXT_COLOR)
+            self.window.blit(label,
+                label.get_rect(midtop=(round(x), plot.bottom + 7)))
+
+        pg.draw.rect(self.window, STATS_TEXT_COLOR, plot, width=1)
+
+        if not self.density_history:
+            waiting = self.fonts["debug"].render(
+                "waiting for overview samples...", True, STATS_TEXT_COLOR)
+            self.window.blit(waiting, waiting.get_rect(center=plot.center))
+            return
+
+        now = time.time()
+        history = sorted(
+            ((timestamp, density) for timestamp, density in self.density_history
+                if now - DENSITY_WINDOW_SECONDS <= timestamp <= now),
+            key=lambda sample: sample[0])
+        if not history:
+            waiting = self.fonts["debug"].render(
+                "no samples in the last 120s", True, STATS_TEXT_COLOR)
+            self.window.blit(waiting, waiting.get_rect(center=plot.center))
+            return
+
+        values = [density for _, density in history]
+        low, high = min(values), max(values)
+        # A fixed 0-100% scale hides useful movement near the usual density.
+        # Keep at least a two-percentage-point range and label it explicitly.
+        if high - low < 0.02:
+            center = (low + high) / 2
+            low = max(0.0, center - 0.01)
+            high = min(1.0, low + 0.02)
+            low = max(0.0, high - 0.02)
+        else:
+            padding = (high - low) * 0.1
+            low = max(0.0, low - padding)
+            high = min(1.0, high + padding)
+
+        # Three labelled horizontal guides make the adaptive scale auditable.
+        for fraction in (0.0, 0.5, 1.0):
+            y = round(plot.bottom - 1 - fraction * (plot.height - 1))
+            if fraction == 0.5:
+                pg.draw.line(self.window, STATS_GRID_COLOR,
+                    (plot.left + 1, y), (plot.right - 2, y))
+            value = low + fraction * (high - low)
+            label = self.fonts["chart_axis"].render(f"{value * 100:.2f}%", True,
+                STATS_TEXT_COLOR)
+            label_rect = label.get_rect(midright=(plot.left - 10, y))
+            if fraction == 0.0:
+                label_rect.bottomright = (plot.left - 10, plot.bottom)
+            elif fraction == 1.0:
+                label_rect.topright = (plot.left - 10, plot.top)
+            self.window.blit(label, label_rect)
+
+        points = []
+        for timestamp, density in history:
+            age = now - timestamp
+            x = plot.right - 1 - age / DENSITY_WINDOW_SECONDS \
+                * (plot.width - 1)
+            y = plot.bottom - 1 - (density - low) / (high - low) \
+                * (plot.height - 1)
+            points.append((round(x), round(y)))
+
+        if len(points) > 1:
+            pg.draw.lines(self.window, DENSITY_COLOR, False, points, width=3)
+        pg.draw.circle(self.window, DENSITY_COLOR, points[-1], 5)
+
+        current = self.fonts["chart_title"].render(
+            f"{values[-1] * 100:.2f}%", True, STATS_TEXT_COLOR)
+        self.window.blit(current,
+            current.get_rect(topright=(tile.right - 18, tile.top)))
 
     def draw_page_tabs(self):
         """The Cols/Stats segmented control (drawn last, sits over the grid)."""
@@ -342,14 +462,17 @@ class Debugger:
             (PAGE_TABS["stats"].left, bar.top + 6),
             (PAGE_TABS["stats"].left, bar.bottom - 7))
 
-    def _drain(self, name, is_current=lambda info: True):
+    def _drain(self, name, is_current=lambda info: True, on_new=None):
         """Drain a pipe to the newest info accepted by is_current, caching it;
-        fall back to the cache (if still current) when nothing new arrived."""
+        call on_new for each accepted message, then fall back to the cache (if
+        still current) when nothing new arrived."""
         _, pipe = self.pipes[name]
         info = None
         while pipe.poll():
             new_info = pipe.recv()
             if is_current(new_info):
+                if on_new is not None:
+                    on_new(new_info)
                 info = new_info
                 self.cache[name] = new_info
         if info is None and self.cache[name] is not None \
@@ -359,7 +482,7 @@ class Debugger:
 
     def draw_overview(self):
         """Draw the global overview panel (bottom left)."""
-        info = self._drain("overview")
+        info = self._drain("overview", on_new=self._record_density)
 
         if info is None:
             txt = self.fonts["debug"].render("waiting...", True, (0,0,0))
@@ -725,11 +848,13 @@ class Debugger:
     def frame(self):
         """One iteration: draw everything, process input, present."""
         self.draw_static_layout()
+        # Drain overview first so a newly arrived density sample appears on the
+        # stats page in this frame rather than the next one.
+        self.draw_overview()
         if self.page == "cols":
             self.draw_cols()
         else:
             self.draw_stats_page()
-        self.draw_overview()
         self.handle_events()
         self.draw_detail()
         self.draw_page_tabs()
