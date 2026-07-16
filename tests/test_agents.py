@@ -33,7 +33,9 @@ def test_agent_init(tmp_path, case):
 @pytest.mark.parametrize("case", cases)
 def test_agent_step(tmp_path, case):
     agt = case.agt_cls(case.cfg_cls(*case.cfg_args), tmp_path)
+    assert agt.age == 0
     agt.step(case.step_input)
+    assert agt.age == 1
 
 
 @pytest.mark.parametrize("case", cases)
@@ -41,6 +43,9 @@ def test_agent_save_and_load(tmp_path, case):
     agt1 = case.agt_cls(case.cfg_cls(*case.cfg_args), tmp_path)
     agt1.save()
     agt2 = case.agt_cls.load(tmp_path)
+    assert agt1.age == agt2.age
+    assert agt1.cfg == agt2.cfg
+    assert agt1.path == agt2.path
     assert len(agt1.cols) == len(agt2.cols)
     for loc1, col1 in agt1.cols.items():
         assert loc1 in agt2.cols

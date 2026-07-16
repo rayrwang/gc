@@ -539,6 +539,8 @@ class AgtBase(ABC):
         self.cfg = cfg
         self.path = path
 
+        self.age = None
+
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
         self.cols: dict[Loc, ColBase] = {}
@@ -794,6 +796,10 @@ class AgtBase(ABC):
         print(f"\nSaving agent to \"{self.path}\":")
         os.makedirs(self.path, exist_ok=True)
 
+        # Save age
+        with open(f"{self.path}/age", "w") as f:
+            f.write(str(self.age))
+
         # Save type of agt
         with open(f"{self.path}/type", "w") as f:
             f.write(type(self).__name__)
@@ -845,6 +851,10 @@ class AgtBase(ABC):
 
         agt = agt_type(cfg, path, skip_init=True)
 
+        # Load age
+        with open(f"{path}/age") as f:
+            agt.age = int(f.read())
+
         # Load cols
         for name in tqdm(os.listdir(path), desc="Loading cols"):
             # Skip agt metadata and any stray files (.DS_Store, editor temps);
@@ -882,6 +892,8 @@ class Agt(AgtBase):  # Agent
 
         if not skip_init:
             print("\nInitializing new agent...")
+
+            self.age: int = 0
 
             width = math.ceil(self.n_cols**(1/2))  # Side length
 
@@ -1022,6 +1034,8 @@ class Agt(AgtBase):  # Agent
             if self.use_debug:  # TODO not here?
                 self.debug_update()
 
+        self.age += 1
+
         # Return outputs
         return [col.out() for col in self.O_cols]
 
@@ -1076,6 +1090,8 @@ class BareAgt(AgtBase):
 
         if not skip_init:
             print("\nInitializing new agent...")
+
+            self.age = 0
 
             width = math.ceil(self.n_cols**(1/2))  # Side length
 
@@ -1224,6 +1240,8 @@ class BareAgt(AgtBase):
             if self.use_debug:  # TODO not here?
                 self.debug_update()
 
+        self.age += 1
+
         # Return outputs
         return [col.out() for col in self.O_cols]
 
@@ -1253,6 +1271,8 @@ class MNISTAgt(AgtBase):
 
         if not skip_init:
             print("\nInitializing new agent...")
+            
+            self.age = 0
 
             # Cols
             col1 = I_VectorCol((0, 0), I_VectorColCfg(784))
@@ -1321,6 +1341,8 @@ class MNISTAgt(AgtBase):
             if self.pipes["overview"][0].poll():
                 sys.exit(0)
             self.debug_update()
+
+        self.age += 1
 
         return [torch.zeros(10)]
 
