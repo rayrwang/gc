@@ -312,6 +312,23 @@ def density(x: torch.Tensor, threshold: float = 1.0, /) -> float:
     return (x >= threshold).sum().item() / x.numel()
 
 
+def sorted_curve(x: torch.Tensor, points: int = 64, /) -> list[float]:
+    """`n -> min(n, points)`
+
+    x sorted descending, downsampled to evenly spaced ranks (head and tail
+    always kept). Sorting first means the downsample preserves the curve's
+    shape; used for the debugger's norm curves.
+    """
+    s = x.detach().float().flatten().sort(descending=True).values
+    if s.numel() > points:
+        # Integer arithmetic: immune to the global default dtype (bf16 would
+        # round a float linspace past the last index) and default device
+        idx = torch.arange(points, device=s.device) * (s.numel() - 1) \
+            // (points - 1)
+        s = s[idx]
+    return [round(float(v), 5) for v in s]
+
+
 # Archive #####################################################################
 @torch.compile(disable=disable_compile)
 def lrn_basic(x, w, y, ss=1e-4):

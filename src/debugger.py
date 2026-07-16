@@ -69,6 +69,22 @@ DENSITY_SUBTITLE = "fraction of current activations ≥ 1.0"
 STATS_TEXT_COLOR = (0, 0, 0)
 STATS_GRID_COLOR = (210, 210, 210)
 
+# Sorted per-unit in-norm curves (top-right stats tile). Snapshots arrive
+# ~every 2s (agent-side cooldown); keep a few minutes for the drift ghost.
+NORM_HISTORY_LIMIT = 90
+NORM_GHOST_SECONDS = 60.0   # target age of the gray reference snapshot
+NORM_INIT_NORM = 2.0        # weights()/conn() init scale -> per-unit init norm
+NORM_CONNS_COLOR = (196, 84, 42)
+NORM_INTERNAL_COLOR = (120, 84, 190)
+NORM_GHOST_COLOR = (185, 185, 185)
+NORM_INIT_LINE_COLOR = (150, 190, 230)
+NORM_TILE = pg.Rect(DENSITY_TILE.right + PAD, PAD,
+    DENSITY_TILE.width, DENSITY_TILE.height)
+NORM_PLOT = pg.Rect(NORM_TILE.left + 65,
+    NORM_TILE.bottom - DENSITY_PLOT_HEIGHT,
+    DENSITY_PLOT_WIDTH, DENSITY_PLOT_HEIGHT)
+NORM_SUBTITLE = "per-unit incoming L2 norm, sorted (conns: ÷ √in-degree)"
+
 STEP_RATE_HISTORY_LIMIT = 600
 STEP_RATE_WINDOW_SECONDS = 60.0
 STEP_RATE_SMOOTHING_SECONDS = 3.0
@@ -215,6 +231,7 @@ class Debugger:
         self.density_history = deque(maxlen=DENSITY_HISTORY_LIMIT)
         self.age_samples = deque(maxlen=32)
         self.step_rate_history = deque(maxlen=STEP_RATE_HISTORY_LIMIT)
+        self.norm_history = deque(maxlen=NORM_HISTORY_LIMIT)
 
     def draw_col(self, loc, highlight=None, colors=None):
         if self.page != "cols":  # Grid (and its highlights) hidden on other pages
@@ -382,9 +399,28 @@ class Debugger:
             rate = (age - first_age) / elapsed
             self.step_rate_history.append((timestamp, rate))
 
+    def _record_norm_curves(self, info):
+        """Record a sorted-norm snapshot (key present only when refreshed)."""
+        curves = info.get("norm_curves")
+        if not isinstance(curves, dict):
+            return
+        try:
+            timestamp = float(info["timestamp"])
+        except (KeyError, TypeError, ValueError):
+            return
+        clean = {}
+        for family in ("conns", "internal"):
+            values = curves.get(family)
+            if values and len(values) > 1 \
+                    and all(math.isfinite(v) for v in values):
+                clean[family] = list(values)
+        if clean and math.isfinite(timestamp):
+            self.norm_history.append((timestamp, clean))
+
     def _record_overview(self, info):
         self._record_density(info)
         self._record_step_rate(info)
+        self._record_norm_curves(info)
 
     def draw_step_rate_sparkline(self):
         """Draw recent steps/second in the overview panel's right column."""
@@ -429,7 +465,123 @@ class Debugger:
         pg.draw.circle(self.window, STEP_RATE_COLOR, points[-1], 3)
 
     def draw_stats_page(self):
-        """Draw bounded global time-series metrics in the grid panel."""
+        """Draw the global metric tiles in the grid panel."""
+        self.draw_density_tile()
+        self.draw_norm_tile()
+
+    def draw_norm_tile(self):
+        """Sorted per-unit in-norm curves (conns + internal) with a ghost.
+
+        Reading: flat near the init line = the rule is holding everywhere;
+        head lifting above it = rich-get-richer runaway (compare the ghost
+        for velocity); flat near-zero tail = dead capacity, and its x-extent
+        is the dead fraction. Sorting erases unit identity, so this detects;
+        the col detail view attributes.
+        """
+        tile = NORM_TILE
+        title = self.fonts["chart_title"].render("In-norm curves", True,
+            STATS_TEXT_COLOR)
+        self.window.blit(title, (tile.left + 18, tile.top))
+        subtitle = self.fonts["chart_subtitle"].render(NORM_SUBTITLE, True,
+            STATS_TEXT_COLOR)
+        self.window.blit(subtitle, (tile.left + 18, tile.top + 40))
+
+        plot = NORM_PLOT
+        # x-axis: unit rank as a percentile of all units (hottest at left)
+        for fraction, marker in ((0.0, "0%"), (0.5, "50%"), (1.0, "100%")):
+            x = plot.left + fraction * (plot.width - 1)
+            pg.draw.line(self.window, STATS_GRID_COLOR,
+                (round(x), plot.top), (round(x), plot.bottom - 1))
+            label = self.fonts["chart_axis"].render(marker, True,
+                STATS_TEXT_COLOR)
+            self.window.blit(label,
+                label.get_rect(midtop=(round(x), plot.bottom + 7)))
+        pg.draw.rect(self.window, STATS_TEXT_COLOR, plot, width=1)
+
+        if not self.norm_history:
+            waiting = self.fonts["debug"].render(
+                "waiting for norm samples...", True, STATS_TEXT_COLOR)
+            self.window.blit(waiting, waiting.get_rect(center=plot.center))
+            return
+
+        newest_ts, current = self.norm_history[-1]
+        # Gray reference snapshot as close to NORM_GHOST_SECONDS old as
+        # available (drawn only once at least half that age exists)
+        ghost = min(
+            (s for s in self.norm_history
+                if newest_ts - s[0] >= NORM_GHOST_SECONDS / 2),
+            key=lambda s: abs((newest_ts - s[0]) - NORM_GHOST_SECONDS),
+            default=None)
+
+        # Shared adaptive y-scale over everything drawn, always including the
+        # init line so the reference stays on screen
+        values = [NORM_INIT_NORM]
+        for _, curves in ([ghost] if ghost else []) + [(newest_ts, current)]:
+            for family_values in curves.values():
+                values.extend(family_values)
+        low, high = min(values), max(values)
+        padding = max((high - low) * 0.1, 0.05)
+        low = max(0.0, low - padding)
+        high = high + padding
+
+        def y_of(value):
+            return round(plot.bottom - 1
+                - (value - low) / (high - low) * (plot.height - 1))
+
+        # Labelled horizontal guides (same convention as the density tile)
+        for fraction in (0.0, 0.5, 1.0):
+            y = round(plot.bottom - 1 - fraction * (plot.height - 1))
+            if fraction == 0.5:
+                pg.draw.line(self.window, STATS_GRID_COLOR,
+                    (plot.left + 1, y), (plot.right - 2, y))
+            value = low + fraction * (high - low)
+            label = self.fonts["chart_axis"].render(f"{value:.2f}", True,
+                STATS_TEXT_COLOR)
+            label_rect = label.get_rect(midright=(plot.left - 10, y))
+            if fraction == 0.0:
+                label_rect.bottomright = (plot.left - 10, plot.bottom)
+            elif fraction == 1.0:
+                label_rect.topright = (plot.left - 10, plot.top)
+            self.window.blit(label, label_rect)
+
+        # Init-scale reference line
+        y = y_of(NORM_INIT_NORM)
+        pg.draw.line(self.window, NORM_INIT_LINE_COLOR,
+            (plot.left + 1, y), (plot.right - 2, y))
+        label = self.fonts["chart_axis"].render("init", True,
+            NORM_INIT_LINE_COLOR)
+        self.window.blit(label, label.get_rect(
+            bottomright=(plot.right - 4, y - 2)))
+
+        def draw_curve(family_values, color, width):
+            n = len(family_values)
+            points = [(round(plot.left + i / (n - 1) * (plot.width - 1)),
+                       min(max(y_of(v), plot.top), plot.bottom - 1))
+                for i, v in enumerate(family_values)]
+            pg.draw.lines(self.window, color, False, points, width=width)
+
+        if ghost:
+            for family_values in ghost[1].values():
+                draw_curve(family_values, NORM_GHOST_COLOR, 2)
+        family_colors = {
+            "conns": NORM_CONNS_COLOR, "internal": NORM_INTERNAL_COLOR}
+        for family, color in family_colors.items():
+            if family in current:
+                draw_curve(current[family], color, 3)
+
+        # Legend with each family's current hottest unit (first sorted value)
+        legend_y = tile.top - 12
+        for family, color in family_colors.items():
+            if family not in current:
+                continue
+            text = f"{family} max {current[family][0]:.2f}"
+            label = self.fonts["chart_subtitle"].render(text, True, color)
+            self.window.blit(label, label.get_rect(
+                topright=(tile.right - 18, legend_y)))
+            legend_y += 24
+
+    def draw_density_tile(self):
+        """Draw the global activation-density time series."""
         tile = DENSITY_TILE
         title = self.fonts["chart_title"].render("Activation density", True,
             STATS_TEXT_COLOR)

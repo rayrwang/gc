@@ -611,6 +611,7 @@ class AgtBase(ABC):
         self.t_prevs["col"] = time.time()
         self.t_prevs["conn"] = time.time()
         self.t_prevs["atv"] = time.time()
+        self.t_prevs["norm_curves"] = 0.0  # 0 -> first overview carries curves
 
     def debug_update(self):
         def stats(x, is_weight):
@@ -661,6 +662,7 @@ class AgtBase(ABC):
         COOLDOWN_COL = 0.5
         COOLDOWN_CONN = 0.1
         COOLDOWN_ATV = 0.1
+        COOLDOWN_NORM_CURVES = 2.0  # reads every weight value, so much slower
 
         # Send overview information ###########################################
         pipe, _ = self.pipes["overview"]
@@ -696,6 +698,13 @@ class AgtBase(ABC):
             info["syns"] = isyns + esyns
 
             info["density"] = fc.density(torch.cat(actuals))
+
+            # Sorted per-unit in-norm curves for the stats page. Unlike the
+            # counting walk above this reads every weight value, so it rides
+            # only the overview messages that clear its own slower cooldown.
+            if time.time()-self.t_prevs["norm_curves"] > COOLDOWN_NORM_CURVES:
+                self.t_prevs["norm_curves"] = time.time()
+                info["norm_curves"] = self.norm_curves()
 
             pipe.send(info)
 
@@ -770,6 +779,46 @@ class AgtBase(ABC):
                 info["x"] = x.cpu().numpy()
                 info["x_avg"] = x_avg.cpu().numpy()
                 pipe.send(info)
+
+    def norm_curves(self, points: int = 64) -> dict[str, list[float]]:
+        """Sorted per-unit incoming-norm curves for the debugger's stats page.
+
+        "conns": each unit's L2 norm over its total incoming external weights,
+        pooled across every conn targeting its col, divided by sqrt(in-degree).
+        conn() already divides by sqrt(sender dim), so a healthy unit sits near
+        the init scale (2.0) regardless of in-degree, sender size, or col.
+        "internal": per-unit incoming norms of each is_* matrix (one matrix
+        per target layer, so no cross-matrix pooling; weights() puts the init
+        at the same 2.0). Head lifting above 2.0 = rich-get-richer runaway;
+        flat near-zero tail = dead capacity (its length = the dead fraction).
+        """
+        sumsq = {}  # (receiving loc, width) -> per-unit sum of squares
+        n_in = {}   # (receiving loc, width) -> number of incoming conns
+        internal = []
+        for col in self.cols.values():
+            for (other_loc, _), w in col.conns.items():
+                if w is None:
+                    continue
+                part = w.detach().float().pow(2).sum(dim=0).cpu()
+                key = (other_loc, part.shape[0])
+                if key in sumsq:
+                    sumsq[key] += part
+                    n_in[key] += 1
+                else:
+                    sumsq[key] = part
+                    n_in[key] = 1
+            for name, w in vars(col).items():
+                if name.startswith("is_") and w is not None:
+                    internal.append(
+                        w.detach().float().pow(2).sum(dim=0).sqrt().cpu())
+        curves = {}
+        if sumsq:
+            conns = torch.cat(
+                [(ss / n_in[key]).sqrt() for key, ss in sumsq.items()])
+            curves["conns"] = fc.sorted_curve(conns, points)
+        if internal:
+            curves["internal"] = fc.sorted_curve(torch.cat(internal), points)
+        return curves
 
     def load_col(self, c: ColBase) -> None:
         if torch.get_default_device().type == "cuda":
