@@ -669,6 +669,7 @@ class AgtBase(ABC):
 
             info = {}
             info["timestamp"] = time.time()
+            info["age"] = self.age
             nrns = 0  # Activations
             copies = 0  # Copies of activations (for additional info)
             isyns = 0  # Internal weights (within each col)

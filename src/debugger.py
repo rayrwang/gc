@@ -69,6 +69,19 @@ DENSITY_SUBTITLE = "fraction of current activations ≥ 1.0"
 STATS_TEXT_COLOR = (0, 0, 0)
 STATS_GRID_COLOR = (210, 210, 210)
 
+STEP_RATE_HISTORY_LIMIT = 600
+STEP_RATE_WINDOW_SECONDS = 60.0
+STEP_RATE_SMOOTHING_SECONDS = 3.0
+STEP_RATE_COLOR = (42, 120, 214)
+OVERVIEW_METRICS_WIDTH = 200
+OVERVIEW_METRICS_RIGHT = OVERVIEW.right - PAD
+STEP_RATE_PLOT = pg.Rect(
+    OVERVIEW_METRICS_RIGHT - OVERVIEW_METRICS_WIDTH,
+    OVERVIEW.y + PAD + 2 * LINE_HEIGHT + 5,
+    OVERVIEW_METRICS_WIDTH,
+    OVERVIEW.height - 2 * PAD - 2 * LINE_HEIGHT - 5,
+)
+
 dir2pos = {
     Dir.A: "top",
     Dir.E: "bottom",
@@ -197,9 +210,11 @@ class Debugger:
             "atv": None,
         }
 
-        # Global overview updates arrive at 5 Hz. Keep about two minutes of
-        # density locally; this is display history, not persisted run data.
+        # Global overview updates arrive at 5 Hz. These bounded histories are
+        # display state only; they are not persisted with the agent.
         self.density_history = deque(maxlen=DENSITY_HISTORY_LIMIT)
+        self.age_samples = deque(maxlen=32)
+        self.step_rate_history = deque(maxlen=STEP_RATE_HISTORY_LIMIT)
 
     def draw_col(self, loc, highlight=None, colors=None):
         if self.page != "cols":  # Grid (and its highlights) hidden on other pages
@@ -339,6 +354,79 @@ class Debugger:
             return
         if math.isfinite(timestamp) and math.isfinite(density):
             self.density_history.append((timestamp, min(max(density, 0.0), 1.0)))
+
+    def _record_step_rate(self, info):
+        """Derive a smoothed steps/second sample from the agent's age."""
+        try:
+            timestamp = float(info["timestamp"])
+            age = int(info["age"])
+        except (KeyError, TypeError, ValueError):
+            return
+        if not math.isfinite(timestamp) or age < 0:
+            return
+
+        if self.age_samples:
+            previous_timestamp, previous_age = self.age_samples[-1]
+            if timestamp <= previous_timestamp or age < previous_age:
+                return
+
+        self.age_samples.append((timestamp, age))
+        while len(self.age_samples) > 2 \
+                and timestamp - self.age_samples[1][0] \
+                >= STEP_RATE_SMOOTHING_SECONDS:
+            self.age_samples.popleft()
+
+        if len(self.age_samples) > 1:
+            first_timestamp, first_age = self.age_samples[0]
+            elapsed = timestamp - first_timestamp
+            rate = (age - first_age) / elapsed
+            self.step_rate_history.append((timestamp, rate))
+
+    def _record_overview(self, info):
+        self._record_density(info)
+        self._record_step_rate(info)
+
+    def draw_step_rate_sparkline(self):
+        """Draw recent steps/second in the overview panel's right column."""
+        plot = STEP_RATE_PLOT
+        pg.draw.line(self.window, STATS_GRID_COLOR,
+            (plot.left, plot.bottom - 1), (plot.right - 1, plot.bottom - 1))
+        if not self.step_rate_history:
+            return
+
+        now = time.time()
+        history = [
+            (timestamp, rate)
+            for timestamp, rate in self.step_rate_history
+            if now - STEP_RATE_WINDOW_SECONDS <= timestamp <= now
+        ]
+        if not history:
+            return
+
+        rates = [rate for _, rate in history]
+        low, high = min(rates), max(rates)
+        if math.isclose(high, low, rel_tol=0.0, abs_tol=1e-12):
+            center = (low + high) / 2
+            half_range = max(center * 0.02, 0.01)
+            low = max(0.0, center - half_range)
+            high = center + half_range
+        else:
+            padding = (high - low) * 0.1
+            low = max(0.0, low - padding)
+            high += padding
+
+        points = []
+        for timestamp, rate in history:
+            seconds_ago = now - timestamp
+            x = plot.right - 1 - seconds_ago / STEP_RATE_WINDOW_SECONDS \
+                * (plot.width - 1)
+            y = plot.bottom - 1 - (rate - low) / (high - low) \
+                * (plot.height - 1)
+            points.append((round(x), round(y)))
+
+        if len(points) > 1:
+            pg.draw.lines(self.window, STEP_RATE_COLOR, False, points, width=2)
+        pg.draw.circle(self.window, STEP_RATE_COLOR, points[-1], 3)
 
     def draw_stats_page(self):
         """Draw bounded global time-series metrics in the grid panel."""
@@ -482,7 +570,7 @@ class Debugger:
 
     def draw_overview(self):
         """Draw the global overview panel (bottom left)."""
-        info = self._drain("overview", on_new=self._record_density)
+        info = self._drain("overview", on_new=self._record_overview)
 
         if info is None:
             txt = self.fonts["debug"].render("waiting...", True, (0,0,0))
@@ -527,8 +615,24 @@ class Debugger:
             txt = self.fonts["debug"].render(f"|-- {info["esyns"]/info["nrns"]:,.2f} to 1", True, (0,0,0))
             self.window.blit(txt, (OVERVIEW.x+650, OVERVIEW.y+PAD+4*LINE_HEIGHT))
 
-            txt = self.fonts["debug"].render(f"density: {info["density"]*100:.2f}%", True, (0,0,0))
-            self.window.blit(txt, (OVERVIEW.x+875, OVERVIEW.y+PAD+0*LINE_HEIGHT))
+            agent_age = info.get("age")
+            age_text = f"{agent_age:,}" if isinstance(agent_age, int) else "--"
+            txt = self.fonts["debug"].render(
+                f"Agent age: {age_text}", True, (0, 0, 0))
+            self.window.blit(txt, txt.get_rect(
+                topright=(OVERVIEW_METRICS_RIGHT, OVERVIEW.y + PAD)))
+
+            current_rate = self.step_rate_history[-1][1] \
+                if self.step_rate_history else None
+            rate_text = f"{current_rate:,.2f}" \
+                if current_rate is not None else "--"
+            txt = self.fonts["debug"].render(
+                f"ticks/s: {rate_text}", True, (0, 0, 0))
+            self.window.blit(txt, txt.get_rect(topright=(
+                OVERVIEW_METRICS_RIGHT,
+                OVERVIEW.y + PAD + LINE_HEIGHT,
+            )))
+            self.draw_step_rate_sparkline()
 
     def handle_events(self):
         """Process the pygame event queue and mouse/keyboard input,

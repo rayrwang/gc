@@ -18,8 +18,8 @@ from src.debugger import (
     ATV_STATS, DENSITY_COLOR, DENSITY_HISTORY_LIMIT, DENSITY_PLOT, GRID, H,
     DENSITY_SUBTITLE, DENSITY_TILE, DENSITY_TIME_MARKERS,
     DENSITY_WINDOW_SECONDS, LINE_HEIGHT, MIDDLE, OVERVIEW, PAGE_TABS,
-    STATS_BLOCK_LINES, STATS_TOP, W, WEIGHT_STATS, Debugger, get_color,
-    parse_loc, screen2dir, screen2loc,
+    STATS_BLOCK_LINES, STATS_TOP, STEP_RATE_COLOR, STEP_RATE_PLOT, W,
+    WEIGHT_STATS, Debugger, get_color, parse_loc, screen2dir, screen2loc,
 )
 
 LOCS = [(1, 0), (0, 1), (1, 1), (2, 1), (1, 2)]
@@ -88,9 +88,10 @@ def col_info(loc):
     }
 
 
-def overview_info(timestamp=None, density=0.1113):
+def overview_info(timestamp=None, density=0.1113, age=1234):
     return {
         "timestamp": time.time() if timestamp is None else timestamp,
+        "age": age,
         "nrns": 844_820, "copies": 3,
         "isyns": 681_574_400, "esyns": 1_458_667_520,
         "syns": 2_140_241_920, "density": density,
@@ -330,12 +331,49 @@ def test_density_history_is_bounded_and_rejects_invalid_samples(dbg):
 
 
 def test_draw_overview_records_each_fresh_density_once(dbg):
-    dbg.pipes["overview"][0].send(overview_info(timestamp=1, density=0.10))
-    dbg.pipes["overview"][0].send(overview_info(timestamp=2, density=0.12))
+    dbg.pipes["overview"][0].send(
+        overview_info(timestamp=1, density=0.10, age=10))
+    dbg.pipes["overview"][0].send(
+        overview_info(timestamp=2, density=0.12, age=14))
     dbg.draw_overview()
     assert list(dbg.density_history) == [(1.0, 0.10), (2.0, 0.12)]
+    assert list(dbg.step_rate_history) == [(2.0, 4.0)]
     dbg.draw_overview()  # cached overview is drawn but not recorded again
     assert len(dbg.density_history) == 2
+    assert len(dbg.step_rate_history) == 1
+
+
+def test_overview_renders_age_and_step_rate_sparkline(dbg, monkeypatch):
+    now = 1_000.0
+    monkeypatch.setattr("src.debugger.time.time", lambda: now)
+    for timestamp, age in ((now - 2, 100), (now - 1, 104), (now, 110)):
+        dbg.pipes["overview"][0].send(
+            overview_info(timestamp=timestamp, age=age))
+
+    dbg.draw_static_layout()
+    dbg.draw_overview()
+
+    assert dbg.cache["overview"]["age"] == 110
+    assert dbg.step_rate_history[-1] == pytest.approx((now, 5.0))
+    arr = pg.surfarray.array3d(dbg.window)
+    plot = arr[STEP_RATE_PLOT.left:STEP_RATE_PLOT.right,
+        STEP_RATE_PLOT.top:STEP_RATE_PLOT.bottom]
+    assert ((plot == STEP_RATE_COLOR).all(axis=2)).any()
+
+
+def test_step_rate_sparkline_adapts_to_observed_range(dbg, monkeypatch):
+    now = 1_000.0
+    monkeypatch.setattr("src.debugger.time.time", lambda: now)
+    dbg.step_rate_history.extend(((now - 2, 100.0), (now - 1, 101.0)))
+
+    dbg.draw_static_layout()
+    dbg.draw_step_rate_sparkline()
+
+    arr = pg.surfarray.array3d(dbg.window)
+    plot = arr[STEP_RATE_PLOT.left:STEP_RATE_PLOT.right,
+        STEP_RATE_PLOT.top:STEP_RATE_PLOT.bottom]
+    blue_ys = np.where((plot == STEP_RATE_COLOR).all(axis=2))[1]
+    assert np.ptp(blue_ys) > STEP_RATE_PLOT.height / 2
 
 
 def test_stats_page_renders_density_sparkline(dbg, monkeypatch):
