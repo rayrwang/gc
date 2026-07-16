@@ -539,7 +539,7 @@ class AgtBase(ABC):
         self.cfg = cfg
         self.path = path
 
-        self.age = None
+        self.age = None  # Lifetime total number of ticks (steps)
 
         self.I_cols: list[I_ColBase] = []
         self.O_cols: list[O_ColBase] = []
@@ -1272,7 +1272,7 @@ class MNISTAgt(AgtBase):
 
         if not skip_init:
             print("\nInitializing new agent...")
-            
+
             self.age = 0
 
             # Cols
