@@ -22,7 +22,7 @@ MNIST using the BCM (Bienenstock-Cooper-Munro) rule learns (rescues the represen
 BCM is potentiation-dominated (roughly cubic in activity) and self-stabilizes only through its sliding threshold `θ = ⟨y²⟩`. In the **recurrent** substrate this is a binding constraint: stability holds only inside a narrow band of the learning-rate (`ss`) and threshold-decay (`ALPHA`) plane, and outside it the activations run away.
 
 <p align="center">
-	<img width="560" alt="BCM stability phase diagram" src="assets/bcm_stability.png">
+	<img width="560" alt="BCM stability phase diagram" src="../assets/bcm_stability.png">
 </p>
 
 (regenerate using `examples/08_bcm_stability.py`)
@@ -52,7 +52,7 @@ CIFAR-10/100 using online Oja softmax-WTA (winner-take-all) does actually learn.
 Abstract clustered vectors (Gaussian blobs in a noisy high-dim space, *data* rather than images) genuinely learn under online softmax-WTA, reaching most of the way to the oracle (kNN on the true signal dimensions). The catch is the **sign**, which must match the data's geometry: discrete clusters want **unsigned** WTA (pure competition, ≈ online k-means); the continuous image manifolds above want **signed** WTA (anti-Hebbian repulsion, like SoftHebb).
 
 <p align="center">
-	<img width="480" alt="Competition sign must match data geometry" src="assets/wta_geometry.png">
+	<img width="480" alt="Competition sign must match data geometry" src="../assets/wta_geometry.png">
 </p>
 
 *Unsigned WTA converges **onto** structure, signed spreads to **cover** it; the right sign is whichever the geometry needs. Regenerate diagram using `examples/13_wta_geometry.py`.*
