@@ -1,27 +1,27 @@
 """
-One-layer local-learning sweep on NOISY (overlapping) abstract clusters.
+One-layer local-learning sweep on noisy (overlapping) abstract clusters.
 
-Identical sweep to 11_one_layer_clean but at LOW SNR -- the clusters heavily overlap, so a raw
+Identical sweep to 11_one_layer_clean but at low SNR: the clusters heavily overlap, so a raw
 random projection is near chance and the task is genuinely hard. Kept deliberately parallel to
 11; sync changes across both. See 11 for the full method/finding writeup; this file documents
 what changes when the signal gets buried.
 
-DATA: same K=10 Gaussian clusters in a 16-dim signal subspace + isotropic noise over 256 dims,
-but cluster radius R=2 (vs 4) -- centroids close together relative to the noise, so clusters
+Data: same K=10 Gaussian clusters in a 16-dim signal subspace + isotropic noise over 256 dims,
+but cluster radius R=2 (vs 4): centroids close together relative to the noise, so clusters
 overlap. raw kNN only ~32 (chance 10), oracle (signal-subspace) ~59: lots of headroom, low SNR.
 
-FINDINGS (chance 10%; raw 32.3 | frozen 26.5 | LEARNED-best 50.5 | oracle 58.7):
-  - Same qualitative ranking as the clean case: softmax-WTA + UNSIGNED still wins; none/inhibit
+Findings (chance 10%; raw 32.3 | frozen 26.5 | learned-best 50.5 | oracle 58.7):
+  - Same qualitative ranking as the clean case: softmax-WTA + unsigned still wins; none/inhibit
     diverge; signed and bcm trail. The geometry verdict (discrete clusters -> unsigned) is
-    SNR-independent -- noise changes the difficulty, not which sign is right.
-  - The ONE place homeostasis helps the champion: at low SNR, per-activation |w|-clocked
-    adaptive-LR edges ahead. Best cell = instar + softmax-WTA + UNSIGNED + adaptive-LR = 50.5
+    SNR-independent; noise changes the difficulty, not which sign is right.
+  - The one place homeostasis helps the champion: at low SNR, per-activation |w|-clocked
+    adaptive-LR edges ahead. Best cell = instar + softmax-WTA + unsigned + adaptive-LR = 50.5
     (vs 47.7 without it), and instar overtakes oja here. The per-unit annealing buys robustness
     when each update is dominated by noise. (In the clean case 11, plain no-homeostasis wins.)
-  - online-BN still HURTS (it equalizes the 16 signal dims with the 240 noise dims).
+  - online-BN still hurts (it equalizes the 16 signal dims with the 240 noise dims).
 
-SIGNIFICANCE: the winning recipe (WTA + unsigned for clustered data) is robust across SNR; the
-homeostasis knobs only earn their keep when the signal is weak -- adaptive-LR as a noise
+Significance: the winning recipe (WTA + unsigned for clustered data) is robust across SNR; the
+homeostasis knobs only earn their keep when the signal is weak: adaptive-LR as a noise
 stabilizer, BN as a liability. float32, 1 seed.
 """
 
@@ -39,7 +39,7 @@ from tqdm import tqdm
 SEED = 0
 D, K, WIDTH = 256, 10, 512        # input dim, n clusters, layer width (rep dim)
 D_SIG = 16                        # cluster signal lives in this many dims; rest is noise
-R = 2                             # cluster radius = SNR. R=2 = NOISY (overlapping)
+R = 2                             # cluster radius = SNR. R=2 = noisy (overlapping)
 N_TR, N_EVTR, N_EVTE = 30000, 3000, 1000
 KNN, TEMP, INHIB, POWER = 20, 1.0, 5.0, 0.7
 LR = {"oja": 0.03, "instar": 0.03, "bcm": 0.003}
@@ -57,7 +57,7 @@ def standardize(rtr, rte):
 
 
 def triangle(u):
-    """Graded readout: relu(u - mean_units(u)) ** power -- the fixed probe code for every cell."""
+    """Graded readout: relu(u - mean_units(u)) ** power, the fixed probe code for every cell."""
     return F.relu(u - u.mean(1, keepdim=True)) ** POWER
 
 

@@ -1,14 +1,14 @@
 
 """
 Fashion-MNIST version of 05: same MNISTAgt (width-128 post-ReLU hidden, raw input,
-BCM), same controlled protocol. Drop-in -- 28x28 grayscale, 10 classes -- so only the
+BCM), same controlled protocol. Drop-in (28x28 grayscale, 10 classes), so only the
 dataset changes. A harder MNIST (~5-10 pts lower) that, unlike MNIST, fills the frame.
 
-Result: at the committed online rate it behaves like MNIST -- BCM weakly beats the
+Result: at the committed online rate it behaves like MNIST: BCM weakly beats the
 frozen control (logistic +2.4, kNN +0.8) but stays below the linear-on-pixels floor.
-Whitening does NOT help here (raw/std/zca 3-seed sweep, 06_mnist_sweep.py): per-feature
+Whitening does not help here (raw/std/zca 3-seed sweep, 06_mnist_sweep.py): per-feature
 z-score is fatal (dead pixels -> inf), and ZCA only "rescued" Fashion when an over-hot
-ss=0.01 made raw BCM collapse -- a learning-rate artifact, not a real need. So the
+ss=0.01 made raw BCM collapse, a learning-rate artifact, not a real need. So the
 whitening rescue is CIFAR/conv-specific (CIFAR degrades even at the gentle ss);
 grayscale FC datasets don't need it.
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     eval_te = torch.arange(N_TEST_EVAL)
     ytr, yte = train_labels[eval_tr], test_labels[eval_te]
 
-    # Learning agent and a frozen control sharing the SAME random init
+    # Learning agent and a frozen control sharing the same random init
     ispec, ospec = MNISTEnv.get_specs(MNISTEnvCfg("passive"))
     torch.manual_seed(SEED)
     learn_agt = MNISTAgt(MNISTCfg(ispec, ospec), f"{project_root_path}/saves/fashion_learn")

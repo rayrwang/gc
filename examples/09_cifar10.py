@@ -1,58 +1,58 @@
 """
-CIFAR-10 substrate probe: a local, ONLINE Hebbian conv stack (no backprop, no objective, one
-sample at a time), three conv layers trained ONLY by a local rule, probed (kNN/ridge/logistic)
-vs a SAME-INIT frozen control. The gap is what learning adds.
+CIFAR-10 substrate probe: a local, online Hebbian conv stack (no backprop, no objective, one
+sample at a time), three conv layers trained only by a local rule, probed (kNN/ridge/logistic)
+vs a same-init frozen control. The gap is what learning adds.
 
-TL;DR -- the learned representation is STABLE under continued training (its gains don't
-collapse); the earlier headline that it "beats SoftHebb" was wrong -- see FINDING. This file
+TL;DR: the learned representation is stable under continued training (its gains don't
+collapse); the earlier headline that it "beats SoftHebb" was wrong (see Finding). This file
 measures representation quality from local unsupervised learning, nothing more.
 
-FINDING -- read LEARNING GAINS (Δ vs each arm's OWN frozen); absolute numbers are confounded by
+Finding: read the learning gains (Δ vs each arm's own frozen); absolute numbers are confounded by
 a ~3-4pt frozen head-start (forward-path/seed; see bottom). Δ kNN / ridge / logistic:
     config                    1 epoch (50k)           4 epochs (200k)
     gc                         +6.9 / +3.5  / +1.9    +5.2 / +7.1 / +4.2
     SoftHebb b1 (online)       +7.7 / +9.6  / +8.4    +4.5 / +5.8 / +5.5
     SoftHebb b10 (batched)    +10.7 / +12.1 / +9.5    +7.0 / +7.9 / +5.4
 
-At 1 epoch SoftHebb learns FAR more -- gc is NOT competitive at a single pass. The one thing gc
-does that SoftHebb (as run) doesn't is hold up under CONTINUED training: gc's gains are stable-
-to-RISING while SoftHebb's PEAK-then-DECAY. By 4 epochs gc edges online SoftHebb on kNN/ridge,
-still TRAILS it on logistic, batched SoftHebb leads throughout. Honest result: "gc's gains DON'T
-COLLAPSE under continual training," NOT "gc beats SoftHebb."
+At 1 epoch SoftHebb learns far more; gc is not competitive at a single pass. The one thing gc
+does that SoftHebb (as run) doesn't is hold up under continued training: gc's gains are stable-
+to-rising while SoftHebb's peak-then-decay. By 4 epochs gc edges online SoftHebb on kNN/ridge,
+still trails it on logistic, batched SoftHebb leads throughout. Honest result: "gc's gains don't
+collapse under continual training," not "gc beats SoftHebb."
 
-CAVEAT -- not yet a fair continual test: SoftHebb's per-layer temperature/power/LR schedule
+Caveat, not yet a fair continual test: SoftHebb's per-layer temperature/power/LR schedule
 (tuned for 1 epoch) was not ported, so its 4-epoch decay may be un-annealed overtraining rather
 than a real method difference. Needs a scheduled/annealed SoftHebb baseline + more seeds before
 "gc stays stable where SoftHebb decays" is earned. Single config, ~1 seed.
 
 ----- reference below (how it works; skip unless you care) -----
 
-RULE -- oja-signed = SoftHebb's update (Moraitis et al., arXiv:2209.11883): per-location softmax
-over channels, winner moves TOWARD the input, losers move AWAY (anti-Hebbian repulsion makes
+Rule: oja-signed = SoftHebb's update (Moraitis et al., arXiv:2209.11883): per-location softmax
+over channels, winner moves toward the input, losers move away (anti-Hebbian repulsion makes
 channels tile instead of collapsing onto one prototype). gc's own rules (BCM, plain instar/oja)
-all FAIL here -- the signed gate is required.
+all fail here; the signed gate is required.
 
-FOUR INGREDIENTS, each load-bearing: (1) Triangle activation relu(u-mean_c)^0.7 -- graded code;
-hard-WTA collapses over depth. (2) SOFT weight-norm -- hard projection makes learning
-destructive. (3) Online BatchNorm -- the homeostatic regularizer; without it kNN is a transient
-peak that COLLAPSES (52->36). (4) NO whitening -- BN handles it; even online ZCA suppresses the
-kNN gain. (Per-neuron adaptive-LR also tested; HURTS kNN.)
+Four ingredients, each load-bearing: (1) Triangle activation relu(u-mean_c)^0.7, a graded code;
+hard-WTA collapses over depth. (2) Soft weight-norm: hard projection makes learning
+destructive. (3) Online BatchNorm: the homeostatic regularizer; without it kNN is a transient
+peak that collapses (52->36). (4) No whitening: BN handles it; even online ZCA suppresses the
+kNN gain. (Per-neuron adaptive-LR also tested; hurts kNN.)
 
-ARCHITECTURE (identical to SoftHebb, ~5.65M params): three conv 96->384->1536, kernels 5/3/3,
+Architecture (identical to SoftHebb, ~5.65M params): three conv 96->384->1536, kernels 5/3/3,
 stride-1+pad; spatial 32->16->8->4 via MaxPool(4,s2) after layers 1-2, AvgPool(2) after 3;
 affine-free BN before each conv; final 4x4 map read whole -> 24576-dim rep (= SoftHebb's
 flatten, dim-matched). The conv stack (weights, topology) is identical to SoftHebb; gc differs
-by NOT porting SoftHebb's per-layer SCHEDULE -- the temperature/power shaping each layer's
-activation (FORWARD path: SoftHebb 0.7/1.4/1.0, gc a fixed 0.7, so even the frozen baselines
-differ ~3-4pt) and the LR (TRAINING: gc fixed) -- plus minor padding/init/BN-momentum/seed.
+by not porting SoftHebb's per-layer schedule: the temperature/power shaping each layer's
+activation (forward path: SoftHebb 0.7/1.4/1.0, gc a fixed 0.7, so even the frozen baselines
+differ ~3-4pt) and the LR (training: gc fixed), plus minor padding/init/BN-momentum/seed.
 Recipe in src.agents.CIFARAgt; this script is the harness. float32 (Oja products overflow fp16).
 
-ABSOLUTE NUMBERS (kNN/ridge/logistic %; gains above are vs each frozen row):
+Absolute numbers (kNN/ridge/logistic %; gains above are vs each frozen row):
     gc:       frozen 44.3/57.1/57.7        50k 51.2/60.6/59.6        200k 49.5/64.2/61.9
     SoftHebb: frozen 43.2/53.8/53.4    b1  50k 50.9/63.4/61.8    b1  200k 47.7/59.6/58.9
                                        b10 50k 53.9/65.9/62.9    b10 200k 50.2/61.7/58.8
 
-    SoftHebb native readout 79.9 logistic (50k-sample + dropout + 50-epoch linear -- a much
+    SoftHebb native readout 79.9 logistic (50k-sample + dropout + 50-epoch linear, a much
     harder probe, not comparable). Frozen rows differ ~3-4pt from those forward-path differences
     (above), not from architecture.
 """
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     print("tensorboard --logdir runs/cifar\n")
     torch.manual_seed(SEED)
     learn_agt = CIFARAgt()
-    torch.manual_seed(SEED)                                   # SAME init as the control
+    torch.manual_seed(SEED)                                   # same init as the control
     control_agt = CIFARAgt()                                  # never gets use_lrn=True -> stays frozen
     for agt in (learn_agt, control_agt):                      # warm up BN stats before learning
         for i in warm:

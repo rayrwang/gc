@@ -8,10 +8,10 @@ point or keep moving. Logged: mean_change = mean |a_t - a_t-1|.
 
 Findings (seed 0, ~210 steps): spike plateaus ~0.57 (sustained motion); every smooth
 sigmoid decays to a fixed point, gain only slowing it (b1 ~10 steps, b40 ~80). So it
-is the DISCONTINUITY, not steepness: near a fixed point the map J=F'(.)W + lateral
+is the discontinuity, not steepness: near a fixed point the map J=F'(.)W + lateral
 inhibition is a contraction for any smooth F (higher gain pushes the spectral radius
 toward 1 but it stays < 1), while the step function has no continuous fixed point to
-fall into, so motion persists. Caveat: inhibition does this work -- with inhibit off,
+fall into, so motion persists. Caveat: inhibition does this work; with inhibit off,
 a steep enough sigmoid (b40) also stays alive.
 
 Each activation has its own agent, stepped round-robin (activation is a module global)

@@ -1,40 +1,40 @@
 """
-One-layer local-learning sweep on CLEAN (well-separated) abstract clusters.
+One-layer local-learning sweep on clean (well-separated) abstract clusters.
 
-This is the DISCRETE-geometry counterpart to the conv image examples (09/10). It tests, on
-synthetic vectors instead of images, which single dense layer trained by a LOCAL rule (no
-backprop, online, single-sample) best recovers cluster structure -- i.e. the regime gc's
+This is the discrete-geometry counterpart to the conv image examples (09/10). It tests, on
+synthetic vectors instead of images, which single dense layer trained by a local rule (no
+backprop, online, single-sample) best recovers cluster structure, i.e. the regime gc's
 conns actually live in (dense vector->vector maps). 12_one_layer_noisy is the same sweep at
 low SNR; keep the two in sync.
 
-DATA: K=10 Gaussian clusters whose centroids live in a 16-dim SIGNAL subspace, with isotropic
+Data: K=10 Gaussian clusters whose centroids live in a 16-dim signal subspace, with isotropic
 unit-variance noise across all 256 dims. The cluster radius R is the signal strength (SNR).
-Here R=4 = well-separated = CLEAN (raw kNN already 66). Probes (kNN on a fixed Triangle
-readout) are compared to RAW (kNN on the 256-d input), ORACLE (kNN on just the 16 signal
-dims = the headroom ceiling), and FROZEN (random projection through the same layer).
+Here R=4 = well-separated = clean (raw kNN already 66). Probes (kNN on a fixed Triangle
+readout) are compared to raw (kNN on the 256-d input), oracle (kNN on just the 16 signal
+dims = the headroom ceiling), and frozen (random projection through the same layer).
 
-SWEEP: rule {bcm, oja, instar} x competition-gate {none, triangle, inhibit, softmax-WTA} x
+Sweep: rule {bcm, oja, instar} x competition-gate {none, triangle, inhibit, softmax-WTA} x
 sign {unsigned, signed} x homeostasis {none, online-BN, per-activation |w|-clocked adaptive-LR,
 both}. "Competition" = the learning gate (which units update, how much); "sign" = whether
 losers get pushed away (anti-Hebbian). Readout is a fixed Triangle for every cell so the probe
-measures what LEARNING did to W, not the encoding quirks of each gate.
+measures what learning did to W, not the encoding quirks of each gate.
 
-FINDINGS (chance 10%; raw 66.0 | frozen 74.2 | LEARNED-best 93.1 | oracle 95.7):
-  - COMPETITION is essential: only softmax-WTA works; none/inhibit DIVERGE, triangle-as-gate
+Findings (chance 10%; raw 66.0 | frozen 74.2 | learned-best 93.1 | oracle 95.7):
+  - Competition is essential: only softmax-WTA works; none/inhibit diverge, triangle-as-gate
     is weak. The competition mechanism matters more than the rule.
-  - SIGN must match geometry: for DISCRETE separated clusters, UNSIGNED wins big -- it is
-    online k-means, prototypes converge ONTO centroids. SIGNED (anti-Hebbian repulsion)
-    scatters them OFF the centroids and trails badly. (Opposite of images: on a CONTINUOUS
+  - Sign must match geometry: for discrete separated clusters, unsigned wins big; it is
+    online k-means, prototypes converge onto centroids. Signed (anti-Hebbian repulsion)
+    scatters them off the centroids and trails badly. (Opposite of images: on a continuous
     manifold, 09/10, signed is required to stop collapse. Separation is the hidden variable.)
-  - RULE form is second-order given WTA: oja ~= instar; bcm trails (~77) and ignores sign.
-  - HOMEOSTASIS is second-order: online-BN HURTS (per-feature scaling washes out the subspace
+  - Rule form is second-order given WTA: oja ~= instar; bcm trails (~77) and ignores sign.
+  - Homeostasis is second-order: online-BN hurts (per-feature scaling washes out the subspace
     signal); per-activation adaptive-LR is ~neutral for the unsigned winner, a mild stabilizer
     for the signed cells.
-  Best: oja + softmax-WTA + UNSIGNED + no-homeostasis = 93.1 kNN, near the oracle 95.7 -- a
-  single dense local-Hebbian layer essentially SOLVES the abstract cluster task when the rule
+  Best: oja + softmax-WTA + unsigned + no-homeostasis = 93.1 kNN, near the oracle 95.7. A
+  single dense local-Hebbian layer essentially solves the abstract cluster task when the rule
   matches the geometry. (softmax-WTA at temperature 1.0; hard-WTA / temperature untested.)
 
-SIGNIFICANCE: dense local learning is NOT weak on abstract vectors -- it is weak when the
+Significance: dense local learning is not weak on abstract vectors; it is weak when the
 rule's geometry assumption is wrong. For conns: discrete-concept-like internal reps -> unsigned
 WTA; continuous -> signed; the right sign is plausibly something a predictive (Dir.E) signal
 should set adaptively (repel the expected, attract the surprising). float32, 1 seed.
@@ -54,7 +54,7 @@ from tqdm import tqdm
 SEED = 0
 D, K, WIDTH = 256, 10, 512        # input dim, n clusters, layer width (rep dim)
 D_SIG = 16                        # cluster signal lives in this many dims; rest is noise
-R = 4                             # cluster radius = SNR. R=4 = CLEAN (well-separated)
+R = 4                             # cluster radius = SNR. R=4 = clean (well-separated)
 N_TR, N_EVTR, N_EVTE = 30000, 3000, 1000
 KNN, TEMP, INHIB, POWER = 20, 1.0, 5.0, 0.7
 LR = {"oja": 0.03, "instar": 0.03, "bcm": 0.003}
@@ -72,7 +72,7 @@ def standardize(rtr, rte):
 
 
 def triangle(u):
-    """Graded readout: relu(u - mean_units(u)) ** power -- the fixed probe code for every cell."""
+    """Graded readout: relu(u - mean_units(u)) ** power, the fixed probe code for every cell."""
     return F.relu(u - u.mean(1, keepdim=True)) ** POWER
 
 

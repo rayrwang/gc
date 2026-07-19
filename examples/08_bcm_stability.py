@@ -3,14 +3,14 @@ Generates the BCM stability phase diagram (assets/bcm_stability.png).
 
 BCM is potentiation-dominated and self-stabilizes only through its sliding threshold
 theta = EMA(y^2). Whether the recurrent substrate stays bounded or runs away is set
-JOINTLY by the learning-rate (ss) and the threshold decay (ALPHA): too large an ss
+jointly by the learning-rate (ss) and the threshold decay (ALPHA): too large an ss
 outruns the threshold, and ALPHA has an interior optimum (too low -> theta freezes and
 stops braking; too high -> the homeostatic loop over-corrects and oscillates). This
 script maps that plane.
 
 Self-contained on purpose: it defines a minimal vectorized recurrent BCM network
 (BCMAgt) instead of importing the Col/Agt framework, so it is decoupled from upcoming
-BareAgt changes. The whole (decay, ss) grid is then run as ONE batched sweep, so a fine
+BareAgt changes. The whole (decay, ss) grid is then run as one batched sweep, so a fine
 phase diagram regenerates in a couple of seconds.
 """
 

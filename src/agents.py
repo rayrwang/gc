@@ -1332,7 +1332,7 @@ class MNISTAgt(AgtBase):
             # Single post-ReLU hidden layer, read directly. A second (col3) readout
             # hop only bottlenecks and collapses under learning; reading the
             # post-ReLU hidden gives a controlled learn-vs-random gap that is
-            # visible at width 128 but WASHES OUT by ~256 as random ReLU features
+            # visible at width 128 but washes out by ~256 as random ReLU features
             # saturate the task (see examples/04). 128 keeps the effect visible;
             # widen for higher absolute accuracy at the cost of a smaller gap.
             col2 = BareCol((1, 0), BareColCfg(128))
@@ -1361,8 +1361,8 @@ class MNISTAgt(AgtBase):
         # Feed the raw grayscale input. BCM (lrn_adaptive) is continuous, so it
         # does not need the discretized input the old discrete rule did. Tested
         # roughly a wash on accuracy (binarizing flatters kNN, raw flatters ridge);
-        # raw is the principled choice -- keeping binary for a nicer number would
-        # be p-hacking. Read ipt[0]; do NOT rebind it (callers reuse the list).
+        # raw is the principled choice; keeping binary for a nicer number would
+        # be p-hacking. Read ipt[0]; never rebind it (callers reuse the list).
         # For a discrete rule (lrn_*_d / instar) re-binarize:
         # col1.ipt(torch.where(ipt[0] > 0, 1.0, 0.0)).
         col1.ipt(ipt[0])
@@ -1400,26 +1400,26 @@ class MNISTAgt(AgtBase):
 DEFAULT_CIFAR_LAYERS = [(3, 96, 5, "max"), (96, 384, 3, "max"), (384, 1536, 3, "avg")]
 class CIFARAgt:
     """
-    Deep local-Hebbian conv stack for CIFAR -- no backprop, no objective, online and
+    Deep local-Hebbian conv stack for CIFAR: no backprop, no objective, online and
     single-sample. Reproduces the SoftHebb recipe (Moraitis et al., arXiv:2209.11883)
     under gc's online constraint with no offline oracles. Three conv layers trained
-    ONLY by a local rule; the pooled final feature map is the rep. See 09_cifar10.py.
+    only by a local rule; the pooled final feature map is the rep. See 09_cifar10.py.
 
-    RULE = oja-signed (SoftHebb's update): an Oja prototype rule gated by a SIGNED
-    soft-WTA -- the winner moves its weight TOWARD the input (Hebbian), losers AWAY
+    Rule = oja-signed (SoftHebb's update): an Oja prototype rule gated by a signed
+    soft-WTA. The winner moves its weight toward the input (Hebbian), losers away
     (anti-Hebbian). The loser repulsion makes channels tile instead of collapsing onto
-    one prototype; gc's own rules (BCM, plain instar/oja) were tested and FAIL here, so
+    one prototype; gc's own rules (BCM, plain instar/oja) were tested and fail here, so
     the anti-Hebbian gate is load-bearing. Four ingredients each matter: Triangle
-    activation relu(u-mean_c(u))^p (graded, so depth doesn't collapse to one-hot); SOFT
-    weight-norm (let ||w|| drift via the rule's own decay -- hard projection makes
+    activation relu(u-mean_c(u))^p (graded, so depth doesn't collapse to one-hot); soft
+    weight-norm (let ||w|| drift via the rule's own decay; hard projection makes
     learning destructive); online BatchNorm (current-image stats at train, running at
-    eval -- a homeostatic regularizer that keeps the rep STABLE under continual
-    training, a transient peak without it); and NO whitening (it suppresses the kNN gain).
+    eval: a homeostatic regularizer that keeps the rep stable under continual
+    training, a transient peak without it); and no whitening (it suppresses the kNN gain).
 
-    layers: list of (in_ch, out_ch, kernel, pool), pool in {max, avg, none} --
+    layers: list of (in_ch, out_ch, kernel, pool), pool in {max, avg, none}:
     max=MaxPool(4,s2,p1), avg=AvgPool(2), none=hold spatial (for extra depth).
     pool: side of the final adaptive-avg-pool; default 4 keeps the full 4x4 map
-    (24576-dim rep, matching SoftHebb's readout -- reducing it to 2x2 costs ridge & kNN).
+    (24576-dim rep, matching SoftHebb's readout; reducing it to 2x2 costs ridge & kNN).
 
     Standalone (a conv doesn't fit the vector-col Col framework); step() /
     get_representations() interface like the probe examples. `training` (BN mode)

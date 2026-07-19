@@ -202,7 +202,7 @@ def test_quit_signals_agent_and_exits(dbg, monkeypatch):
 
 # Per-state render smoke ######################################################
 # Not pixel-exact (that would break on any intentional visual change); asserts
-# each state draws SOMETHING into its panel region without raising.
+# each state draws something into its panel region without raising.
 def test_frame_idle_renders(dbg, monkeypatch):
     press(monkeypatch, (0, 0), dbg.scale)
     dbg.pipes["overview"][0].send(overview_info())
@@ -255,7 +255,7 @@ def test_histogram_nan_states(dbg):
 
 def test_stats_bands_match_block_geometry():
     """The click band for layer i must contain the y-rows where block i's text
-    is drawn (rows 0-3 of the block) -- the drift the layout table exists to
+    is drawn (rows 0-3 of the block): the drift the layout table exists to
     prevent."""
     for i in range(1, 8):
         block_top = STATS_TOP + STATS_BLOCK_LINES * (i - 1) * LINE_HEIGHT

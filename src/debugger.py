@@ -31,7 +31,7 @@ import pygame as pg
 from .agents import Dir
 
 # Draw on 2500 x 1300 virtual window, then scale to size of real window.
-# All virtual-canvas geometry lives here; drawing AND hit-testing read from
+# All virtual-canvas geometry lives here; both drawing and hit-testing read from
 # these, so panel positions and click zones cannot drift apart.
 W, H = (2500, 1300)
 GRID = pg.Rect(0, 0, 1100, 1100)              # cols grid

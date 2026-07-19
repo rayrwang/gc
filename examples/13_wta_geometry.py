@@ -27,7 +27,7 @@ def discrete():
 
 
 def continuous():
-    # a dominant central mode + a sparse halo -- the regime where unsigned piles onto the
+    # a dominant central mode + a sparse halo: the regime where unsigned piles onto the
     # mode and under-covers the rest (like the smooth-patch mode of natural images)
     return np.vstack([0.45 * rng.standard_normal((2200, 2)), 2.6 * rng.standard_normal((400, 2))])
 

@@ -1,26 +1,26 @@
 """
 CIFAR-100 substrate probe: the CIFAR-10 example (09_cifar10.py) on the harder 100-class task
-(1% chance). Same recipe (src.agents.CIFARAgt -- oja-signed + Triangle + soft-norm + online BN,
+(1% chance). Same recipe (src.agents.CIFARAgt: oja-signed + Triangle + soft-norm + online BN,
 no whitening, 24576-dim rep), same online single-sample protocol, same probes (kNN/ridge/
-logistic) vs a SAME-INIT frozen control. See 09 for the recipe, the four load-bearing
+logistic) vs a same-init frozen control. See 09 for the recipe, the four load-bearing
 ingredients, and the SoftHebb (Moraitis et al., arXiv:2209.11883) lineage. Kept deliberately
-parallel to 09 -- sync changes across both.
+parallel to 09; sync changes across both.
 
-The CIFAR-100 story mirrors CIFAR-10. Read LEARNING GAINS (Δ vs each arm's OWN frozen):
+The CIFAR-100 story mirrors CIFAR-10. Read the learning gains (Δ vs each arm's own frozen):
     config                  1 epoch (50k)         4 epochs (200k)
     gc                      +4.1 / +2.0 / +1.6    +2.4 / +7.3 / +3.7
     SoftHebb b1 (online)    +3.6 / +2.9 / +9.0    +2.2 / -1.7 / +5.9
 
-At 1 epoch SoftHebb learns more (especially logistic, +9.0 vs +1.6) -- gc is NOT competitive at a
-single pass. The one thing gc does that SoftHebb (as run) doesn't is hold up under CONTINUED
-training: gc's gains are stable-to-RISING (ridge 25.7->31.0) while SoftHebb's DECAY -- its ridge
-falls BELOW its own frozen by 4 epochs. By 200k gc edges SoftHebb on ridge and ~ties on
+At 1 epoch SoftHebb learns more (especially logistic, +9.0 vs +1.6); gc is not competitive at a
+single pass. The one thing gc does that SoftHebb (as run) doesn't is hold up under continued
+training: gc's gains are stable-to-rising (ridge 25.7->31.0) while SoftHebb's decay (its ridge
+falls below its own frozen by 4 epochs). By 200k gc edges SoftHebb on ridge and ~ties on
 kNN/logistic. Same honest result as 08: "gc's gains don't collapse under continual training,"
-NOT "gc beats SoftHebb." Same caveat: SoftHebb's per-layer temperature/power/LR schedule was not
+not "gc beats SoftHebb." Same caveat: SoftHebb's per-layer temperature/power/LR schedule was not
 ported, so its 4-epoch decay may be un-annealed overtraining, not a property of induction; needs
 a scheduled baseline + more seeds. Single config, ~1 seed.
 
-ABSOLUTE NUMBERS (kNN/ridge/logistic %, chance 1%; gains above are vs each frozen row):
+Absolute numbers (kNN/ridge/logistic %, chance 1%; gains above are vs each frozen row):
     gc:       frozen 15.1/23.7/20.1       50k 19.2/25.7/21.7       200k 17.5/31.0/23.8
     SoftHebb: frozen 15.8/25.3/18.1    b1 50k 19.4/28.2/27.1    b1 200k 18.0/23.6/24.0
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     print("tensorboard --logdir runs/cifar100\n")
     torch.manual_seed(SEED)
     learn_agt = CIFARAgt()
-    torch.manual_seed(SEED)                                   # SAME init as the control
+    torch.manual_seed(SEED)                                   # same init as the control
     control_agt = CIFARAgt()                                  # never gets use_lrn=True -> stays frozen
     for agt in (learn_agt, control_agt):                      # warm up BN stats before learning
         for i in warm:

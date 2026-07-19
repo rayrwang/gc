@@ -105,7 +105,7 @@ def test_cifar_agt_bn_modes():
     assert all(torch.allclose(w, w_old) for w, w_old in zip(agt.W, w_before, strict=True))  # no learning in eval
 
 
-# MNISTAgt is the ONLY thing that exercises the Col/conns/activs/lrn_adaptive path
+# MNISTAgt is the only thing that exercises the Col/conns/activs/lrn_adaptive path
 # (CIFARAgt and the abstract examples are standalone). This is a bit-identical golden
 # of that path, captured pre-refactor on CPU/float32/seed-0, so the planned structural
 # refactor (activations -> dataclass, conns -> endpoint addresses) can prove it changed

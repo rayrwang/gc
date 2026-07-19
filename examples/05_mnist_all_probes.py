@@ -1,17 +1,17 @@
 
 """
-Evaluate the agent's learned representations with three FROZEN probes (complementing
+Evaluate the agent's learned representations with three frozen probes (complementing
 04's online linear probe): kNN (cluster structure), ridge (least-squares linear),
-logistic (cross-entropy linear). Trains the BCM agent + a SAME-INIT frozen control on
+logistic (cross-entropy linear). Trains the BCM agent + a same-init frozen control on
 MNIST, periodically freezes both, reads the post-ReLU hidden as features, standardises,
 fits each probe. Offline (unlike 04): learning is online, probes fit on frozen reps.
 
-Result: the learn-vs-control gap is positive and robust across ALL three probes (not a
-linear-probe artifact) -- at width 128 ridge/logistic lead (~+2.1/+2.6), kNN smaller
+Result: the learn-vs-control gap is positive and robust across all three probes (not a
+linear-probe artifact): at width 128 ridge/logistic lead (~+2.1/+2.6), kNN smaller
 (~+1.6); at width 64 all agree ~+3.3-3.8. It shrinks toward noise as width grows and
 random features saturate, so it's a rescue where random is weak, not a uniform gain.
 But the image baseline logged below is the floor: the learned rep sits at-or-below a
-linear classifier on the pixels -- learning helps vs random, not in absolute terms.
+linear classifier on the pixels; learning helps vs random, not in absolute terms.
 
 Same-init is mandatory: on independent inits the gap is pure init noise that flips
 sign. Quantified gaps are from the multi-seed 06_mnist_sweep.py; this script runs the same
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     eval_te = torch.arange(N_TEST_EVAL)
     ytr, yte = train_labels[eval_tr], test_labels[eval_te]
 
-    # Learning agent and a frozen control sharing the SAME random init
+    # Learning agent and a frozen control sharing the same random init
     ispec, ospec = MNISTEnv.get_specs(MNISTEnvCfg("passive"))
     torch.manual_seed(SEED)
     learn_agt = MNISTAgt(MNISTCfg(ispec, ospec), f"{project_root_path}/saves/probes_learn")

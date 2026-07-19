@@ -1,8 +1,8 @@
 
 """
 Controlled sweep harness: does a local Hebbian rule learn representations that beat
-a frozen random net of the SAME init? This is the fast research engine behind the
-quantified gaps in 04/05 -- a batched, vectorized reimplementation of the agent's
+a frozen random net of the same init? This is the fast research engine behind the
+quantified gaps in 04/05: a batched, vectorized reimplementation of the agent's
 learning, decoupled from the Col/Agt framework so whole design axes can be swept in
 seconds.
 
@@ -17,12 +17,12 @@ layernorm/topk), weight-norm, hidden dims (-> depth), init scale, input norm
 update (ylearn) while the uncompeted activation is propagated and read as the rep.
 
 Scope/caveats: MNIST and fully-connected only (the conv line lives in 09/10); ridge
-probe only; BATCHED (B=500) -- a fast approximation of the agent's per-sample online
+probe only; batched (B=500), a fast approximation of the agent's per-sample online
 stepping, so learning-rate effects can differ (selftest checks the batched instar/oja
 math matches fc per-sample at B=1). Headline finding (reproduced by __main__): without
 competition the correlational rules (basic/instar/oja) collapse to chance while BCM
 self-stabilizes via its sliding threshold; with softmax + weight-norm all four tie
-(~84%) -- the rule is not the differentiator, the architecture is.
+(~84%): the rule is not the differentiator, the architecture is.
 """
 
 import os
@@ -121,7 +121,7 @@ def wnorm_(W):  # unit L2 norm per output neuron (column)
 
 def forward(W, h, cfg):
     # per layer: (presyn, dense, ylearn). dense = activation (propagated + read as
-    # the rep); ylearn = competed signal used ONLY for the local update.
+    # the rep); ylearn = competed signal used only for the local update.
     layers = []
     for w in W:
         dense = act(h @ w, cfg["act"])

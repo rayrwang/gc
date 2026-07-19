@@ -100,7 +100,7 @@ def test_lrn_instar_behavior():
 
 def test_lrn_oja_behavior():
     """
-    `lrn_oja`: Δw = ss * (x - w*y) * y -- Hebbian growth with a normalizing
+    `lrn_oja`: Δw = ss * (x - w*y) * y, Hebbian growth with a normalizing
     decay, so a large weight is *decreased* where plain Hebb would grow it;
     w*y == x is a fixed point.
     """
@@ -261,7 +261,7 @@ def test_softmax_wta_signed():
 
 
 def test_lrn_oja_gated_matches_formula():
-    """Both variants return the UPDATED weights w + ss*dW (module convention). Batched
+    """Both variants return the updated weights w + ss*dW (module convention). Batched
     dW = (x^T gate - w * sum_n(gate*u)) / n; single-sample = the n=1 case."""
     torch.manual_seed(0)
     n, d_x, d_y = 5, 4, 3

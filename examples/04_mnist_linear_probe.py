@@ -4,16 +4,16 @@ Learning representations of MNIST digits with a local (Hebbian) rule.
 
 Architecture: one 128-unit post-ReLU hidden layer fed the raw image, learned online
 by BCM, read directly as the rep. Show digits one at a time, train a linear probe on
-the hidden activations, and compare learning ON vs the SAME net frozen at init,
+the hidden activations, and compare learning on vs the same net frozen at init,
 against two pixel baselines: a linear probe (floor) and a ReLU MLP (ceiling).
 
 Findings (controlled same-init A/B, raw input, multiple seeds; sweep in 06_mnist_sweep.py):
 
 1. A local rule needs stabilization or it collapses (every unit drifts to one
    feature). basic/instar/Oja all collapse without external winner-take-all; BCM
-   does NOT, because its sliding threshold theta=<y^2> is per-neuron homeostasis.
-   CAVEAT (likely MNIST-specific): theta stabilizes each unit but doesn't stop two
-   units learning the same feature -- the BCM literature adds lateral inhibition on
+   does not, because its sliding threshold theta=<y^2> is per-neuron homeostasis.
+   Caveat (likely MNIST-specific): theta stabilizes each unit but doesn't stop two
+   units learning the same feature; the BCM literature adds lateral inhibition on
    natural images. "BCM needs no competition" is an easy-MNIST result; expect
    competition to become necessary on harder data (now confirmed on CIFAR, see 09).
 
@@ -22,22 +22,22 @@ Findings (controlled same-init A/B, raw input, multiple seeds; sweep in 06_mnist
    random ReLU features saturate. Width drives absolute accuracy; the gap is a
    rescue that only shows where random is weak.
 
-3. Read the post-ReLU hidden DIRECTLY. A second linear readout hop both bottlenecks
-   and collapses the rep under learning (-12% vs frozen) -- a readout with no
+3. Read the post-ReLU hidden directly. A second linear readout hop both bottlenecks
+   and collapses the rep under learning (-12% vs frozen); a readout with no
    nonlinearity after it is the one place local learning reliably hurts.
 
 4. The gap is robust across probes (kNN/ridge/logistic all positive), not a linear-
-   probe artifact -- nearest-neighbour cluster structure improves too. See 05.
+   probe artifact; nearest-neighbour cluster structure improves too. See 05.
 
-5. SOBERING: the learned rep does NOT beat a linear classifier on the pixels. Ladder
+5. Sobering: the learned rep does not beat a linear classifier on the pixels. Ladder
    (width 128, logistic, 3 seeds): linear-on-pixels 85.0, frozen 82.3, learned 84.1,
-   ReLU MLP 93.0. Learning closes the gap TOWARD the linear floor but stays below it
-   -- helps vs random, not useful in absolute terms. Without the floor the +2% reads
+   ReLU MLP 93.0. Learning closes the gap toward the linear floor but stays below
+   it: helps vs random, not useful in absolute terms. Without the floor the +2% reads
    as a win.
 
-Caveat that bit us: learn-vs-frozen MUST be controlled (same init, fixed seed,
+Caveat that bit us: learn-vs-frozen must be controlled (same init, fixed seed,
 seed-averaged) or the gap is pure init noise that flips sign. This script's online-
-SGD probe is NOT controlled (noisy live numbers); trust the 06_mnist_sweep.py same-init gap.
+SGD probe is not controlled (noisy live numbers); trust the 06_mnist_sweep.py same-init gap.
 """
 
 import os
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     control_classifier = nn.Sequential(nn.Linear(784, 128), nn.ReLU(), nn.Linear(128, 10))
     control_optim = torch.optim.SGD(control_classifier.parameters(), lr=1e-2)
 
-    # Linear baseline: a linear probe straight on the image (the floor -- is the
+    # Linear baseline: a linear probe straight on the image (the floor: is the
     # learned rep even worth more than a linear classifier on the raw pixels?)
     linear_classifier = nn.Linear(784, 10)
     linear_optim = torch.optim.SGD(linear_classifier.parameters(), lr=1e-2)
