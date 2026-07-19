@@ -40,4 +40,4 @@ def test_dict2spec_ignores_unknown_key_order():
     d = spec2dict(T.I_Vector(d=128))
     original = dict(d)
     assert dict2spec(d) == T.I_Vector(d=128)
-    assert d == original   # input dict left intact (dict2spec copies before popping)
+    assert d == original  # input dict left intact (dict2spec copies before popping)

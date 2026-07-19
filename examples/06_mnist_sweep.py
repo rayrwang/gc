@@ -145,7 +145,7 @@ def hebb_update(W, layers, cfg, theta):
             dw = ss * (XY - W[li] * (y * y).mean(0, keepdim=True))
         elif rule == "bcm":
             th = theta[li]
-            th.mul_(0.8).add_(0.2 * (y * y).mean(0))     # sliding threshold EMA
+            th.mul_(0.8).add_(0.2 * (y * y).mean(0))  # sliding threshold EMA
             dw = ss * (x.T @ (y * (y - th)) / B)
         else:
             raise ValueError(rule)

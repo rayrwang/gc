@@ -43,9 +43,9 @@ from src.agents import CIFARAgt
 from src.envs import CIFAR100Dataset
 
 SEED = 0
-N_STEPS = 50000                                       # online single-sample steps (~1 epoch)
-EVAL_INTERVAL = 10000                                 # report learn-vs-frozen progress
-WARMUP = 1000                                         # populate BN stats before learning
+N_STEPS = 50000        # online single-sample steps (~1 epoch)
+EVAL_INTERVAL = 10000  # report learn-vs-frozen progress
+WARMUP = 1000          # populate BN stats before learning
 N_TRAIN_EVAL, N_TEST_EVAL = 3000, 1000
 N_CLASSES = 100
 K_NN = 20
@@ -62,13 +62,13 @@ def ridge(rtr, ytr, rte, yte, lam=80.0):
     a = torch.cat([rtr, torch.ones(len(rtr), 1)], 1).double()
     b = torch.cat([rte, torch.ones(len(rte), 1)], 1).double()
     gram = a.T @ a
-    gram.diagonal().add_(lam)             # ridge penalty in-place (avoids a 24576^2 eye -> OOM at this rep dim)
+    gram.diagonal().add_(lam)  # ridge penalty in-place (avoids a 24576^2 eye -> OOM at this rep dim)
     weights = torch.linalg.solve(gram, a.T @ targets)
     return ((b @ weights).argmax(1) == yte).float().mean().item() * 100
 
 
 def logistic(rtr, ytr, rte, yte, steps=400, lr=0.05):
-    torch.manual_seed(SEED)                       # deterministic classifier init (the only RNG in eval)
+    torch.manual_seed(SEED)  # deterministic classifier init (the only RNG in eval)
     clf = torch.nn.Linear(rtr.shape[1], N_CLASSES).float()
     opt = torch.optim.Adam(clf.parameters(), lr=lr)
     for _ in range(steps):
@@ -102,7 +102,7 @@ def evaluate(agt, etr, ytr, ete, yte):
 
 if __name__ == "__main__":
     torch.set_default_dtype(torch.float32)
-    torch.use_deterministic_algorithms(True)              # fully reproducible run-to-run
+    torch.use_deterministic_algorithms(True)  # fully reproducible run-to-run
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch.set_default_device(device)
 
@@ -123,12 +123,12 @@ if __name__ == "__main__":
     print("tensorboard --logdir runs/cifar100\n")
     torch.manual_seed(SEED)
     learn_agt = CIFARAgt()
-    torch.manual_seed(SEED)                                   # same init as the control
-    control_agt = CIFARAgt()                                  # never gets use_lrn=True -> stays frozen
-    for agt in (learn_agt, control_agt):                      # warm up BN stats before learning
+    torch.manual_seed(SEED)               # same init as the control
+    control_agt = CIFARAgt()              # never gets use_lrn=True -> stays frozen
+    for agt in (learn_agt, control_agt):  # warm up BN stats before learning
         for i in warm:
             agt.step([train_imgs[i]], use_lrn=False, training=True)
-    control = evaluate(control_agt, etr, ytr, ete, yte)       # frozen baseline (constant)
+    control = evaluate(control_agt, etr, ytr, ete, yte)  # frozen baseline (constant)
     print("frozen baseline:  " + "   ".join(f"{p} {control[p]:.1f}" for p in PROBES), flush=True)
 
     for step, i in enumerate(order, 1):

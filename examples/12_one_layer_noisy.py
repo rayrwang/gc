@@ -37,9 +37,9 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 SEED = 0
-D, K, WIDTH = 256, 10, 512        # input dim, n clusters, layer width (rep dim)
-D_SIG = 16                        # cluster signal lives in this many dims; rest is noise
-R = 2                             # cluster radius = SNR. R=2 = noisy (overlapping)
+D, K, WIDTH = 256, 10, 512  # input dim, n clusters, layer width (rep dim)
+D_SIG = 16                  # cluster signal lives in this many dims; rest is noise
+R = 2                       # cluster radius = SNR. R=2 = noisy (overlapping)
 N_TR, N_EVTR, N_EVTE = 30000, 3000, 1000
 KNN, TEMP, INHIB, POWER = 20, 1.0, 5.0, 0.7
 LR = {"oja": 0.03, "instar": 0.03, "bcm": 0.003}
@@ -73,7 +73,7 @@ class OneLayer:
         self.W = 3.0 * torch.randn(D, WIDTH, generator=gen) / D ** 0.5
         self.rule, self.comp, self.sign, self.lr = rule, comp, sign, LR[rule]
         self.bn, self.adaptlr = bn, adaptlr
-        self.theta = torch.ones(1, WIDTH)                    # BCM sliding threshold
+        self.theta = torch.ones(1, WIDTH)  # BCM sliding threshold
         self.rm, self.rs, self.mom = torch.zeros(1, D), torch.ones(1, D), 0.01  # streaming input-BN stats
 
     def _bn(self, x, update):
@@ -87,36 +87,36 @@ class OneLayer:
     def _gate(self, u):
         """Competition: turn pre-activations u into the per-unit learning credit g."""
         if self.comp == "wta":
-            resp = torch.softmax(TEMP * u, dim=1)            # soft winner-take-all responsibilities
+            resp = torch.softmax(TEMP * u, dim=1)  # soft winner-take-all responsibilities
             if self.sign == "unsigned":
-                return resp                                  # all positive: winner most, losers a little
-            g = -resp                                        # signed: losers - (anti-Hebbian)...
-            g[0, u.argmax(1)] *= -1                           # ...winner +
+                return resp  # all positive: winner most, losers a little
+            g = -resp        # signed: losers - (anti-Hebbian)...
+            g[0, u.argmax(1)] *= -1  # ...winner +
             return g
         if self.comp == "none":
             base = u
         elif self.comp == "triangle":
             base = u - u.mean(1, keepdim=True)
         elif self.comp == "inhibit":
-            base = u - (INHIB / (WIDTH - 1)) * (u.sum(1, keepdim=True) - u)   # subtractive lateral inhibition
+            base = u - (INHIB / (WIDTH - 1)) * (u.sum(1, keepdim=True) - u)  # subtractive lateral inhibition
         p = POWER if self.comp == "triangle" else 1.0
         if self.sign == "unsigned":
             return F.relu(base) ** p
-        return torch.sign(base) * base.abs() ** p            # signed: keep below-threshold negative
+        return torch.sign(base) * base.abs() ** p  # signed: keep below-threshold negative
 
     def learn(self, x):
         x = self._bn(x.reshape(1, -1), update=True)
         u = x @ self.W
         g = self._gate(u)
         if self.rule == "instar":
-            dW = g * (x.T - self.W)                           # g_j*(x_i - W_ij): move toward x
+            dW = g * (x.T - self.W)  # g_j*(x_i - W_ij): move toward x
         elif self.rule == "oja":
-            dW = x.T * g - self.W * (g * u)                   # g_j*(x_i - u_j*W_ij): Oja decay bounds |w|
+            dW = x.T * g - self.W * (g * u)  # g_j*(x_i - u_j*W_ij): Oja decay bounds |w|
         else:  # bcm
             self.theta = 0.8 * self.theta + 0.2 * g ** 2
-            dW = x.T * (g * (g - self.theta))                 # x_i*g_j*(g_j - theta_j)
+            dW = x.T * (g * (g - self.theta))  # x_i*g_j*(g_j - theta_j)
         if self.adaptlr:
-            wn = self.W.norm(dim=0, keepdim=True)             # per-activation |w_i|
+            wn = self.W.norm(dim=0, keepdim=True)  # per-activation |w_i|
             dW = dW * (wn - 1.0).abs().clamp_min(1e-3) ** 0.5  # |w|-clocked per-unit learning rate
         self.W = self.W + self.lr * dW
 
@@ -138,14 +138,14 @@ if __name__ == "__main__":
     gen = torch.Generator(device=device).manual_seed(SEED)
     centroids = torch.zeros(K, D)
     centroids[:, :D_SIG] = torch.randn(K, D_SIG, generator=gen)
-    centroids = centroids / centroids.norm(dim=1, keepdim=True) * R     # radius R in the signal subspace
-    Xev, ytr_e = make_clusters(centroids, N_EVTR // K, gen)             # eval-train gallery
-    Xte, yte_e = make_clusters(centroids, N_EVTE // K, gen)             # eval-test
-    Xtr, _ = make_clusters(centroids, N_TR // K, gen)                   # online training stream
+    centroids = centroids / centroids.norm(dim=1, keepdim=True) * R  # radius R in the signal subspace
+    Xev, ytr_e = make_clusters(centroids, N_EVTR // K, gen)          # eval-train gallery
+    Xte, yte_e = make_clusters(centroids, N_EVTE // K, gen)          # eval-test
+    Xtr, _ = make_clusters(centroids, N_TR // K, gen)                # online training stream
     order = torch.randperm(len(Xtr), generator=gen)
 
-    raw = probe(lambda X: X)                                            # do-nothing baseline
-    oracle = probe(lambda X: X[:, :D_SIG])                              # signal subspace = headroom ceiling
+    raw = probe(lambda X: X)                # do-nothing baseline
+    oracle = probe(lambda X: X[:, :D_SIG])  # signal subspace = headroom ceiling
     frozen = probe(OneLayer("oja", "none", "unsigned", False, False,
                             torch.Generator(device=device).manual_seed(1)).rep)  # random projection
     print(f"R={R} (noisy)  raw {raw:.1f} | oracle {oracle:.1f} | frozen {frozen:.1f}   [kNN %, chance 10]\n")

@@ -131,10 +131,10 @@ def test_lrn_adaptive_behavior():
     """
     ss = 0.1
     x0 = torch.tensor([1.0, 1.0])
-    theta = torch.tensor([1.0, 1.0])              # the sliding threshold (y.avg_sq)
-    y0 = torch.tensor([2.0, 0.5])                 # output 0 above theta, output 1 below
+    theta = torch.tensor([1.0, 1.0])  # the sliding threshold (y.avg_sq)
+    y0 = torch.tensor([2.0, 0.5])     # output 0 above theta, output 1 below
     x = Activs(x0, torch.zeros(2), x0, x0 ** 2)
-    y = Activs(y0, torch.zeros(2), y0, theta)     # avg_sq = threshold
+    y = Activs(y0, torch.zeros(2), y0, theta)  # avg_sq = threshold
 
     w = torch.zeros(2, 2)
     dw = fc.lrn_adaptive(x, w, y, ss=ss) - w
@@ -151,14 +151,14 @@ def test_lrn_adaptive_behavior():
 def test_spike_threshold():
     """`spike` binarizes at the threshold: x >= threshold -> 1, x < threshold -> 0."""
     x = torch.tensor([0.5, 0.99, 1.0, 1.5, -3.0])
-    assert torch.equal(fc.spike(x), torch.tensor([0.0, 0.0, 1.0, 1.0, 0.0]))   # default thr=1.0
+    assert torch.equal(fc.spike(x), torch.tensor([0.0, 0.0, 1.0, 1.0, 0.0]))  # default thr=1.0
     assert torch.equal(fc.spike(x, threshold=0.5), torch.tensor([1.0, 1.0, 1.0, 1.0, 0.0]))
 
 
 def test_atv_discretizes_then_projects():
     """Activity rule is spike-then-matmul: the *input* is binarized at the threshold
     before the projection, so sub-threshold inputs contribute nothing."""
-    x = torch.tensor([0.5, 2.0])          # unit 0 sub-threshold, unit 1 active
+    x = torch.tensor([0.5, 2.0])  # unit 0 sub-threshold, unit 1 active
     w = torch.tensor([[1.0, 2.0],
                       [3.0, 4.0]])
     # spike(x) = [0, 1] -> only row 1 of w survives
@@ -172,15 +172,15 @@ def test_inhibit_equals_rank1_matmul():
     Only the actual activations (x.actual) change; expectations/averages pass through."""
     torch.manual_seed(0)
     d, A = 8, 5.0
-    x0 = torch.randn(d) + 1.0                          # straddles the spike threshold
-    x1 = torch.rand(d) + 0.3                           # straddles the 0.8 expectation gate
+    x0 = torch.randn(d) + 1.0  # straddles the spike threshold
+    x1 = torch.rand(d) + 0.3   # straddles the 0.8 expectation gate
     x = Activs(x0, x1, torch.randn(d), torch.randn(d))
 
     out = fc.inhibit(x)
 
     expected = fc.spike(x0) * torch.where(x1 < 0.8, 0.0, 1.0)
     W = (A / (d - 1)) * (torch.eye(d) - torch.ones(d, d))
-    assert torch.allclose(out.actual, x0 + expected @ W, atol=1e-5)   # rank-1 form == full matmul
+    assert torch.allclose(out.actual, x0 + expected @ W, atol=1e-5)  # rank-1 form == full matmul
     assert torch.equal(out.expect, x1)        # expectation passes through
     assert torch.equal(out.avg, x.avg)        # average passes through
     assert torch.equal(out.avg_sq, x.avg_sq)  # average-of-squares passes through
@@ -191,7 +191,7 @@ def test_lrn_discrete_truth_table():
     unit fires (x >= 1), y >= 1 potentiates, y <= -1 depresses, |y| < 1 decays toward 0;
     a silent presynaptic unit (x < 1) leaves the weight unchanged regardless of y."""
     x_on, x_off = torch.tensor([2.0]), torch.tensor([0.5])
-    w = torch.tensor([[0.01]])                         # small -> inside the regulation band
+    w = torch.tensor([[0.01]])  # small -> inside the regulation band
 
     assert (fc.lrn_discrete(x_on, w, torch.tensor([2.0])) - w).item() > 0     # y>=1 -> up
     assert (fc.lrn_discrete(x_on, w, torch.tensor([-2.0])) - w).item() < 0    # y<=-1 -> down
@@ -202,11 +202,11 @@ def test_lrn_discrete_truth_table():
 def test_lrn_discrete_regulation_gate_attenuates_large_weights():
     """The Gaussian regulation gate exp(-(w/band)^2) suppresses updates for weights well
     outside the band, so an out-of-band weight barely moves where an in-band one would."""
-    x, y = torch.tensor([2.0]), torch.tensor([2.0])    # x active, y>=1 -> would potentiate
+    x, y = torch.tensor([2.0]), torch.tensor([2.0])  # x active, y>=1 -> would potentiate
     in_band = (fc.lrn_discrete(x, torch.tensor([[0.05]]), y) - 0.05).abs().item()
     out_band = (fc.lrn_discrete(x, torch.tensor([[1.0]]), y) - 1.0).abs().item()
-    assert in_band > 1e-3            # in-band weight gets a real update
-    assert out_band < 1e-6           # out-of-band weight is essentially frozen by the gate
+    assert in_band > 1e-3   # in-band weight gets a real update
+    assert out_band < 1e-6  # out-of-band weight is essentially frozen by the gate
     assert out_band < in_band / 1000
 
 
@@ -220,9 +220,9 @@ def test_density_and_dist():
 def test_triangle_centers_and_grades():
     """`triangle_batched` = relu(u - row_mean) ** power: below-mean units are zeroed, the
     above-mean remainder is graded (not one-hot). Single-sample `triangle` matches one row."""
-    out = fc.triangle_batched(torch.tensor([[3.0, 1.0, 2.0]]), power=1.0)   # mean 2 -> diff [1,-1,0]
+    out = fc.triangle_batched(torch.tensor([[3.0, 1.0, 2.0]]), power=1.0)  # mean 2 -> diff [1,-1,0]
     assert torch.allclose(out, torch.tensor([[1.0, 0.0, 0.0]]))
-    out07 = fc.triangle_batched(torch.tensor([[4.0, 0.0]]), power=0.7)      # mean 2 -> diff [2,-2]
+    out07 = fc.triangle_batched(torch.tensor([[4.0, 0.0]]), power=0.7)  # mean 2 -> diff [2,-2]
     assert out07[0, 0].item() == pytest.approx(2.0 ** 0.7)
     assert out07[0, 1].item() == 0.0
     # single sample (no batch dim) matches the one-row batched result
@@ -249,14 +249,14 @@ def test_softmax_wta_signed():
     u = torch.tensor([[2.0, 1.0, 0.0]])
     g = fc.softmax_wta_batched(u, beta=1.0, signed=True)
     resp = torch.softmax(u, dim=-1)
-    assert g[0, 0] > 0                          # winner positive
-    assert torch.all(g[0, 1:] < 0)             # losers negative
-    assert torch.allclose(g.abs(), resp)       # magnitudes = softmax
+    assert g[0, 0] > 0  # winner positive
+    assert torch.all(g[0, 1:] < 0)        # losers negative
+    assert torch.allclose(g.abs(), resp)  # magnitudes = softmax
     assert torch.allclose(g[0, 1:], -resp[0, 1:])
     # single sample: winner +, losers -, magnitudes = softmax
     gs = fc.softmax_wta(torch.tensor([2.0, 1.0, 0.0]), signed=True)
-    assert gs[0] > 0                       # winner positive
-    assert torch.all(gs[1:] < 0)           # losers negative
+    assert gs[0] > 0              # winner positive
+    assert torch.all(gs[1:] < 0)  # losers negative
     assert torch.allclose(gs.abs(), torch.softmax(torch.tensor([2.0, 1.0, 0.0]), dim=-1))
 
 
@@ -269,8 +269,8 @@ def test_lrn_oja_gated_matches_formula():
     w = torch.randn(d_x, d_y)
     u = x @ w
     g = fc.softmax_wta_batched(u, signed=True)
-    dW = (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n        # raw averaged update
-    w_b = fc.lrn_oja_gated_batched(x, w, g, u)                  # default ss = 1e-2
+    dW = (x.T @ g - w * (g * u).sum(0, keepdim=True)) / n  # raw averaged update
+    w_b = fc.lrn_oja_gated_batched(x, w, g, u)  # default ss = 1e-2
     assert tuple(w_b.shape) == (d_x, d_y)
     assert torch.allclose(w_b, w + 1e-2 * dW)
     # single sample = the n=1 case; both return the updated weights, so they agree

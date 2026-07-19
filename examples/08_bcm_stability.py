@@ -70,7 +70,7 @@ class BCMAgt:
         u = self._spike(a) @ self.W                       # synchronous spike-bounded propagation
         u = u + self.drive * torch.rand(a.shape[0], generator=self.gen, device=DEV)  # sensory drive
         self.theta = (1 - self.decay) * self.theta + self.decay * u**2  # slide the threshold
-        self.a = u                                        # commit
+        self.a = u  # commit
 
     def diverged(self):
         return (not torch.isfinite(self.a).all()) or (self.a.abs().max() > 1e4)
@@ -87,18 +87,18 @@ def divergence_grid(decays, sss, n_units=N_UNITS, steps=200, drive=DRIVE, seed=0
     dec = torch.tensor(decays, device=DEV).repeat_interleave(ns)[:, None]  # [B,1]
     ss = torch.tensor(sss, device=DEV).repeat(nd)[:, None]                 # [B,1]
     W = 2.0 * torch.randn(B, n_units, n_units, generator=g, device=DEV) / n_units**0.5
-    W *= ~torch.eye(n_units, dtype=torch.bool, device=DEV)                 # zero diagonals
+    W *= ~torch.eye(n_units, dtype=torch.bool, device=DEV)  # zero diagonals
     a = torch.randn(B, n_units, generator=g, device=DEV)
     theta = torch.ones(B, n_units, device=DEV)
-    div = torch.full((B,), -1, dtype=torch.long, device=DEV)              # -1 = still stable
+    div = torch.full((B,), -1, dtype=torch.long, device=DEV)  # -1 = still stable
     for t in range(1, steps + 1):
-        post = a * (a - theta)                                            # [B,n]
-        W = torch.baddbmm(W, (ss * a).unsqueeze(2), post.unsqueeze(1))    # W += ss * outer(a, post), per cell
+        post = a * (a - theta)                                          # [B,n]
+        W = torch.baddbmm(W, (ss * a).unsqueeze(2), post.unsqueeze(1))  # W += ss * outer(a, post), per cell
         u = torch.bmm(torch.where(a < 1.0, 0.0, 1.0).unsqueeze(1), W).squeeze(1)  # spike-bounded propagation
         u = u + drive * torch.rand(B, n_units, generator=g, device=DEV)
         theta = (1 - dec) * theta + dec * u**2
         a = u
-        bad = (~torch.isfinite(a).all(1)) | (a.abs().amax(1) > 1e4)       # [B]
+        bad = (~torch.isfinite(a).all(1)) | (a.abs().amax(1) > 1e4)  # [B]
         div = torch.where(bad & (div < 0), torch.full_like(div, t), div)
     Z = div.float().cpu().numpy()
     Z[Z < 0] = np.nan

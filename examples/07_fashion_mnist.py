@@ -31,9 +31,9 @@ from src.agents import MNISTCfg, MNISTAgt
 from src.envs import MNISTEnv, MNISTEnvCfg, FashionMNISTDataset
 
 SEED = 0
-N_STEPS = 5000          # online learning steps
+N_STEPS = 5000  # online learning steps
 EVAL_INTERVAL = 500
-N_TRAIN_EVAL = 4000     # rep subset for fitting the probes
+N_TRAIN_EVAL = 4000  # rep subset for fitting the probes
 N_TEST_EVAL = 1500
 K_NN = 20
 

@@ -35,9 +35,9 @@ def test_screen2loc():
 
 def test_screen2dir():
     """Top half of a cell selects Dir.A, bottom half Dir.E (in-cell coords)."""
-    assert screen2dir(150, 120, 100) == Dir.A     # y%100=20, top half
-    assert screen2dir(150, 180, 100) == Dir.E     # y%100=80, bottom half
-    assert screen2dir(0, 50, 100) == Dir.A        # boundary y == width/2 is top
+    assert screen2dir(150, 120, 100) == Dir.A  # y%100=20, top half
+    assert screen2dir(150, 180, 100) == Dir.E  # y%100=80, bottom half
+    assert screen2dir(0, 50, 100) == Dir.A     # boundary y == width/2 is top
 
 
 def test_get_color():
@@ -45,7 +45,7 @@ def test_get_color():
     assert get_color(0) == (255, 255, 255)
     assert get_color(2) == (0, 255, 0)
     assert get_color(-2) == (255, 0, 0)
-    assert get_color(99) == get_color(2)          # clipped
+    assert get_color(99) == get_color(2)  # clipped
     assert get_color(float("nan")) == (0, 255, 255)
 
 
@@ -56,7 +56,7 @@ def test_parse_loc():
     assert parse_loc("cfg") is None
     assert parse_loc("cfg_type") is None
     assert parse_loc(".DS_Store") is None
-    assert parse_loc("(1, 2, 3)") is None         # not a 2-tuple
+    assert parse_loc("(1, 2, 3)") is None  # not a 2-tuple
     assert parse_loc("5") is None
 
 
@@ -122,14 +122,14 @@ def test_drain_newest_wins_and_caches(dbg):
     send = dbg.pipes["overview"][0]
     send.send({"timestamp": 1})
     send.send({"timestamp": 2})
-    assert dbg._drain("overview")["timestamp"] == 2   # newest of the backlog
+    assert dbg._drain("overview")["timestamp"] == 2  # newest of the backlog
     assert dbg.cache["overview"]["timestamp"] == 2
-    assert dbg._drain("overview")["timestamp"] == 2   # empty pipe -> cache
+    assert dbg._drain("overview")["timestamp"] == 2  # empty pipe -> cache
 
 
 def test_drain_predicate_filters_and_gates_cache(dbg):
     send = dbg.pipes["col"][0]
-    send.send(col_info((9, 9)))                       # for another col
+    send.send(col_info((9, 9)))  # for another col
     assert dbg._drain("col", lambda i: i["loc"] == (1, 1)) is None
     send.send(col_info((1, 1)))
     assert dbg._drain("col", lambda i: i["loc"] == (1, 1))["loc"] == (1, 1)
@@ -161,10 +161,10 @@ def test_right_click_selects_conn_by_half(dbg, monkeypatch):
     w = dbg.COL_WIDTH
     press(monkeypatch, (2.5 * w, 1.25 * w), dbg.scale, buttons=(False, False, True))
     dbg.handle_events()
-    assert dbg.gui_state["conn"] == ((2, 1), Dir.A)   # top half -> Dir.A
+    assert dbg.gui_state["conn"] == ((2, 1), Dir.A)  # top half -> Dir.A
     press(monkeypatch, (2.5 * w, 1.75 * w), dbg.scale, buttons=(False, False, True))
     dbg.handle_events()
-    assert dbg.gui_state["conn"] == ((2, 1), Dir.E)   # bottom half -> Dir.E
+    assert dbg.gui_state["conn"] == ((2, 1), Dir.E)  # bottom half -> Dir.E
 
 
 def test_right_click_stats_band_selects_layer(dbg, monkeypatch):
@@ -207,8 +207,8 @@ def test_frame_idle_renders(dbg, monkeypatch):
     press(monkeypatch, (0, 0), dbg.scale)
     dbg.pipes["overview"][0].send(overview_info())
     dbg.frame()
-    assert region_has_content(dbg.window, GRID)       # cols drawn
-    assert region_has_content(dbg.window, OVERVIEW)   # overview stats drawn
+    assert region_has_content(dbg.window, GRID)      # cols drawn
+    assert region_has_content(dbg.window, OVERVIEW)  # overview stats drawn
 
 
 def test_frame_col_state_renders_stats(dbg, monkeypatch):
@@ -226,7 +226,7 @@ def test_frame_atv_state_renders_value_grid(dbg, monkeypatch):
     dbg.gui_state["atv"] = 1
     dbg.pipes["col"][0].send(col_info((1, 1)))
     x = np.linspace(-3, 3, 128).astype(np.float32)
-    x[5] = np.nan                                     # exercises the NaN color
+    x[5] = np.nan  # exercises the NaN color
     dbg.pipes["atv"][0].send({
         "timestamp": time.time(), "request": ((1, 1), 1),
         "x": x, "x_avg": (x * 0.5).astype(np.float32),
@@ -281,7 +281,7 @@ def test_tab_click_toggles_page_and_preserves_selection(dbg, monkeypatch):
     press(monkeypatch, PAGE_TABS["stats"].center, dbg.scale, buttons=(True, False, False))
     dbg.handle_events()
     assert dbg.page == "stats"
-    assert dbg.gui_state["loc"] == (1, 1)   # selection survives the flip
+    assert dbg.gui_state["loc"] == (1, 1)  # selection survives the flip
     press(monkeypatch, PAGE_TABS["cols"].center, dbg.scale, buttons=(True, False, False))
     dbg.handle_events()
     assert dbg.page == "cols"
@@ -304,11 +304,11 @@ def test_stats_page_right_click_conn_disabled_atv_enabled(dbg, monkeypatch):
     w = dbg.COL_WIDTH
     press(monkeypatch, (2.5 * w, 1.25 * w), dbg.scale, buttons=(False, False, True))
     dbg.handle_events()
-    assert dbg.gui_state["conn"] is None       # grid right-click: dead on stats page
+    assert dbg.gui_state["conn"] is None  # grid right-click: dead on stats page
     y = STATS_TOP + (STATS_BLOCK_LINES * 1.5 - 0.5) * LINE_HEIGHT
     press(monkeypatch, (ATV_STATS.centerx, y), dbg.scale, buttons=(False, False, True))
     dbg.handle_events()
-    assert dbg.gui_state["atv"] == 2           # layer right-click: still works
+    assert dbg.gui_state["atv"] == 2  # layer right-click: still works
 
 
 def test_tab_key_toggles_page(dbg, monkeypatch):

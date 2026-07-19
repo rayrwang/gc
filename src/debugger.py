@@ -40,9 +40,9 @@ MIDDLE = pg.Rect(1100, 0, 400, 1300)          # conn detail or activity values
 ATV_STATS = pg.Rect(1500, 0, 500, 1300)       # selected col's activations
 WEIGHT_STATS = pg.Rect(2000, 200, 500, 1100)  # selected col's weights
 
-PAD = 25           # text inset from a panel's edge
-HEADER_Y = 220     # baseline of the "Activations:" / "Weights:" headers
-STATS_TOP = 250    # first row of the per-tensor stats blocks
+PAD = 25         # text inset from a panel's edge
+HEADER_Y = 220   # baseline of the "Activations:" / "Weights:" headers
+STATS_TOP = 250  # first row of the per-tensor stats blocks
 LINE_HEIGHT = 30
 STATS_BLOCK_LINES = 5  # rows per stats block (4 text lines + 1 gap)
 
@@ -72,8 +72,8 @@ STATS_GRID_COLOR = (210, 210, 210)
 # Sorted per-unit in-norm curves (top-right stats tile). Snapshots arrive
 # ~every 2s (agent-side cooldown); keep a few minutes for the drift ghost.
 NORM_HISTORY_LIMIT = 90
-NORM_GHOST_SECONDS = 60.0   # target age of the gray reference snapshot
-NORM_INIT_NORM = 2.0        # weights()/conn() init scale -> per-unit init norm
+NORM_GHOST_SECONDS = 60.0  # target age of the gray reference snapshot
+NORM_INIT_NORM = 2.0       # weights()/conn() init scale -> per-unit init norm
 NORM_CONNS_COLOR = (196, 84, 42)
 NORM_INTERNAL_COLOR = (120, 84, 190)
 NORM_GHOST_COLOR = (185, 185, 185)
@@ -286,11 +286,11 @@ class Debugger:
         histogram.set_colorkey((255,255,255))
         pg.draw.rect(histogram, (0,0,0), (100+0, 15+0, 215, 133), 1)  # Border
 
-        pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)      # -2 std tick
+        pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)  # -2 std tick
         txt = self.fonts["small"].render(f"-{20*bin_width:g}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+7.5, 15+133)))
 
-        pg.draw.line(histogram, (100,149,237), (100+57.5, 15+133-10), (100+57.5, 15+133+5), width=2)    # -1 std tick
+        pg.draw.line(histogram, (100,149,237), (100+57.5, 15+133-10), (100+57.5, 15+133+5), width=2)  # -1 std tick
         txt = self.fonts["small"].render(f"-{10*bin_width:g}", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+57.5, 15+133)))
 

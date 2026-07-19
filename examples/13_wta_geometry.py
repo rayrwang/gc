@@ -38,12 +38,12 @@ def learn(data, signed):
     for _ in range(STEPS):
         x = data[rng.integers(len(data))]
         d2 = ((x - w) ** 2).sum(1)
-        resp = np.exp(-(d2 - d2.min()) / TEMP)                      # soft assignment
+        resp = np.exp(-(d2 - d2.min()) / TEMP)  # soft assignment
         resp /= resp.sum()
         g = -resp if signed else resp.copy()
         if signed:
-            g[d2.argmin()] *= -1                                     # winner +, losers - (anti-Hebbian)
-        w += LR * g[:, None] * (x - w)                               # move toward (or away from) x
+            g[d2.argmin()] *= -1        # winner +, losers - (anti-Hebbian)
+        w += LR * g[:, None] * (x - w)  # move toward (or away from) x
     return w
 
 

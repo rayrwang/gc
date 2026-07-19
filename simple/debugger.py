@@ -62,11 +62,11 @@ def nrn_debugger(PATH, pipes):
                 pg.draw.rect(histogram, (0,0,0), (100+i*5, 15+133-height, 5, height))
         else:
             return None
-        pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)      # -2 tick
+        pg.draw.line(histogram, (100,149,237), (100+7.5, 15+133-10), (100+7.5, 15+133+5), width=2)  # -2 tick
         txt = fonts["small"].render("-2", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+7.5, 15+133)))
 
-        pg.draw.line(histogram, (100,149,237), (100+57.5, 15+133-10), (100+57.5, 15+133+5), width=2)    # -1 tick
+        pg.draw.line(histogram, (100,149,237), (100+57.5, 15+133-10), (100+57.5, 15+133+5), width=2)  # -1 tick
         txt = fonts["small"].render("-1", True, (0,0,0))
         histogram.blit(txt, txt.get_rect(midtop=(100+57.5, 15+133)))
 
@@ -112,23 +112,23 @@ def nrn_debugger(PATH, pipes):
         for coord_x in range(50, 450, 1):
             x = (coord_x-50)/(450-50)*4-2  # [50, 450] -> [-2, 2]
             pg.draw.line(color_bar, get_color(x), (coord_x, 0), (coord_x, 80))
-        pg.draw.line(color_bar, (0,0,0), (50, 75), (50, 85), width=5)      # -2 tick
+        pg.draw.line(color_bar, (0,0,0), (50, 75), (50, 85), width=5)  # -2 tick
         txt = fonts["regular"].render("-2", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(50, 85)))
 
-        pg.draw.line(color_bar, (0,0,0), (150, 75), (150, 85), width=5)      # -1 tick
+        pg.draw.line(color_bar, (0,0,0), (150, 75), (150, 85), width=5)  # -1 tick
         txt = fonts["regular"].render("-1", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(150, 85)))
 
-        pg.draw.line(color_bar, (0,0,0), (250, 75), (250, 85), width=5)      # 0 tick
+        pg.draw.line(color_bar, (0,0,0), (250, 75), (250, 85), width=5)  # 0 tick
         txt = fonts["regular"].render("0", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(250, 85)))
 
-        pg.draw.line(color_bar, (0,0,0), (350, 75), (350, 85), width=5)      # 1 tick
+        pg.draw.line(color_bar, (0,0,0), (350, 75), (350, 85), width=5)  # 1 tick
         txt = fonts["regular"].render("1", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(350, 85)))
 
-        pg.draw.line(color_bar, (0,0,0), (450, 75), (450, 85), width=5)      # 2 tick
+        pg.draw.line(color_bar, (0,0,0), (450, 75), (450, 85), width=5)  # 2 tick
         txt = fonts["regular"].render("2", True, (0,0,0))
         color_bar.blit(txt, txt.get_rect(midtop=(450, 85)))
         return color_bar
