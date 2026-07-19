@@ -2,7 +2,7 @@
 One-layer local-learning sweep on noisy (overlapping) abstract clusters.
 
 Identical sweep to 11_one_layer_clean but at low SNR: the clusters heavily overlap, so a raw
-random projection is near chance and the task is genuinely hard. Kept deliberately parallel to
+random projection is near chance and the task is hard. Kept deliberately parallel to
 11; sync changes across both. See 11 for the full method/finding writeup; this file documents
 what changes when the signal gets buried.
 

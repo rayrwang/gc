@@ -17,7 +17,7 @@ a ~3-4pt frozen head-start (forward-path/seed; see bottom). Δ kNN / ridge / log
 At 1 epoch SoftHebb learns far more; gc is not competitive at a single pass. The one thing gc
 does that SoftHebb (as run) doesn't is hold up under continued training: gc's gains are stable-
 to-rising while SoftHebb's peak-then-decay. By 4 epochs gc edges online SoftHebb on kNN/ridge,
-still trails it on logistic, batched SoftHebb leads throughout. Honest result: "gc's gains don't
+still trails it on logistic, batched SoftHebb leads throughout. The result: "gc's gains don't
 collapse under continual training," not "gc beats SoftHebb."
 
 Caveat, not yet a fair continual test: SoftHebb's per-layer temperature/power/LR schedule
@@ -32,7 +32,7 @@ over channels, winner moves toward the input, losers move away (anti-Hebbian rep
 channels tile instead of collapsing onto one prototype). gc's own rules (BCM, plain instar/oja)
 all fail here; the signed gate is required.
 
-Four ingredients, each load-bearing: (1) Triangle activation relu(u-mean_c)^0.7, a graded code;
+Four ingredients, each necessary: (1) Triangle activation relu(u-mean_c)^0.7, a graded code;
 hard-WTA collapses over depth. (2) Soft weight-norm: hard projection makes learning
 destructive. (3) Online BatchNorm: the homeostatic regularizer; without it kNN is a transient
 peak that collapses (52->36). (4) No whitening: BN handles it; even online ZCA suppresses the

@@ -35,7 +35,7 @@ pythonpath = ["."]
 extend-select = [
     "I",    # import sorting
     "UP",   # pyupgrade (3.12+ syntax)
-    "B",    # bugbear -- B905 zip-strict is the win
+    "B",    # bugbear: B905 zip-strict is the win
     "C4",   # comprehensions
     "PIE",  # redundant code
     "PERF", # perf footguns
@@ -64,7 +64,7 @@ root = ["."]
 include = ["src/agents.py", "simple/**"]
 rules = { "not-subscriptable" = "ignore", "not-iterable" = "ignore", "invalid-assignment" = "ignore", "unresolved-attribute" = "ignore", "invalid-method-override" = "ignore", "invalid-argument-type" = "ignore", "unsupported-operator" = "ignore" }
 
-# Examples get a NARROWER set: only the rules that fire on the lazy-None /
+# Examples get a narrower set: only the rules that fire on the lazy-None /
 # monkeypatch / step()-signature patterns they inherit from src/agents.py.
 # (A blanket suppression here once hid six examples broken by the Activs
 # refactor.) Caveat: ty cannot catch attribute misuse behind ColBase's

@@ -2,7 +2,7 @@
 CIFAR-100 substrate probe: the CIFAR-10 example (09_cifar10.py) on the harder 100-class task
 (1% chance). Same recipe (src.agents.CIFARAgt: oja-signed + Triangle + soft-norm + online BN,
 no whitening, 24576-dim rep), same online single-sample protocol, same probes (kNN/ridge/
-logistic) vs a same-init frozen control. See 09 for the recipe, the four load-bearing
+logistic) vs a same-init frozen control. See 09 for the recipe, the four necessary
 ingredients, and the SoftHebb (Moraitis et al., arXiv:2209.11883) lineage. Kept deliberately
 parallel to 09; sync changes across both.
 
@@ -15,7 +15,7 @@ At 1 epoch SoftHebb learns more (especially logistic, +9.0 vs +1.6); gc is not c
 single pass. The one thing gc does that SoftHebb (as run) doesn't is hold up under continued
 training: gc's gains are stable-to-rising (ridge 25.7->31.0) while SoftHebb's decay (its ridge
 falls below its own frozen by 4 epochs). By 200k gc edges SoftHebb on ridge and ~ties on
-kNN/logistic. Same honest result as 08: "gc's gains don't collapse under continual training,"
+kNN/logistic. Same result as 09: "gc's gains don't collapse under continual training,"
 not "gc beats SoftHebb." Same caveat: SoftHebb's per-layer temperature/power/LR schedule was not
 ported, so its 4-epoch decay may be un-annealed overtraining, not a property of induction; needs
 a scheduled baseline + more seeds. Single config, ~1 seed.

@@ -1409,7 +1409,7 @@ class CIFARAgt:
     soft-WTA. The winner moves its weight toward the input (Hebbian), losers away
     (anti-Hebbian). The loser repulsion makes channels tile instead of collapsing onto
     one prototype; gc's own rules (BCM, plain instar/oja) were tested and fail here, so
-    the anti-Hebbian gate is load-bearing. Four ingredients each matter: Triangle
+    the anti-Hebbian gate is required. Four ingredients each matter: Triangle
     activation relu(u-mean_c(u))^p (graded, so depth doesn't collapse to one-hot); soft
     weight-norm (let ||w|| drift via the rule's own decay; hard projection makes
     learning destructive); online BatchNorm (current-image stats at train, running at
