@@ -55,6 +55,7 @@ class DebugLearningRuleAgt(AgtBase):
     def __init__(self, d: int, path):
         self.d = d
         self.path = path
+        self.age = 0
 
         inits = (
             torch.randn(d),
@@ -136,7 +137,8 @@ class DebugLearningRuleAgt(AgtBase):
                     self.cols[output_loc].nr_1.actual)
 
         self.debug_update()
-        
+        self.age += 1
+
 
 if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")

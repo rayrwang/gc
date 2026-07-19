@@ -27,6 +27,7 @@ class SelectivityAgt(AgtBase):
     def __init__(self, d: int, path):
         self.d = d
         self.path = path
+        self.age = 0
 
         self.cols = {}
 
@@ -67,6 +68,7 @@ class SelectivityAgt(AgtBase):
         )
 
         self.debug_update()
+        self.age += 1
 
 
 if __name__ == "__main__":

@@ -35,6 +35,7 @@ class ExpectationsAgt(AgtBase):
     def __init__(self, d: int, path):
         self.d = d
         self.path = path
+        self.age = 0
 
         self.cols = {}
 
@@ -67,7 +68,8 @@ class ExpectationsAgt(AgtBase):
             col.update_activations()
 
         self.debug_update()
-        
+        self.age += 1
+
 
 if __name__ == "__main__":
     torch.set_default_device("cuda" if torch.cuda.is_available() else "cpu")
