@@ -22,11 +22,18 @@ Three situations with known answers, three controls that must not pass:
     dir.e off         same substrate, forward learning on, backward map
                       frozen: shows the prediction lives in Dir.E, not Dir.A
 
+Two reference mechanisms sit alongside for calibration: canonical temporal
+predictive coding (settling inference + error-hebbian learning, both hinges
+of the family on) and a temporal Helmholtz machine trained by wake-sleep
+(one-pass recognition, no settling; recognition learns on its own dreams).
+
 Results (seeds 0/1/2, mean trailing score; retention = post-noise cycle
 score immediately on return, re-settle vs first-settle in steps):
 
     subject      cycle    noise    retention  resettle
-    dir.e on     +1.00    +0.01    +0.78      64 vs 81 (faster: savings)
+    dir.e on     +1.00    +0.01    +0.78       64 vs 81 (faster: savings)
+    pc           +1.00    -0.00    +0.25      262 vs 57 (5x slower: burnout)
+    wake-sleep   +1.00    +0.01    +0.94       50 vs 53
     dir.e off    -0.01    +0.01    n/a        n/a
     frozen twin  -0.02    -0.01    n/a        n/a
     copy-last    -0.00    -0.00    n/a        n/a
@@ -34,8 +41,13 @@ score immediately on return, re-settle vs first-settle in steps):
 The backward direction carries all of it: with Dir.E frozen the same
 substrate predicts nothing. The delta rule reaches 1.00 where pure Hebb
 plateaus near 0.8 (crosstalk: delta is Hebb plus unlearning of the already-
-predicted part). And the sandwich shows savings, not burnout: the mechanism
-relearns its cycle faster than it first learned it after 200 steps of noise.
+predicted part). Prediction alone does not separate the three learners: the
+sandwich does. Canonical PC keeps settling-and-learning on the noise, drags
+its maps, returns to its cycle at a quarter strength and relearns it five
+times slower than it first did (burnout); wake-sleep's normalized steps
+barely move; dir.e-on loses a fifth of its score but relearns faster than
+it learned (savings). Noise-robustness, not prediction, is where the
+mechanisms differ.
 """
 
 import hashlib
@@ -105,6 +117,57 @@ class Agt:
         self.h = h
 
 
+class PC:
+    """canonical temporal predictive coding (Rao-Ballard dynamic form):
+    settling inference + error-hebbian learning on both maps."""
+
+    def __init__(self, seed, settle=40, lr_inf=0.1, lr_w=0.1):
+        g = torch.Generator().manual_seed(seed)
+        self.W_out = torch.eye(DIM) + 0.01 * torch.randn(DIM, DIM, generator=g)
+        self.W_dyn = 0.01 * torch.randn(DIM, DIM, generator=g)
+        self.x = torch.zeros(DIM)
+        self.settle, self.lr_inf, self.lr_w = settle, lr_inf, lr_w
+
+    def guess(self):
+        return self.W_out @ (self.W_dyn @ self.x)
+
+    def observe(self, a):
+        x_pred = self.W_dyn @ self.x
+        x = x_pred.clone()
+        for _ in range(self.settle):  # inference: descend obs error + prior error
+            x = x + self.lr_inf * (self.W_out.T @ (a - self.W_out @ x) - (x - x_pred))
+        self.W_out = self.W_out + self.lr_w * torch.outer(a - self.W_out @ x, x)
+        self.W_dyn = self.W_dyn + self.lr_w * torch.outer(x - x_pred, self.x)
+        self.x = x
+
+
+class WakeSleep:
+    """temporal helmholtz machine: one-pass recognition (no settling);
+    generative + dynamics train in wake, recognition trains on dreams."""
+
+    def __init__(self, seed, lr=0.1, dream=0.1):
+        self.gen = torch.Generator().manual_seed(seed)
+        g = self.gen
+        self.R = torch.eye(DIM) + 0.01 * torch.randn(DIM, DIM, generator=g)
+        self.G = torch.eye(DIM) + 0.01 * torch.randn(DIM, DIM, generator=g)
+        self.D = 0.01 * torch.randn(DIM, DIM, generator=g)
+        self.x = torch.zeros(DIM)
+        self.lr, self.dream = lr, dream
+
+    def guess(self):
+        return self.G @ (self.D @ self.x)
+
+    def observe(self, a):
+        x = torch.tanh(self.R @ a)
+        self.G = self.G + self.lr * torch.outer(a - self.G @ x, x) / (1 + x @ x)
+        x_pred = self.D @ self.x
+        self.D = self.D + self.lr * torch.outer(x - x_pred, self.x) / (1 + self.x @ self.x)
+        z = torch.tanh(x_pred + self.dream * torch.randn(DIM, generator=self.gen))
+        fantasy = self.G @ z
+        self.R = self.R + self.lr * torch.outer(z - torch.tanh(self.R @ fantasy), fantasy) / (1 + fantasy @ fantasy)
+        self.x = x
+
+
 class CopyLast:
     def __init__(self, seed):
         self.last = torch.zeros(DIM)
@@ -149,6 +212,8 @@ def settled(xs):
 if __name__ == "__main__":
     subjects = {
         "dir.e on": lambda s: Agt(s),
+        "pc": lambda s: PC(s),
+        "wake-sleep": lambda s: WakeSleep(s),
         "dir.e off": lambda s: Agt(s, dire=False),
         "frozen twin": lambda s: Agt(s, frozen=True),
         "copy-last": lambda s: CopyLast(s),

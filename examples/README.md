@@ -70,15 +70,17 @@ The rule barely matters once WTA is in place. Oja and instar stay within a point
 
 ### Expectations (Dir.E)
 
-A feedforward agent with Dir.A running forward (SoftHebb) and Dir.E running backward: a map from hidden activity at t-1 to input at t, trained by the delta rule (Hebbian in form, error-valued). Guesses are published before each input arrives, then scored by cosine. Structure gets found where it exists (a 4-symbol cycle), nothing gets claimed where it doesn't (fresh noise each step), and a noise interlude neither erases the learned cycle nor slows relearning: it comes back *faster* (savings, not burnout).
+A feedforward agent with Dir.A running forward (SoftHebb) and Dir.E running backward: a map from hidden activity at t-1 to input at t, trained by the delta rule (Hebbian in form, error-valued). Guesses are published before each input arrives, then scored by cosine. Structure gets found where it exists (a 4-symbol cycle), nothing gets claimed where it doesn't (fresh noise each step). Canonical temporal predictive coding and a wake-sleep Helmholtz machine run alongside as references.
 
-| mean trailing score | cycle | noise | retention | resettle        |
-| ------------------- | ----- | ----- | --------- | --------------- |
-| dir.e on            | +1.00 | +0.01 | +0.78     | 64 vs 81 steps  |
-| dir.e off           | -0.01 | +0.01 |           |                 |
-| frozen twin         | -0.02 | -0.01 |           |                 |
-| copy-last null      | -0.00 | -0.00 |           |                 |
+| mean trailing score | cycle | noise | retention | resettle       |
+| ------------------- | ----- | ----- | --------- | -------------- |
+| dir.e on            | +1.00 | +0.01 | +0.78     | 64 vs 81 steps |
+| predictive coding   | +1.00 | -0.00 | +0.25     | 262 vs 57      |
+| wake-sleep          | +1.00 | +0.01 | +0.94     | 50 vs 53       |
+| dir.e off           | -0.01 | +0.01 |           |                |
+| frozen twin         | -0.02 | -0.01 |           |                |
+| copy-last null      | -0.00 | -0.00 |           |                |
 
-The backward direction carries all of it: the same substrate with Dir.E frozen predicts nothing, so the prediction lives in the expectation pathway, not the forward features. The copy-last null scores zero on the cycle by construction (no consecutive repeats), which is what makes "found the structure" mean something.
+Prediction doesn't separate the learners; the noise sandwich (cycle -> noise -> same cycle) does. Canonical PC keeps settling-and-learning on the noise, drags its maps, and comes back at quarter strength relearning 5x slower (burnout); dir.e-on loses a fifth and relearns *faster* than it first learned (savings). The backward direction carries all of it: the same substrate with Dir.E frozen predicts nothing, so the prediction lives in the expectation pathway, not the forward features.
 
 (see `examples/14_expectations_one_layer.py`)
