@@ -76,11 +76,11 @@ A one-hidden-layer feedforward agent with Dir.A running forward (SoftHebb) and D
 
 | mean trailing score | cycle | noise | retention | resettle       |
 | ------------------- | ----- | ----- | --------- | -------------- |
-| dir.e on            | +1.00 | +0.01 | +0.78     | 64 vs 81 steps |
+| dir.e on            | +1.00 | -0.00 | +0.78     | 64 vs 82 steps |
 | predictive coding   | +1.00 | -0.00 | +0.25     | 262 vs 57      |
 | wake-sleep          | +1.00 | +0.01 | +0.94     | 50 vs 53       |
-| dir.e off           | -0.01 | +0.01 |           |                |
-| frozen twin         | -0.02 | -0.01 |           |                |
+| dir.e off           | -0.02 | +0.02 |           |                |
+| frozen twin         | +0.01 | +0.02 |           |                |
 | copy-last null      | -0.00 | -0.00 |           |                |
 
 Prediction doesn't separate the learners; the noise sandwich (cycle -> noise -> same cycle) does. Canonical PC keeps settling-and-learning on the noise, drags its maps, and comes back at quarter strength relearning 5x slower (burnout); dir.e-on loses a fifth and relearns *faster* than it first learned (savings). The backward direction carries all of it: the same substrate with Dir.E frozen predicts nothing, so the prediction lives in the expectation pathway, not the forward features.

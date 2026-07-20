@@ -100,8 +100,6 @@ class DeepAgt(AgtBase):
 
     def step(self, ipt, use_lrn=True):
         use_lrn = use_lrn and not self.frozen
-        # snapshot last step's expectations: update_activations wipes them
-        prev_expect = {loc: c.nr_1.expect.clone() for loc, c in self.cols.items()}
         self.cols[(0, 0)].ipt(ipt[0])
         self.cols[(0, 0)].update_activations()
         for li in range(len(DIMS)):  # forward, input sender raw, hidden triangled
@@ -112,10 +110,12 @@ class DeepAgt(AgtBase):
         for li in range(len(DIMS)):  # dir.e: delta on last step's expectation error
             hi, lo = self.cols[(li + 1, 0)], self.cols[(li, 0)]
             if use_lrn:
-                err = lo.nr_1.actual - prev_expect[lo.loc]
-                pre = self.prev[hi.loc]
-                hi.conns[(lo.loc, Dir.E)] = hi.conns[(lo.loc, Dir.E)] \
-                    + self.lr_e * torch.outer(pre, err) / (1 + pre @ pre)
+                # lrn_delta recomputes the residual internally: pre @ w here
+                # still equals last step's emitted expectation (same sender
+                # activity, weights untouched since emission)
+                hi.conns[(lo.loc, Dir.E)] = fc.lrn_delta(
+                    self.prev[hi.loc], hi.conns[(lo.loc, Dir.E)],
+                    lo.nr_1.actual, ss=self.lr_e)
             if use_lrn:  # dir.a: the substrate's own rule
                 w = lo.conns[(hi.loc, Dir.A)]
                 lo.conns[(hi.loc, Dir.A)] = fc.lrn_oja_gated(

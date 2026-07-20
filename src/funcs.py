@@ -252,6 +252,27 @@ def lrn_oja_gated_batched(x, w, gate, u, ss=1e-2):
 
 
 @torch.compile(disable=disable_compile)
+def lrn_delta(x, w, y, ss=1e-2):
+    """
+    `d_x, (d_x d_y), d_y, () -> (d_x d_y)`
+
+    Delta rule (Widrow-Hoff / LMS), normalized step
+
+    Δw ∝ (y - xw) x / (1 + |x|²)
+
+    The only rule here with a target: y is what the output should have been,
+    not what it was. Gradient descent on |y - xw|² for one layer; the |x|²
+    normalization keeps the step stable on large-norm senders.
+    """
+    d_x, = x.shape
+    d_y, = y.shape
+
+    check_shapes(d_x, tuple(w.shape), d_y, "delta learning rule")
+
+    return w + ss * torch.outer(x, y - x @ w) / (1 + x @ x)
+
+
+@torch.compile(disable=disable_compile)
 def lrn_adaptive(x, w, y, ss=1e-2):
     """
     `Activs d_x, (d_x d_y), Activs d_y, () -> (d_x d_y)`

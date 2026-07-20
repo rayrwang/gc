@@ -36,11 +36,11 @@ Results (seeds 0/1/2, mean trailing score; retention = post-noise cycle
 score immediately on return, re-settle vs first-settle in steps):
 
     subject      cycle    noise    retention  resettle
-    dir.e on     +1.00    +0.01    +0.78       64 vs 81 (faster: savings)
+    dir.e on     +1.00    -0.00    +0.78       64 vs 82 (faster: savings)
     pc           +1.00    -0.00    +0.25      262 vs 57 (5x slower: burnout)
     wake-sleep   +1.00    +0.01    +0.94       50 vs 53
-    dir.e off    -0.01    +0.01    n/a        n/a
-    frozen twin  -0.02    -0.01    n/a        n/a
+    dir.e off    -0.02    +0.02    n/a        n/a
+    frozen twin  +0.01    +0.02    n/a        n/a
     copy-last    -0.00    -0.00    n/a        n/a
 
 The backward direction carries all of it: with Dir.E frozen the same
@@ -103,12 +103,12 @@ class Agt:
     def __init__(self, seed, dire=True, frozen=False, lr_a=0.03, lr_e=0.1):
         g = torch.Generator().manual_seed(seed)
         self.W = 3.0 * torch.randn(DIM, HIDDEN, generator=g) / DIM ** 0.5
-        self.E = 0.01 * torch.randn(DIM, HIDDEN, generator=g)
+        self.E = 0.01 * torch.randn(HIDDEN, DIM, generator=g)  # (pre, target), fc convention
         self.h = None
         self.dire, self.frozen, self.lr_a, self.lr_e = dire, frozen, lr_a, lr_e
 
     def guess(self):
-        return torch.zeros(DIM) if self.h is None else self.E @ self.h
+        return torch.zeros(DIM) if self.h is None else self.h @ self.E
 
     def observe(self, a):
         x = (a - a.mean()) / (a.var() + 1e-5).sqrt()  # online norm
@@ -118,8 +118,7 @@ class Agt:
             gate = fc.softmax_wta(u, 1.0, signed=True)
             self.W = fc.lrn_oja_gated(x, self.W, gate, u, ss=self.lr_a)
             if self.dire and self.h is not None:
-                err = a - self.E @ self.h  # delta: hebb on the residual
-                self.E = self.E + self.lr_e * torch.outer(err, self.h) / (1 + self.h @ self.h)
+                self.E = fc.lrn_delta(self.h, self.E, a, ss=self.lr_e)
         self.h = h
 
 
