@@ -81,4 +81,4 @@ A feedforward agent with Dir.A running forward (SoftHebb) and Dir.E running back
 
 The backward direction carries all of it: the same substrate with Dir.E frozen predicts nothing, so the prediction lives in the expectation pathway, not the forward features. The copy-last null scores zero on the cycle by construction (no consecutive repeats), which is what makes "found the structure" mean something.
 
-(see `examples/15_expectations_one_layer.py`)
+(see `examples/14_expectations_one_layer.py`)
