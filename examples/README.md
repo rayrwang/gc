@@ -27,7 +27,7 @@ BCM is potentiation-dominated (roughly cubic in activity) and self-stabilizes on
 
 (regenerate using `examples/08_bcm_stability.py`)
 
-`ss` is the dominant axis (too large outruns the threshold). `ALPHA` has an *interior* optimum: too low and `θ` freezes and stops braking, too high and the homeostatic loop over-corrects. Both the stable region and the `ALPHA` optimum are **architecture-dependent**: they shift with column count and connectivity, so a stable `(ss, ALPHA)` for one network is not stable for another. This knife-edge is a reason the shipped substrate uses Oja-signed / SoftHebb instead, whose decay term bounds `‖w‖` at any learning rate, so it has no stability surface to tune.
+`ss` is the dominant axis (too large outruns the threshold). `ALPHA` has an *interior* optimum: too low and `θ` freezes and stops braking, too high and the homeostatic loop over-corrects. Both the stable region and the `ALPHA` optimum are **architecture-dependent**: they shift with column count and connectivity, so a stable `(ss, ALPHA)` for one network is not stable for another. This knife-edge is a reason to prefer Oja-signed / SoftHebb for a recurrent substrate: its decay term bounds `‖w‖` at any learning rate, so there is no stability surface to tune.
 
 ### CIFAR
 
@@ -70,6 +70,8 @@ The rule barely matters once WTA is in place. Oja and instar stay within a point
 
 ### Expectations (Dir.E)
 
+#### One Layer
+
 A one-hidden-layer feedforward agent with Dir.A running forward (SoftHebb) and Dir.E running backward: a map from hidden activity at t-1 to input at t, trained by the delta rule (Hebbian in form, error-valued). Guesses are published before each input arrives, then scored by cosine. Structure gets found where it exists (a 4-symbol cycle), nothing gets claimed where it doesn't (fresh noise each step). Canonical temporal predictive coding and a wake-sleep Helmholtz machine run alongside as references.
 
 | mean trailing score | cycle | noise | retention | resettle       |
@@ -83,14 +85,25 @@ A one-hidden-layer feedforward agent with Dir.A running forward (SoftHebb) and D
 
 Prediction doesn't separate the learners; the noise sandwich (cycle -> noise -> same cycle) does. Canonical PC keeps settling-and-learning on the noise, drags its maps, and comes back at quarter strength relearning 5x slower (burnout); dir.e-on loses a fifth and relearns *faster* than it first learned (savings). The backward direction carries all of it: the same substrate with Dir.E frozen predicts nothing, so the prediction lives in the expectation pathway, not the forward features.
 
-The same expectations run through a **deep** stack of real substrate parts (I_VectorCol input, BareCol hidden layers, framework conns: the substrate transports expectations through its Dir.E conns but leaves their learning rule TODO; the delta rule above fills it). Each Dir.E conn predicts the next activity of the layer below, scored per column against a persistence baseline (what copy-last would score on that column's own activity):
+(see `examples/14_expectations_one_layer.py`)
 
-| cycle, per column | predict | persist |     | noise | predict | persist |
-| ----------------- | ------- | ------- | --- | ----- | ------- | ------- |
-| input (0,0)       | +1.00   | -0.00   |     |       | +0.00   | -0.00   |
-| hidden (1,0)      | +1.00   | +0.03   |     |       | -0.01   | +0.01   |
-| top (2,0)         | (none)  | +0.47   |     |       | (none)  | +0.50   |
+#### Deep
+
+The same expectations run through a **deep** stack of real substrate parts (I_VectorCol input, BareCol hidden layers, framework conns), with the delta rule training the backward Dir.E conns. Each one predicts the next activity of the layer below, scored per column against a persistence baseline (what copy-last would score on that column's own activity):
+
+|              | cycle   |         |     | noise   |         |
+| ------------ | ------- | ------- | --- | ------- | ------- |
+|              | predict | persist |     | predict | persist |
+| input (0,0)  | +1.00   | -0.00   |     | +0.00   | -0.00   |
+| hidden (1,0) | +1.00   | +0.03   |     | -0.01   | +0.01   |
+| top (2,0)    | (none)  | +0.47   |     | (none)  | +0.50   |
 
 Depth costs nothing: the delta rule's credit assignment is layer-local, so every predicted column learns its cycle to 1.00. The unpredicted top column shows the catch instead: its activity is ~0.5 self-similar even on iid noise, because triangle-plus-norm dynamics turn white input into activity dominated by its own stationary statistics. iid at the input is not iid at depth, so honesty at depth means predicting no better than persistence, not predicting nothing.
 
-(see `examples/{14_expectations_one_layer, 15_expectations_deep}.py`)
+(see `examples/15_expectations_deep.py`)
+
+#### BareAgt
+
+Recurrent grid of single-layer modules with no internal weights.
+
+TODO
