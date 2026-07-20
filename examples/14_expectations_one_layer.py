@@ -1,6 +1,11 @@
 """
-Expectations (Dir.E) on a feedforward substrate: a one-step-ahead prediction
-exam with its own controls.
+Expectations (Dir.E) on a one-hidden-layer feedforward substrate: a
+one-step-ahead prediction exam with its own controls. One layer on purpose:
+the guess is read from the first hidden layer's activity, and stacking more
+layers leaves that path untouched (tested: depths 1-3 score identically), so
+for this exam extra depth is decoration. Depth starts mattering when
+prediction becomes per-layer, which is the recurrent substrate's shape, not
+this one.
 
 The agent runs Dir.A forward (SoftHebb: signed soft-WTA gated Oja, Triangle
 activation, online norm) and Dir.E backward: a map from hidden activity at
@@ -92,7 +97,8 @@ def noise(steps, seed):
 
 
 class Agt:
-    """forward W (dir.a, softhebb) + backward E (dir.e, delta); both local."""
+    """one hidden layer: forward W (dir.a, softhebb) + backward E (dir.e,
+    delta); both local."""
 
     def __init__(self, seed, dire=True, frozen=False, lr_a=0.03, lr_e=0.1):
         g = torch.Generator().manual_seed(seed)

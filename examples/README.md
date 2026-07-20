@@ -70,7 +70,7 @@ The rule barely matters once WTA is in place. Oja and instar stay within a point
 
 ### Expectations (Dir.E)
 
-A feedforward agent with Dir.A running forward (SoftHebb) and Dir.E running backward: a map from hidden activity at t-1 to input at t, trained by the delta rule (Hebbian in form, error-valued). Guesses are published before each input arrives, then scored by cosine. Structure gets found where it exists (a 4-symbol cycle), nothing gets claimed where it doesn't (fresh noise each step). Canonical temporal predictive coding and a wake-sleep Helmholtz machine run alongside as references.
+A one-hidden-layer feedforward agent with Dir.A running forward (SoftHebb) and Dir.E running backward: a map from hidden activity at t-1 to input at t, trained by the delta rule (Hebbian in form, error-valued). Guesses are published before each input arrives, then scored by cosine. Structure gets found where it exists (a 4-symbol cycle), nothing gets claimed where it doesn't (fresh noise each step). Canonical temporal predictive coding and a wake-sleep Helmholtz machine run alongside as references.
 
 | mean trailing score | cycle | noise | retention | resettle       |
 | ------------------- | ----- | ----- | --------- | -------------- |
