@@ -83,4 +83,14 @@ A one-hidden-layer feedforward agent with Dir.A running forward (SoftHebb) and D
 
 Prediction doesn't separate the learners; the noise sandwich (cycle -> noise -> same cycle) does. Canonical PC keeps settling-and-learning on the noise, drags its maps, and comes back at quarter strength relearning 5x slower (burnout); dir.e-on loses a fifth and relearns *faster* than it first learned (savings). The backward direction carries all of it: the same substrate with Dir.E frozen predicts nothing, so the prediction lives in the expectation pathway, not the forward features.
 
-(see `examples/14_expectations_one_layer.py`)
+The same expectations run through a **deep** stack of real substrate parts (I_VectorCol input, BareCol hidden layers, framework conns: the substrate transports expectations through its Dir.E conns but leaves their learning rule TODO; the delta rule above fills it). Each Dir.E conn predicts the next activity of the layer below, scored per column against a persistence baseline (what copy-last would score on that column's own activity):
+
+| cycle, per column | predict | persist |     | noise | predict | persist |
+| ----------------- | ------- | ------- | --- | ----- | ------- | ------- |
+| input (0,0)       | +1.00   | -0.00   |     |       | +0.00   | -0.00   |
+| hidden (1,0)      | +1.00   | +0.03   |     |       | -0.01   | +0.01   |
+| top (2,0)         | (none)  | +0.47   |     |       | (none)  | +0.50   |
+
+Depth costs nothing: the delta rule's credit assignment is layer-local, so every predicted column learns its cycle to 1.00. The unpredicted top column shows the catch instead: its activity is ~0.5 self-similar even on iid noise, because triangle-plus-norm dynamics turn white input into activity dominated by its own stationary statistics. iid at the input is not iid at depth, so honesty at depth means predicting no better than persistence, not predicting nothing.
+
+(see `examples/{14_expectations_one_layer, 15_expectations_deep}.py`)
