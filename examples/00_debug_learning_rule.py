@@ -55,7 +55,7 @@ class DebugLearningRuleAgt(AgtBase):
     def __init__(self, d: int, path):
         self.d = d
         self.path = path
-        self.age = 0
+        self.age: int = 0
 
         inits = (
             torch.randn(d),

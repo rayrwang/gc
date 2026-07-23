@@ -44,7 +44,7 @@ CASES = [
 ]
 
 
-@pytest.mark.parametrize("script, marker, timeout", CASES)
+@pytest.mark.parametrize(("script", "marker", "timeout"), CASES)
 def test_example_runs_clean(script, marker, timeout):
     result = subprocess.run(
         [sys.executable, os.path.join(EXAMPLES, script)],
@@ -52,6 +52,7 @@ def test_example_runs_clean(script, marker, timeout):
     )
     assert result.returncode == 0, \
         f"{script} exited {result.returncode}\nstderr tail:\n{result.stderr[-2000:]}"
-    assert marker in result.stdout, \
-        f"{script} finished but its expected output marker is missing\n" \
+    assert marker in result.stdout, (
+        f"{script} finished but its expected output marker is missing\n"
         f"stdout tail:\n{result.stdout[-2000:]}"
+    )

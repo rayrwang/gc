@@ -39,8 +39,15 @@ sys.path.insert(0, (project_root_path := os.path.dirname(os.path.dirname(__file_
 import torch
 
 import src.funcs as fc
-from src.agents import (AgtBase, BareCol, BareColCfg, Dir, I_VectorCol,
-                        I_VectorColCfg, conn)
+from src.agents import (
+    AgtBase,
+    BareCol,
+    BareColCfg,
+    Dir,
+    I_VectorCol,
+    I_VectorColCfg,
+    conn,
+)
 
 DIM = 32
 DIMS = (64, 64)        # hidden widths
@@ -78,7 +85,7 @@ class DeepAgt(AgtBase):
 
     def __init__(self, path, seed, lr_e=0.1, frozen=False):
         super().__init__(None, path)
-        self.age = 0
+        self.age: int = 0
         self.lr_e, self.frozen = lr_e, frozen
         torch.manual_seed(seed)  # conn()/activs() draw from the global rng
         col = I_VectorCol((0, 0), I_VectorColCfg(DIM))
@@ -91,7 +98,7 @@ class DeepAgt(AgtBase):
             lo.conns[(hi.loc, Dir.A)] = conn(lo, hi, Dir.A, 3.0)
             hi.conns[(lo.loc, Dir.E)] = conn(hi, lo, Dir.E, 0.01)
         self.predicted = {loc for c in self.cols.values()
-                          for (loc, d) in c.conns if d == Dir.E}
+                          for (loc, d) in (c.conns or {}) if d == Dir.E}
         self.prev = {loc: torch.zeros(c.d) for loc, c in self.cols.items()}
         self.create_directory()
 
@@ -149,7 +156,8 @@ def run(agt, stream):
                 persist.setdefault(loc, []).append(float(p @ x / d) if d > 0 else 0.0)
         g_prev = {loc: agt.cols[loc].nr_1.expect.clone() for loc in agt.predicted}
         a_prev = acts
-    t = lambda xs: sum(xs[-WINDOW:]) / WINDOW
+    def t(xs):
+        return sum(xs[-WINDOW:]) / WINDOW
     return {loc: t(xs) for loc, xs in pred.items()}, {loc: t(xs) for loc, xs in persist.items()}
 
 
@@ -167,7 +175,10 @@ if __name__ == "__main__":
                     pr.setdefault(loc, []).append(p.get(loc))
                     pe.setdefault(loc, []).append(q[loc])
             for loc in sorted(pe):
-                m = lambda xs: sum(x for x in xs if x is not None) / len(xs) if any(x is not None for x in xs) else None
+                def m(xs):
+                    if not any(x is not None for x in xs):
+                        return None
+                    return sum(x for x in xs if x is not None) / len(xs)
                 rows.setdefault(loc, {})[name] = (m(pr[loc]), m(pe[loc]))
         for loc in sorted(rows):
             cells = []
