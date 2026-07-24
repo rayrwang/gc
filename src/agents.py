@@ -66,7 +66,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, fields
 from enum import Enum
-from typing import Literal
+from typing import ClassVar, Literal
 
 import dacite
 import numpy as np
@@ -185,7 +185,7 @@ class ColBase(ABC):
         #                               ^ source or target
         #                                          ^ current or new
         #                 v
-    conn_layer_dict: dict[str, tuple[str, Literal[0, 1]]]
+    conn_layer_dict: ClassVar[dict[str, tuple[str, Literal[0, 1]]]]
         # to                         ^ name of activation layer and 
         #                                 ^ kind (actual or expectations)
 
@@ -355,7 +355,7 @@ class BareCol(ColBase):  # 1 layer, no internal weights
             self.nr_1, self.nr_1_ = activs(cfg.d), activs(cfg.d)
             self.weights_loaded = True
 
-    conn_layer_dict = {
+    conn_layer_dict: ClassVar[dict[str, tuple[str, Literal[0, 1]]]] = {
         "a_pre": ("nr_1", 0),
         "a_pre_": ("nr_1_", 0),
         "a_post": ("nr_1", 0),
@@ -474,7 +474,7 @@ class Col(ColBase):  # Column (module) within the agent (whole network)
             for f in fields(new):
                 setattr(new, f.name, getattr(after_inhibit, f.name))
 
-    conn_layer_dict = {
+    conn_layer_dict: ClassVar[dict[str, tuple[str, Literal[0, 1]]]] = {
         "a_pre": ("nr_4", 0),
         "a_pre_": ("nr_4_", 0),
         "a_post": ("nr_1", 0),

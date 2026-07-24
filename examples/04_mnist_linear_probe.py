@@ -100,7 +100,7 @@ if __name__ == "__main__":
             N_COLS = args.size
         else:
             N_COLS = 20
-        AGT_PATH = f"{project_root_path}/saves/mnist_repr_agt-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}"
+        AGT_PATH = f"{project_root_path}/saves/mnist_repr_agt-{datetime.datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")}"
         agt = MNISTAgt(MNISTCfg(ispec, ospec), AGT_PATH)
     assert isinstance(agt, MNISTAgt)  # load() returns base AgtBase; narrow for use_lrn
     agt.debug_init()
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     # No learning control: Above but with static weights
     no_lrn_agt = MNISTAgt(MNISTCfg(ispec, ospec),
-        f"{project_root_path}/saves/mnist_repr_no_lrn_agt-{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}")
+        f"{project_root_path}/saves/mnist_repr_no_lrn_agt-{datetime.datetime.now().astimezone().strftime("%Y%m%d_%H%M%S")}")
     no_lrn_classifier = nn.Linear(get_representations(no_lrn_agt).shape[0], 10)
     no_lrn_optim = torch.optim.SGD(no_lrn_classifier.parameters(), lr=1e-2)
 
