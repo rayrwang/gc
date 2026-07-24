@@ -5,7 +5,7 @@ import pytest
 import torch
 
 # isort: off
-from src.iotypes import I_Vector, O_Vector
+from src.iotypes import I_Base, I_Vector, O_Base, O_Vector
 from src.agents import Cfg, Agt, BareCfg, BareAgt, MNISTCfg, MNISTAgt, CIFARAgt, Dir
 
 N_COLS = 4
@@ -75,19 +75,22 @@ def test_load_preserves_io_col_order(tmp_path):
     """step() matches I_cols/O_cols to ipt/out by position, so load must restore
     them in ispec/ospec order and not in whatever order the filesystem lists.
     Distinct dims per channel, so a permutation is visible rather than silent."""
-    ispec = [I_Vector(8), I_Vector(16), I_Vector(32)]
-    ospec = [O_Vector(4), O_Vector(9)]
+    idims, odims = [8, 16, 32], [4, 9]
+    ispec: list[I_Base] = [I_Vector(d) for d in idims]
+    ospec: list[O_Base] = [O_Vector(d) for d in odims]
     agt1 = Agt(Cfg(N_COLS, ispec, ospec), tmp_path)
     agt1.save()
     agt2 = Agt.load(tmp_path)
 
     assert [c.loc for c in agt2.I_cols] == [c.loc for c in agt1.I_cols]
     assert [c.loc for c in agt2.O_cols] == [c.loc for c in agt1.O_cols]
-    assert [s.d for s in ispec] == [c.cfg.d for c in agt2.I_cols]
-    assert [s.d for s in ospec] == [c.cfg.d for c in agt2.O_cols]
+    # count[0] is the col's activation total, which for these single-layer
+    # io cols is its width, so it reads the loaded tensors not the saved cfg
+    assert [c.count[0] for c in agt2.I_cols] == idims
+    assert [c.count[0] for c in agt2.O_cols] == odims
 
     # The permutation is otherwise silent: step() only checks arity, not shapes.
-    agt2.step([torch.randn(s.d) for s in ispec])
+    agt2.step([torch.randn(d) for d in idims])
 
 
 # CIFARAgt is standalone (deep oja-signed conv, no Cfg / save-load), so it gets its own tests
