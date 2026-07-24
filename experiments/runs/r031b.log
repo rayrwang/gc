@@ -1,0 +1,21 @@
+  r031 10/128
+  r031 20/128
+  r031 30/128
+  r031 40/128
+  r031 50/128
+  r031 60/128
+  r031 70/128
+  r031 80/128
+  r031 90/128
+  r031 100/128
+  r031 110/128
+  r031 120/128
+  r031 128/128
+
+VERDICTS: {'drift': True, 'boundedness_controls': True, 'fan3_gap_bar': True, 'fan3_sign_bar': True, 'dire_off_must_fail': False}
+fan3 diff mean +0.0142 (gap +0.0679 vs bar 0.0350); paired signs 23/32 (min 20); unfloored mean +0.0131
+dire_off: gap +0.0461, paired 20/32 -> CLEARED = incident
+bite: exclusion 0.015, delta 0.0012 (caps 0.2, 0.02)
+recorded (non-gating): visibility 1.0% (76/7840 col-switch pairs, 410 false), responds mean 0.0373, T_switch median 6822
+
+EVENT: GATE FAILURE(S)

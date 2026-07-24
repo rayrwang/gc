@@ -1,0 +1,42 @@
+R-011 COMMISSIONING #4 ANALYSIS
+==================================================
+
+--- sgd @ step 8000 ---
+  rdm_corr-geom      D_ord=0.9603 D_seed=0.4178 S=  2.30  MC-p=0.00010 (0/10000)
+  rdm_euclid-geom    D_ord=10.0857 D_seed=4.3942 S=  2.30  MC-p=0.00010 (0/10000)
+  shortlag-ridge     D_ord=0.1662 D_seed=0.1662 S=  1.00
+  shortlag-knn       D_ord=0.1737 D_seed=0.1737 S=  1.00
+  shortlag-logistic  D_ord=0.1593 D_seed=0.1593 S=  1.00
+  shortlag_raw-ridge D_ord=0.1751 D_seed=0.1751 S=  1.00
+  shortlag_raw-knn   D_ord=0.1973 D_seed=0.1973 S=  1.00
+  shortlag_raw-logistic D_ord=0.1951 D_seed=0.1951 S=  1.00
+  drift-ridge        D_ord=0.1313 D_seed=0.1313 S=  1.00
+  drift-knn          D_ord=0.1737 D_seed=0.1737 S=  1.00
+  drift-logistic     D_ord=0.1453 D_seed=0.1453 S=  1.00
+  content-ridge      D_ord=0.2911 D_seed=0.3131 S=  0.93
+  content-knn        D_ord=0.2647 D_seed=0.2814 S=  0.94
+  content-logistic   D_ord=0.2277 D_seed=0.2477 S=  0.92
+
+--- randproj @ step 8000 ---
+  rdm_corr-geom      D_ord=0.0000 D_seed=0.3690 S=  0.00
+  rdm_euclid-geom    D_ord=0.0000 D_seed=0.9235 S=  0.00
+  shortlag-ridge     D_ord=0.0000 D_seed=0.5825 S=  0.00
+  shortlag-knn       D_ord=0.0000 D_seed=0.4660 S=  0.00
+  shortlag-logistic  D_ord=0.0000 D_seed=0.5363 S=  0.00
+  shortlag_raw-ridge D_ord=0.0000 D_seed=0.6266 S=  0.00
+  shortlag_raw-knn   D_ord=0.0000 D_seed=0.4921 S=  0.00
+  shortlag_raw-logistic D_ord=0.0000 D_seed=0.5731 S=  0.00
+  drift-ridge        D_ord=0.0000 D_seed=0.6266 S=  0.00
+  drift-knn          D_ord=0.0000 D_seed=0.4921 S=  0.00
+  drift-logistic     D_ord=0.0000 D_seed=0.5731 S=  0.00
+  content-ridge      D_ord=0.0000 D_seed=0.3133 S=  0.00
+  content-knn        D_ord=0.0000 D_seed=0.2470 S=  0.00
+  content-logistic   D_ord=0.0000 D_seed=0.2865 S=  0.00
+
+GATE (a) SGD rdm_corr AND rdm_euclid at p<=0.001 (2 of 2): 2/2 -> OK
+GATE (b) RandProj D_order=0, all constructs x probes: 14/12 -> OK
+
+COMMISSIONING #4 VERDICT: PASS
+
+Evidence: 64 stamped runs, r_20260708_141536_5fd3771_s0 .. r_20260708_153105_5fd3771_s7
+Cost cards unchanged from R-006 (same arms); tuning-eval count: 0, 0.

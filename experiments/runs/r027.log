@@ -1,0 +1,41 @@
+  r027 1/32
+  r027 2/32
+  r027 3/32
+  r027 4/32
+  r027 5/32
+  r027 6/32
+  r027 7/32
+  r027 8/32
+  r027 9/32
+  r027 10/32
+  r027 11/32
+  r027 12/32
+  r027 13/32
+  r027 14/32
+  r027 15/32
+  r027 16/32
+  r027 17/32
+  r027 18/32
+  r027 19/32
+  r027 20/32
+  r027 21/32
+  r027 22/32
+  r027 23/32
+  r027 24/32
+  r027 25/32
+  r027 26/32
+  r027 27/32
+  r027 28/32
+  r027 29/32
+  r027 30/32
+  r027 31/32
+  r027 32/32
+
+VERDICTS: {'drift': True, 'boundedness_controls': True, 'faithful_diff_bar': False, 'faithful_responds_bar': True, 'dire_off_must_fail': True, 'floor_delta_ok': True}
+faithful diff mean -0.0191 (gap +0.0223 vs bar 0.1245), signs 1/8 (min 7); responds 0.0482 (bar 0.0062)
+dire_off diff mean -0.0216 (must stay under bar): fails as registered
+stock (non-gating reading) diff mean -0.0547, signs 1/8, nan arms: none
+twin floored-vs-frozen delta 0.00334 (sigma/2 = 0.02075)
+T_switch export: median 500 (per-instance [500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 516, 591, 659, 709, 736, 769, 1007, 1126, 1192, 1263, 1269, 1282, 1396], plateau floor 0.0875)
+
+EVENT: GATE FAILURE(S): incident routing

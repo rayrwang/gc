@@ -1,0 +1,45 @@
+# The battery is tracked; its bulk run data is not.
+#
+# Rationale: everything that constitutes the RECORD (charter, registry, the
+# experiment scripts, frozen constants, verdicts, per-run logs, and the D3
+# append-only ledger) is small and belongs in history. The raw traces are
+# ~2.3GB and are reachable by content hash from the ledger, so excluding them
+# loses addressability of nothing: the manifest chain still proves exactly
+# which bytes produced each verdict, and those objects can be exported as a
+# release asset if a specific result needs to ship with its evidence.
+#
+# Sizes at time of writing: tracked ~2.3MB, excluded ~2.3GB.
+
+__pycache__/
+
+# The root .gitignore has a bare "runs/" for the tensorboard output at repo
+# top level, and that pattern also matches experiments/runs/. Re-include it
+# here, then subtract the bulk below.
+!runs/
+
+# Content-addressed trace store: keep the ledger, drop the blobs.
+# ledger.jsonl (1.3MB) is the append-only event record and carries the
+# manifest hash for every run. objects/ is 1.6GB across 2604 files.
+# Resolving one registered run's manifest chain costs 24MB (R-022) to
+# 209MB (R-024), which is why they stay out of history.
+runs/d3_store/objects/
+
+# Null-arm exam traces: two 32MB jsonl files, regenerable from dire_exam.py.
+runs/dire_exam/
+
+# 4.2MB sweep log. Every other log in runs/ is under 22KB and is tracked.
+runs/sweep10.log
+
+# Per-run harness logs: 590MB across 357 runs, median 1.8MB each.
+# The code/ snapshot beside each one is kept (240KB unique across all 357
+# after dedup) so the provenance of every run survives without its payload.
+runs/r_*/log.jsonl
+
+# Exception: the runs cited as "source run" by a registry verdict keep their
+# payload, so every issued verdict is checkable from the repo alone. 1.1MB.
+!runs/r_20260708_013028_5fd3771_s0/log.jsonl
+!runs/r_20260708_014411_5fd3771_s7/log.jsonl
+!runs/r_20260709_161932_5fd3771_s0/log.jsonl
+!runs/r_20260709_162210_5fd3771_s7/log.jsonl
+!runs/r_20260709_162553_5fd3771_s0/log.jsonl
+!runs/r_20260709_162853_5fd3771_s7/log.jsonl

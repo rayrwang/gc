@@ -1,0 +1,14 @@
+  r029 8/64
+  r029 16/64
+  r029 24/64
+  r029 32/64
+  r029 40/64
+  r029 48/64
+  r029 56/64
+  r029 64/64
+running bite audit on free-play fan3 runs...
+
+E-checks: {'E1_no_nan': True, 'E2_diff_sigma': True, 'E3_floor_positive': True, 'E4_bite_in_caps': True, 'E5_drift_bit_identical': True}
+twin diff -0.0537 sigma 0.0117 -> gap bar 0.0350; sign bar 20/32
+floor 1.0000 (zero frac 0.006); bite: excl 0.035, delta 0.0114
+constants sha 6333ac07e5b0  written: True

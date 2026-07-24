@@ -1,0 +1,46 @@
+{
+ "bars": {
+  "gc_ff/kp0": 0.4154,
+  "gc_ff/kp1": 0.1401,
+  "pc/kp0": 0.6612,
+  "pc/kp1": 0.1845,
+  "wake_sleep/kp0": 0.5958,
+  "wake_sleep/kp1": 0.0776
+ },
+ "kz_bands": {
+  "gc_ff": [
+   -0.0545,
+   0.0539
+  ],
+  "pc": [
+   -0.0768,
+   0.077
+  ],
+  "wake_sleep": [
+   -0.0604,
+   0.0627
+  ]
+ },
+ "plateau_floors": {
+  "gc_ff/constant": 0.4154,
+  "gc_ff/cycle": 0.2117,
+  "gc_ff/noise": 0.0545,
+  "pc/constant": 0.6612,
+  "pc/cycle": 0.2723,
+  "pc/noise": 0.077,
+  "wake_sleep/constant": 0.5958,
+  "wake_sleep/cycle": 0.1223,
+  "wake_sleep/noise": 0.0627
+ },
+ "seeds": [
+  101,
+  211,
+  307,
+  401,
+  503,
+  601,
+  701,
+  811
+ ],
+ "source_run": "r_20260720_152001_692f9c9_s101"
+}

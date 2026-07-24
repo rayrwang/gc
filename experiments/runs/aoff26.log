@@ -1,0 +1,12 @@
+aoff26: 3 jobs, 0 in ledger, 3 to run
+  aoff26 1/3
+  aoff26 2/3
+  aoff26 3/3
+
+the 2x2 (fan3 topology, seeds 50-52, matched):
+  A on,  E on   (learner):  diff -0.1201   [comp25]
+  A on,  E off  (dire_off): diff -0.0137   [comp25]
+  A off, E off  (twin):     diff -0.0476   [comp25]
+  A off, E on   (a_off):    diff -0.0044   [this probe]
+
+a_off detail: per-seed diffs -0.0028 -0.0060 -0.0043; kp1 margin -0.0139, kz margin -0.0095; final majority-sign 57.0% (twin ~58%, collapsed learner ~94%)

@@ -1,0 +1,28 @@
+resp13: 20 jobs, 0 in ledger, 20 to run
+  resp13 1/20
+  resp13 2/20
+  resp13 3/20
+  resp13 4/20
+  resp13 5/20
+  resp13 6/20
+  resp13 7/20
+  resp13 8/20
+  resp13 9/20
+  resp13 10/20
+  resp13 11/20
+  resp13 12/20
+  resp13 13/20
+  resp13 14/20
+  resp13 15/20
+  resp13 16/20
+  resp13 17/20
+  resp13 18/20
+  resp13 19/20
+  resp13 20/20
+
+responds trial (proposed row-8 statistic, measured):
+faithful   mean 0.0430  sd 0.0099  per-seed: 0.0552 0.0289 0.0431 0.0411 0.0556 0.0460 0.0413 0.0296 0.0357 0.0540
+frozen     mean 0.0023  sd 0.0020  per-seed: 0.0013 0.0015 0.0013 0.0014 0.0012 0.0059 0.0015 0.0012 0.0012 0.0063
+
+proposed bar preview: faithful mean 0.0430 vs twin + 3 sigma = 0.0083  -> clears
+per-seed pairing note: identical graphs per seed, so the paired differences are the sharper reading if the pooled bar is marginal.

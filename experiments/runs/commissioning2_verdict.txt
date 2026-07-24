@@ -1,0 +1,38 @@
+R-007 COMMISSIONING #2 ANALYSIS
+==================================================
+
+--- sgd @ step 8000 ---
+  drift-ridge        D_ord=2.6506 D_seed=2.7337 S=  0.97  MC-p=0.17408 (1740/10000)
+  drift-knn          D_ord=2.1827 D_seed=2.1758 S=  1.00  MC-p=0.00260 (25/10000)
+  drift-logistic     D_ord=2.7062 D_seed=2.7101 S=  1.00  MC-p=0.52235 (5223/10000)
+  content-ridge      D_ord=0.2261 D_seed=0.2538 S=  0.89
+  content-knn        D_ord=0.2571 D_seed=0.2851 S=  0.90
+  content-logistic   D_ord=0.2535 D_seed=0.2863 S=  0.89
+
+--- randproj @ step 8000 ---
+  drift-ridge        D_ord=0.0000 D_seed=0.6463 S=  0.00
+  drift-knn          D_ord=0.0000 D_seed=0.6336 S=  0.00
+  drift-logistic     D_ord=0.0000 D_seed=0.6327 S=  0.00
+  content-ridge      D_ord=0.0000 D_seed=0.3231 S=  0.00
+  content-knn        D_ord=0.0000 D_seed=0.3168 S=  0.00
+  content-logistic   D_ord=0.0000 D_seed=0.3164 S=  0.00
+
+GATE (a) SGD drift-S p<=0.001 on >=2/3 probes: 0/3 -> FAIL
+GATE (b) RandProj D_order=0, both constructs x 3 probes: 6/6 -> OK
+
+COMMISSIONING #2 VERDICT: FAIL
+
+SECONDARY: SGD drift-S(t) (non-gating; stale probes exist from 2000):
+  step       ridge       knn  logistic
+   2000          -         -         -
+   3000          -         -         -
+   4000          -         -         -
+   5000          -         -         -
+   6000          -         -         -
+   7000       0.97      0.99      0.99
+   8000       0.97      1.00      1.00   <- GATE
+   9000       0.97      1.00      1.00   (washout)
+  10000       0.97      1.00      1.00   (washout)
+
+Evidence: 64 stamped runs, r_20260708_120700_5fd3771_s0 .. r_20260708_124906_5fd3771_s7
+Cost cards unchanged from R-006 (same arms); tuning-eval count: 0, 0.

@@ -1,0 +1,22 @@
+  r025 1/16
+  r025 2/16
+  r025 3/16
+  r025 4/16
+  r025 5/16
+  r025 6/16
+  r025 7/16
+  r025 8/16
+  r025 9/16
+  r025 10/16
+  r025 11/16
+  r025 12/16
+  r025 13/16
+  r025 14/16
+  r025 15/16
+  r025 16/16
+
+E-checks: {'E1_no_nan': True, 'E2_diff_sigma': True, 'E3_floor_positive': True, 'E4_resp_sigma': True, 'E5_drift_bit_identical': True}
+twin diff -0.0415 sigma 0.0415 -> bar gap 0.1245
+activity floor (p1.0) 1.000000  responds twin 0.0021 sigma 0.0014 -> bar 0.0062
+dire_off diffs: [-0.1792, -0.1059, 0.1119, -0.1367, -0.1093, 0.303, -0.086, 0.0]
+constants sha 7d1fc274c7a6  written: True

@@ -1,0 +1,32 @@
+rep11: 120 jobs, 0 in ledger, 120 to run
+  rep11 10/120
+  rep11 20/120
+  rep11 30/120
+  rep11 40/120
+  rep11 50/120
+  rep11 60/120
+  rep11 70/120
+  rep11 80/120
+  rep11 90/120
+  rep11 100/120
+  rep11 110/120
+  rep11 120/120
+
+per-arm reading (sign counts over seeds; reading, not ranking):
+arm            steps  pos  neg  nan  mean kp1   mean kz mean diff  per-seed diffs
+instar_lr003    3000    3    3    4    -0.104      +nan    +0.004  nan +0.012 -0.018 +0.038 -0.015 -0.007 nan nan +0.014 nan
+instar_lr003    6000    5    0    5      +nan      +nan    +0.054  nan +0.057 +0.006 +0.055 +0.073 nan nan nan +0.078 nan
+instar_lr01     3000    4    2    4    -0.077      +nan    +0.007  nan +0.010 -0.006 +0.025 +0.009 -0.000 nan nan +0.006 nan
+instar_lr01     6000    5    0    5      +nan      +nan    +0.049  nan +0.045 +0.023 +0.066 +0.051 nan nan nan +0.063 nan
+instar_lr03     3000    5    1    4    -0.068      +nan    +0.019  nan +0.042 -0.001 +0.049 +0.013 +0.008 nan nan +0.004 nan
+instar_lr03     6000    5    0    5      +nan      +nan    +0.081  nan +0.125 +0.064 +0.100 +0.044 nan nan nan +0.073 nan
+dire_off        3000    4    2    4    -0.894      +nan    +0.008  nan -0.006 +0.021 +0.027 +0.016 -0.013 nan nan +0.003 nan
+dire_off        6000    4    1    5      +nan      +nan    +0.003  nan -0.032 +0.013 +0.018 +0.010 nan nan nan +0.007 nan
+frozen          3000    1    9    0    -0.767    -0.711    -0.056  -0.033 -0.030 -0.031 -0.123 -0.127 -0.045 -0.048 +0.001 -0.118 -0.004
+frozen          6000    1    9    0    -0.765    -0.712    -0.053  -0.024 -0.035 -0.034 -0.121 -0.118 -0.041 -0.047 +0.006 -0.113 -0.005
+faithful        3000    1    9    0    -0.002    +0.018    -0.020  -0.032 -0.024 -0.025 -0.013 -0.001 +0.001 -0.059 -0.025 -0.018 -0.003
+faithful        6000    9    1    0    +0.010    -0.046    +0.056  +0.109 +0.041 +0.110 +0.064 +0.024 +0.077 -0.046 +0.132 +0.019 +0.034
+
+known answers: dire_off and frozen must sit at ~zero differential;
+faithful is the recorded zero-differential recipe. any of them going
+positive with the family = machinery artifact, not world imprint.

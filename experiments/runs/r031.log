@@ -1,0 +1,37 @@
+  r031 10/128
+  r031 20/128
+  r031 30/128
+  r031 40/128
+  r031 50/128
+  r031 60/128
+  r031 70/128
+  r031 80/128
+  r031 90/128
+concurrent.futures.process._RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/concurrent/futures/process.py", line 254, in _process_worker
+    r = call_item.fn(*call_item.args, **call_item.kwargs)
+  File "/home/raymond/gc/experiments/23_registered_fan3_subjects.py", line 188, in run_ts_seed
+    settle = de.settled_at(xs, window=WINDOW, dwell=WINDOW,
+             ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                           plateau_floor=0.0, **SETTLE) if not SMOKE else None
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: experiments.dire_exam.settled_at() got multiple values for keyword argument 'dwell'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/raymond/gc/experiments/23_registered_fan3_subjects.py", line 305, in <module>
+    main()
+    ~~~~^^
+  File "/home/raymond/gc/experiments/23_registered_fan3_subjects.py", line 212, in main
+    (results if futs[fut] == "m" else ts_results).append(fut.result())
+                                                         ~~~~~~~~~~^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 443, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 395, in __get_result
+    raise self._exception
+TypeError: experiments.dire_exam.settled_at() got multiple values for keyword argument 'dwell'

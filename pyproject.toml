@@ -31,6 +31,15 @@ packages = ["src", "simple"]
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
+# experiments/ is the research battery, now tracked in git as a record rather
+# than as library code. It is excluded from both checkers on purpose. The
+# scripts use a sys.path bootstrap that trips E402 throughout, and
+# experiments/runs/ holds 357 frozen code snapshots that registry entries cite
+# by hash: charter section 1 says those are never altered, so pointing a linter
+# with --fix at them is a hazard, not an improvement.
+[tool.ruff]
+extend-exclude = ["experiments"]
+
 [tool.ruff.lint]
 extend-select = [
     "I",    # import sorting
@@ -54,6 +63,11 @@ ignore = [
 [tool.ty.environment]
 python = "venv"
 root = ["."]
+
+# See the note above ruff's extend-exclude: experiments/ is a tracked record,
+# not checked source.
+[tool.ty.src]
+exclude = ["experiments"]
 
 # Lazy/None-init skeletons (cols before weights load, deliberately freed
 # weights), setattr-driven attributes, and subclass step() overrides are

@@ -1,0 +1,32 @@
+R-013 A1 COMMISSIONING ANALYSIS
+==================================================
+
+--- gate (a): SGD / native, s* seed-medians ---
+  forward  +0.50 +0.20 +0.00 +0.00 +0.20 +0.33 +0.33 +0.20  -> FAIL
+  reverse  +0.33 +0.33 +0.33 +0.20 +0.33 +0.33 +0.50 +0.00  -> FAIL
+  perm3    +0.33 +0.20 +0.33 +0.20 +0.33 +0.33 +0.50 +0.20  -> 8/8 OK (exact p=1/256)
+  perm4    +0.33 +0.33 +0.33 +0.20 +0.00 +0.33 +0.50 +0.20  -> FAIL
+
+--- gate (b1): randproj (t1,t2) order-invariance: OK (exact) ---
+--- gate (b2): randproj/knn seed-medians ['+0.00', '+0.00', '-0.33', '-0.20', '+0.00', '+0.00', '+0.00', '+0.00'] pos=0 neg=2 mean=-0.067 -> OK ---
+--- gate (c): rerun triple row-identical: OK (690 rows) ---
+
+--- recorded (non-gating) ---
+  sgd/native: cells ok=160 excluded=0 censored=0 ceiling(t_re=0)=0
+    s* mean=+0.261 median=+0.333 | classic savings mean=+0.352 median=+0.500 | onset-retention mean=0.000
+  sgd/knn: cells ok=160 excluded=0 censored=0 ceiling(t_re=0)=0
+    s* mean=+0.159 median=+0.100 | classic savings mean=+0.188 median=+0.167 | onset-retention mean=0.000
+  randproj/knn: cells ok=160 excluded=0 censored=0 ceiling(t_re=0)=0
+    s* mean=-0.066 median=+0.000 | classic savings mean=-0.312 median=+0.000 | onset-retention mean=0.000
+  sgd: rdm_corr switch-displacement mean=0.1970 (n=288)
+  randproj: rdm_corr switch-displacement mean=-0.0000 (n=288)
+
+GATE (a) SGD known-positive:  FAIL
+GATE (b1) pipeline invariance: OK
+GATE (b2) known-zero:          OK
+GATE (c) determinism:          OK
+
+R-013 VERDICT: FAIL
+
+Evidence: 64 stamped runs, r_20260709_161932_5fd3771_s0 .. r_20260709_162210_5fd3771_s7 (+1 determinism rerun)
+Analysis rerun: identical (OK).

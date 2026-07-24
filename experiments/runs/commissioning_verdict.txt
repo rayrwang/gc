@@ -1,0 +1,34 @@
+R-004/R-005 COMMISSIONING ANALYSIS
+==================================================
+
+--- sgd @ step 8000 (end of training) ---
+  ridge     D_order=0.2573 D_seed=0.2302 S=  1.12  perm-p=0.0078 (2/256)
+  knn       D_order=0.4000 D_seed=0.2160 S=  1.85  perm-p=0.0078 (2/256)
+  logistic  D_order=0.2130 D_seed=0.2262 S=  0.94  perm-p=0.4492 (115/256)
+
+--- randproj @ step 8000 (end of training) ---
+  ridge     D_order=0.0000 D_seed=0.3231 S=  0.00  perm-p=1.0000 (256/256)
+  knn       D_order=0.0000 D_seed=0.3168 S=  0.00  perm-p=1.0000 (256/256)
+  logistic  D_order=0.0000 D_seed=0.3164 S=  0.00  perm-p=1.0000 (256/256)
+
+GATE (a) sensitivity  (SGD p=1/256 on >=2/3 probes): 0/3 -> FAIL
+GATE (b) false-positive (RandProj D_order=0 on 3/3):  3/3 -> OK
+
+COMMISSIONING VERDICT: FAIL
+
+SECONDARY (non-gating): S_p(t) across the run (SGD):
+  step       ridge       knn  logistic
+   1000       1.26      1.46      1.28
+   2000       1.59      1.64      1.39
+   3000       1.59      1.72      1.38
+   4000       1.56      1.72      1.40
+   5000       1.10      1.33      1.03
+   6000       1.09      1.35      0.93
+   7000       0.99      1.46      0.93
+   8000       1.12      1.85      0.94   <- GATE
+   9000       1.12      1.85      0.94   (washout)
+  10000       1.12      1.85      0.94   (washout)
+
+Cost cards (S6, analytic v0, MAC*2): sgd ~6.1e5 FLOPs/step (fwd+bwd 784x128+128x10); randproj ~2.0e5 (fwd only). Tuning-evaluation count: sgd 0, randproj 0.
+
+Evidence: 32 stamped runs, r_20260708_013028_5fd3771_s0 .. r_20260708_014411_5fd3771_s7
