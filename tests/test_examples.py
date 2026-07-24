@@ -48,7 +48,7 @@ CASES = [
 def test_example_runs_clean(script, marker, timeout):
     result = subprocess.run(
         [sys.executable, os.path.join(EXAMPLES, script)],
-        capture_output=True, text=True, timeout=timeout,
+        capture_output=True, text=True, timeout=timeout, check=False,
     )
     assert result.returncode == 0, \
         f"{script} exited {result.returncode}\nstderr tail:\n{result.stderr[-2000:]}"
