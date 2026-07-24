@@ -546,6 +546,7 @@ class AgtBase(ABC):
         self.cols: dict[Loc, ColBase] = {}
 
         self.use_debug = False
+        self.autosave = True
         atexit.register(self.cleanup)
         signal.signal(signal.SIGINT, lambda _, __: sys.exit(0))
 
@@ -562,7 +563,16 @@ class AgtBase(ABC):
     def cleanup(self):
         if hasattr(self, "bar"):  # tqdm progress bar
             self.bar.close()
+        if self.age is None:
+            return  # init or load never finished, so there is nothing safe to write
+        if not self.autosave:
+            return
         self.save()
+
+    def close(self):
+        """Drop the exit-time save so the agent can be released."""
+        self.autosave = False
+        atexit.unregister(self.cleanup)
 
     @abstractmethod
     def step(self, ipt: Inputs, disable_print: bool = False) -> Outputs:
