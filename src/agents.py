@@ -915,15 +915,20 @@ class AgtBase(ABC):
         with open(f"{path}/age") as f:
             agt.age = int(f.read())
 
-        # Load cols
-        for name in tqdm(os.listdir(path), desc="Loading cols"):
+        # Load cols in loc order rather than filesystem order. step() matches
+        # I_cols and O_cols to ipt and out by position, so directory order
+        # would permute the channels.
+        entries = []
+        for name in os.listdir(path):
             # Skip agt metadata and any stray files (.DS_Store, editor temps);
             # col saves are directories named by their loc tuple
             if name in ("type", "cfg", "cfg_type") or not os.path.isdir(f"{path}/{name}"):
                 continue
-            col = Col.init_and_load(path, name, load_activations, load_weights)
+            entries.append((ast.literal_eval(name), name))
+        entries.sort()
 
-            loc = ast.literal_eval(name)
+        for loc, name in tqdm(entries, desc="Loading cols"):
+            col = Col.init_and_load(path, name, load_activations, load_weights)
             agt.cols[loc] = col
             if isinstance(col, I_ColBase):
                 agt.I_cols.append(col)

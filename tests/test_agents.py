@@ -71,6 +71,25 @@ def test_agent_save_and_load(tmp_path, case):
             assert torch.allclose(weight, col2.conns[address])
 
 
+def test_load_preserves_io_col_order(tmp_path):
+    """step() matches I_cols/O_cols to ipt/out by position, so load must restore
+    them in ispec/ospec order and not in whatever order the filesystem lists.
+    Distinct dims per channel, so a permutation is visible rather than silent."""
+    ispec = [I_Vector(8), I_Vector(16), I_Vector(32)]
+    ospec = [O_Vector(4), O_Vector(9)]
+    agt1 = Agt(Cfg(N_COLS, ispec, ospec), tmp_path)
+    agt1.save()
+    agt2 = Agt.load(tmp_path)
+
+    assert [c.loc for c in agt2.I_cols] == [c.loc for c in agt1.I_cols]
+    assert [c.loc for c in agt2.O_cols] == [c.loc for c in agt1.O_cols]
+    assert [s.d for s in ispec] == [c.cfg.d for c in agt2.I_cols]
+    assert [s.d for s in ospec] == [c.cfg.d for c in agt2.O_cols]
+
+    # The permutation is otherwise silent: step() only checks arity, not shapes.
+    agt2.step([torch.randn(s.d) for s in ispec])
+
+
 # CIFARAgt is standalone (deep oja-signed conv, no Cfg / save-load), so it gets its own tests
 def test_cifar_agt_smoke():
     """Deep oja-signed conv forward + learning on synthetic input: rep is the right
