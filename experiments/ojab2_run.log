@@ -1,0 +1,42 @@
+=== round-1 sweep finished Sat Jul 25 05:54:28 AM EDT 2026, starting ojab2 ===
+ojab2: lr_e=0.1 picked by the stability rule (largest non-divergent oja cell in round 1); beta=2.0; seeds [60, 61, 62, 63, 64, 65, 66, 67] (fresh, no overlap with the 50-52 that generated the hypothesis)
+  24 cells, 24 to run
+  1/24 seed 64 oja: diff 0.0324665437239242
+  2/24 seed 62 oja: diff 0.30268968328614887
+  3/24 seed 60 oja: diff 0.3009958508282384
+  4/24 seed 63 oja: diff -0.02889049079354311
+  5/24 seed 65 oja: diff -0.5481809348143002
+  6/24 seed 61 oja: diff -0.08905223536994612
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 11 leaked semaphore objects to clean up at shutdown: {'/mp-m7k_7gzi', '/mp-kmimwd5p', '/mp-m1hw7nbp', '/mp-xo3m99z3', '/mp-algueg72', '/mp-cyc6p6gy', '/mp-npmbgoin', '/mp-67sfeo3h', '/mp-aktnqfe_', '/mp-181e_sf6', '/mp-ph6ye23s'}
+  warnings.warn(
+ojab2: lr_e=0.1 picked by the stability rule (largest non-divergent oja cell in round 1); beta=2.0; seeds [60, 61, 62, 63, 64, 65, 66, 67] (fresh, no overlap with the 50-52 that generated the hypothesis)
+  24 cells, 18 to run
+  1/18 seed 66 frozen: diff -0.5612472240634067
+  2/18 seed 64 frozen: diff 0.036792749433882777
+  3/18 seed 67 frozen: diff 0.3128589522672565
+  4/18 seed 60 frozen: diff 0.528099679557097
+  5/18 seed 61 frozen: diff -0.003074470770533494
+  6/18 seed 62 frozen: diff 0.46178371603842816
+  7/18 seed 63 frozen: diff -0.0368163988984026
+  8/18 seed 65 frozen: diff -0.7504030795667506
+  9/18 seed 66 delta: diff 0.00017290932154687502
+  10/18 seed 61 delta: diff 0.0027415707020977814
+  11/18 seed 63 delta: diff -0.0036058485650937457
+  12/18 seed 62 delta: diff 0.0010432506129196084
+  13/18 seed 67 delta: diff 0.009715233496613697
+  14/18 seed 65 delta: diff 0.018203830919618462
+  15/18 seed 64 delta: diff 0.0010540294887097824
+  16/18 seed 60 delta: diff -0.03330722375473448
+  17/18 seed 67 oja: diff 0.14792605939885115
+  18/18 seed 66 oja: diff -0.5035813921138564
+
+oja confirmatory, beta 2.0, lr_e 0.1, 8 fresh seeds
+     arm      diff    E-grow    maj%  status
+     oja   -0.0482      2.48   88.4%  ok
+   delta   -0.0005      0.37   88.4%  ok
+  frozen   -0.0015      1.00   88.4%  ok
+
+paired per-seed, oja minus each reference:
+  vs frozen: 3/8 positive, p=0.7266  s60:-0.227 s61:-0.086 s62:-0.159 s63:+0.008 s64:-0.004 s65:+0.202 s66:+0.058 s67:-0.165
+  pre-registered reading vs frozen: DROP: round 1 was seed luck
+  vs delta: 4/8 positive, p=1.0000  s60:+0.334 s61:-0.092 s62:+0.302 s63:-0.025 s64:+0.031 s65:-0.566 s66:-0.504 s67:+0.138

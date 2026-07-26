@@ -1,0 +1,45 @@
+device cuda, steps 50000
+
+=== frozen ===
+  frozen: kNN 44.30 ridge 56.70 logit 56.70 netmass +nan |cos| 0.090 |W| 29.4
+
+=== original ===
+    original 25000/50000 34s
+    original 50000/50000 67s
+  original: kNN 49.90 ridge 58.60 logit 59.90 netmass +0.305 |cos| 0.080 |W| 52.6
+
+=== shift25 ===
+    shift25 25000/50000 35s
+    shift25 50000/50000 70s
+  shift25: kNN 49.50 ridge 58.00 logit 58.40 netmass +0.224 |cos| 0.081 |W| 52.2
+
+=== shift50 ===
+    shift50 25000/50000 36s
+    shift50 50000/50000 70s
+  shift50: kNN 48.50 ridge 57.80 logit 58.90 netmass +0.157 |cos| 0.426 |W| 26.4
+
+=== shift75 ===
+    shift75 25000/50000 35s
+    shift75 50000/50000 70s
+  shift75: kNN 43.80 ridge 47.60 logit 48.70 netmass +0.103 |cos| 0.972 |W| 9.8
+
+=== shift100 ===
+    shift100 25000/50000 35s
+    shift100 50000/50000 70s
+  shift100: kNN 24.70 ridge 33.60 logit 24.80 netmass -0.000 |cos| 0.987 |W| 9.8
+
+=== centered ===
+    centered 25000/50000 23s
+    centered 50000/50000 45s
+  centered: kNN 30.20 ridge 35.80 logit 38.50 netmass -0.000 |cos| 0.766 |W| 9.8
+
+       arm   netmass     kNN   ridge   logit    dkNN  dridge  dlogit   |cos|     |W|
+    frozen      +nan   44.30   56.70   56.70   +0.00   +0.00   +0.00   0.090    29.4
+  original    +0.305   49.90   58.60   59.90   +5.60   +1.90   +3.20   0.080    52.6
+   shift25    +0.224   49.50   58.00   58.40   +5.20   +1.30   +1.70   0.081    52.2
+   shift50    +0.157   48.50   57.80   58.90   +4.20   +1.10   +2.20   0.426    26.4
+   shift75    +0.103   43.80   47.60   48.70   -0.50   -9.10   -8.00   0.972     9.8
+  shift100    -0.000   24.70   33.60   24.80  -19.60  -23.10  -31.90   0.987     9.8
+  centered    -0.000   30.20   35.80   38.50  -14.10  -20.90  -18.20   0.766     9.8
+
+shift arms preserve every pairwise gate difference exactly and only change the row sum. So a flat curve across shift25..shift100 means the net mass is free to remove and centring's damage was from destroying the differential, not from zeroing the sum.

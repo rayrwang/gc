@@ -79,11 +79,12 @@ class BareAgtXC(BareAgtX):
     share identical columns."""
 
     def __init__(self, cfg, path, seed=0, dire=True, frozen=False, tap=False,
-                 a_frozen=False):
+                 a_frozen=False, dire_rule="delta"):
         AgtBase.__init__(self, cfg, path)
         self.age = 0
         self.dire, self.frozen, self.tap = dire, frozen, tap
         self.a_frozen = a_frozen  # freeze dir.a only (additive, default off)
+        self.dire_rule = dire_rule  # delta | hebb (additive, default = incumbent)
         self.last_taps = None
         random.seed(seed)
         torch.manual_seed(seed)

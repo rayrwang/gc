@@ -1,0 +1,31 @@
+arule31: 12 cells, 12 to run (Dir.E FROZEN in all)
+  1/12 s52 instar: maj 100.0% minority 0.0% patterns 0.02 |a| 0.00
+  2/12 s51 oja: maj 58.6% minority 41.4% patterns 1.00 |a| 5.66
+  3/12 s50 basic: maj 56.6% minority 43.4% patterns 1.00 |a| 5.66
+  4/12 s52 basic: maj 58.1% minority 41.9% patterns 1.00 |a| 5.66
+  5/12 s50 instar: maj 100.0% minority 0.0% patterns 0.02 |a| 0.00
+  6/12 s52 oja: maj 57.8% minority 42.2% patterns 1.00 |a| 5.66
+  7/12 s50 oja: maj 56.8% minority 43.2% patterns 1.00 |a| 5.66
+  8/12 s51 basic: maj 58.9% minority 41.1% patterns 1.00 |a| 5.66
+  9/12 s52 softhebb: maj 94.3% minority 5.7% patterns 0.71 |a| 4.83
+  10/12 s51 instar: maj 100.0% minority 0.0% patterns 0.02 |a| 0.00
+  11/12 s51 softhebb: maj 94.6% minority 5.4% patterns 0.76 |a| 5.75
+  12/12 s50 softhebb: maj 97.0% minority 3.0% patterns 0.63 |a| 5.97
+
+Dir.A rule x collapse, Dir.E frozen, seeds [50, 51, 52], 12000 steps
+refs: twin (no learning) ~58% maj = chance for d=32; collapsed softhebb learner ~94%; gate29 centred ~66%
+
+   A-rule  gate?     maj   maj_sd  minority  patterns     |a|      diff
+ softhebb    yes   95.3%   0.0146      4.7%      0.70    5.52   -0.0137
+      oja     no   57.8%   0.0090     42.2%      1.00    5.66   +0.0071
+   instar     no  100.0%   0.0000      0.0%      0.02    0.00   +0.0004
+    basic     no   57.8%   0.0117     42.2%      1.00    5.66   +0.0001
+
+reading:
+  maj near 58% and patterns near 1.0  -> not collapsed
+  maj near 94% and patterns near 0    -> collapsed
+  maj_sd near 0 across seeds          -> state set by the rule, not the data (this is what exposed topk4)
+  |a| near 0                          -> dead, not healthy: a silent net is trivially 'uncollapsed'
+
+IF only softhebb collapses: the two days of collapse work were about the faithful preset, not the substrate, and gate29's centred gate is a softhebb fix.
+IF all four collapse: it is substrate-level, the gate is one route in, and there must be a second mechanism since three of these have no gate at all.

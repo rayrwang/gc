@@ -1,0 +1,61 @@
+gu35: 33 cells, 33 to run (Dir.E FROZEN, rule=softhebb, arms identical to beta34)
+  1/33 s51 frozen: hebb +0.00e+00 decay +0.00e+00 pred +0.00e+00 meas +0.00e+00 |W| 11.3->11.34
+  2/33 s50 frozen: hebb +0.00e+00 decay +0.00e+00 pred +0.00e+00 meas +0.00e+00 |W| 11.3->11.33
+  3/33 s52 frozen: hebb +0.00e+00 decay +0.00e+00 pred +0.00e+00 meas +0.00e+00 |W| 11.3->11.3
+  4/33 s52 b1.25: hebb +2.51e-04 decay -2.08e-06 pred +2.49e-04 meas +7.25e-04 |W| 11.3->6.79e+04
+  5/33 s52 b0.5: hebb +2.56e-04 decay -9.21e-05 pred +1.64e-04 meas +4.48e-04 |W| 11.3->2438
+  6/33 s50 b1.25: hebb +2.34e-04 decay +1.71e-04 pred +4.04e-04 meas +1.12e-03 |W| 11.3->7.928e+06
+  7/33 s50 b1: hebb +2.68e-04 decay -7.32e-06 pred +2.61e-04 meas +8.77e-04 |W| 11.3->4.2e+05
+  8/33 s52 b1: hebb +2.40e-04 decay +1.32e-05 pred +2.53e-04 meas +8.20e-04 |W| 11.3->2.129e+05
+  9/33 s51 b0.5: hebb +2.57e-04 decay -1.21e-04 pred +1.37e-04 meas +3.23e-04 |W| 11.3->543.8
+  10/33 s50 b0.5: hebb +2.65e-04 decay -1.21e-04 pred +1.44e-04 meas +4.39e-04 |W| 11.3->2202
+  11/33 s51 b1: hebb +2.63e-04 decay -2.90e-05 pred +2.34e-04 meas +8.64e-04 |W| 11.3->3.591e+05
+  12/33 s51 b1.25: hebb +2.68e-04 decay -8.93e-06 pred +2.59e-04 meas +8.05e-04 |W| 11.3->1.767e+05
+  13/33 s52 b1.5: hebb +2.68e-04 decay +8.41e-05 pred +3.52e-04 meas +1.08e-03 |W| 11.3->5.022e+06
+  14/33 s51 b1.5: hebb +2.75e-04 decay +1.65e-05 pred +2.92e-04 meas +8.34e-04 |W| 11.3->2.505e+05
+  15/33 s50 b1.5: hebb +2.06e-04 decay +3.07e-04 pred +5.13e-04 meas +1.29e-03 |W| 11.3->5.85e+07
+  16/33 s50 b2: hebb +2.31e-04 decay +9.55e-05 pred +3.26e-04 meas +6.73e-04 |W| 11.3->3.637e+04
+  17/33 s51 b1.75: hebb +2.96e-04 decay +7.90e-05 pred +3.75e-04 meas +1.08e-03 |W| 11.3->4.81e+06
+  18/33 s52 b1.75: hebb +2.11e-04 decay +2.31e-04 pred +4.42e-04 meas +1.16e-03 |W| 11.3->1.31e+07
+  19/33 s52 b2: hebb +2.19e-04 decay +1.57e-04 pred +3.76e-04 meas +7.75e-04 |W| 11.3->1.231e+05
+  20/33 s50 b3: hebb +5.63e-04 decay -5.65e-04 pred -1.43e-06 meas -6.13e-07 |W| 11.3->11.25
+  21/33 s51 b3: hebb +5.69e-04 decay -5.70e-04 pred -1.34e-06 meas -6.18e-07 |W| 11.3->11.25
+  22/33 s51 b2: hebb +2.67e-04 decay +1.48e-04 pred +4.15e-04 meas +9.02e-04 |W| 11.3->5.684e+05
+  23/33 s52 b3: hebb +5.56e-04 decay -5.57e-04 pred -1.85e-06 meas -5.52e-07 |W| 11.3->11.23
+  24/33 s50 b1.75: hebb +2.09e-04 decay +2.45e-04 pred +4.54e-04 meas +1.18e-03 |W| 11.3->1.692e+07
+  25/33 s50 b4: hebb +5.72e-04 decay -5.73e-04 pred -1.46e-06 meas -8.54e-07 |W| 11.3->11.22
+  26/33 s51 b4: hebb +5.76e-04 decay -5.77e-04 pred -1.27e-06 meas -8.38e-07 |W| 11.3->11.22
+  27/33 s52 b4: hebb +5.71e-04 decay -5.72e-04 pred -1.69e-06 meas -9.00e-07 |W| 11.3->11.18
+  28/33 s52 unsigned: hebb +4.09e-04 decay -3.28e-04 pred +8.16e-05 meas +8.32e-05 |W| 11.3->30.65
+  29/33 s50 unsigned: hebb +4.09e-04 decay -3.28e-04 pred +8.13e-05 meas +8.29e-05 |W| 11.3->30.65
+  30/33 s50 b8: hebb +5.78e-04 decay -5.79e-04 pred -1.48e-06 meas -9.67e-07 |W| 11.3->11.2
+  31/33 s51 unsigned: hebb +4.09e-04 decay -3.28e-04 pred +8.15e-05 meas +8.30e-05 |W| 11.3->30.68
+  32/33 s52 b8: hebb +5.75e-04 decay -5.77e-04 pred -1.74e-06 meas -9.97e-07 |W| 11.3->11.17
+  33/33 s51 b8: hebb +5.79e-04 decay -5.80e-04 pred -1.28e-06 meas -9.07e-07 |W| 11.3->11.21
+
+gate*u vs weight growth, Dir.E frozen, seeds [50, 51, 52], 12000 steps
+exact first-order decomposition: d|W|^2 = 2*ss*[<W, outer(x,gate)> - sum_j gu[j]*|w[:,j]|^2]. hebb and decay are those two terms as per-step log-growth rates; pred is their sum.
+
+      arm   mean_gu       hebb      decay       pred       meas    |W| pred    |W| meas      half1      half2
+   frozen   +0.0000  +0.00e+00  +0.00e+00  +0.00e+00  +0.00e+00       11.32       11.32       +nan       +nan
+     b0.5   +0.0163  +2.59e-04  -1.11e-04  +1.48e-04  +4.03e-04       67.52        1728  +1.50e-04  +6.50e-05
+       b1   +0.0151  +2.57e-04  -7.70e-06  +2.49e-04  +8.54e-04       227.7   3.307e+05  +3.13e-04  +7.10e-04
+    b1.25   +0.0144  +2.51e-04  +5.33e-05  +3.04e-04  +8.84e-04       643.6   2.724e+06  +3.58e-04  +7.85e-04
+     b1.5   +0.0153  +2.50e-04  +1.36e-04  +3.85e-04  +1.07e-03        2160   2.126e+07  +2.78e-04  +9.29e-04
+    b1.75   +0.0214  +2.39e-04  +1.85e-04  +4.24e-04  +1.14e-03        1984   1.161e+07  +1.92e-04  +1.04e-03
+       b2   +0.0310  +2.39e-04  +1.33e-04  +3.72e-04  +7.83e-04        1080   2.426e+05  +1.06e-04  +9.37e-04
+       b3   +0.1297  +5.63e-04  -5.64e-04  -1.54e-06  -5.94e-07       11.12       11.24  +4.10e-07  +4.73e-07
+       b4   +0.1318  +5.73e-04  -5.74e-04  -1.47e-06  -8.64e-07       11.12       11.21  +2.81e-07  +2.77e-07
+       b8   +0.1319  +5.77e-04  -5.79e-04  -1.50e-06  -9.57e-07       11.12       11.19  +2.93e-07  +2.91e-07
+ unsigned   +0.0326  +4.09e-04  -3.28e-04  +8.15e-05  +8.30e-05        30.1       30.66  +1.65e-04  +2.81e-05
+
+reading:
+  arms whose predicted |W| is within 3x of measured: ['b3', 'b4', 'b8', 'unsigned'] (of 10)
+  sign of pred matches sign of meas: True
+  ordering of meas matches ordering of pred: False
+  arms where the HEBBIAN term dominates: ['b0.5', 'b1', 'b1.25', 'b1.5', 'b1.75', 'b2', 'unsigned']
+  arms where the DECAY term dominates: ['b3', 'b4', 'b8']
+  -> REFUTED. First-order local analysis does not explain it. Next suspects: recurrence (w feeds activity feeds gate), and CIFAR's ~1024-position averaging against this single-sample update.
+
+mean_gu is the UNWEIGHTED mean of gate*u, kept as a diagnostic. decay_rate is the same quantity WEIGHTED BY COLUMN NORMS, which is what actually enters d|W|^2. They can differ in sign when the columns sitting in the negative regime are the large ones.
+half1 vs half2 are per-step log-slopes of the sampled |W| trajectory. Equal slopes mean growth at a constant exponential rate, which is what the first-order story predicts.

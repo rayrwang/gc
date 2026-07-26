@@ -1,0 +1,60 @@
+gate29: 27 cells (3 gates x 3 E-rules x 3 seeds), 27 to run, beta=0.5
+  1/27 s52 argmax/hebb: maj 94% ovr 88% Emax 2887 diff 0.7997714155973297
+  2/27 s50 centered/delta: maj 67% ovr 0% Emax 12 diff -0.0006986913812839461
+  3/27 s50 argmax/delta: maj 97% ovr 98% Emax 96 diff -0.10949880024645861
+  4/27 s52 centered/hebb: maj 66% ovr 0% Emax 1884 diff 0.000564535128717035
+  5/27 s51 centered/hebb: maj 67% ovr 0% Emax 1870 diff -0.0006192699161604864
+  6/27 s52 argmax/delta: maj 94% ovr 88% Emax 164 diff -0.17594862214896673
+  7/27 s51 argmax/hebb: maj 95% ovr 92% Emax 2897 diff -0.06333818593085452
+  8/27 s50 argmax/hebb: maj 97% ovr 98% Emax 2893 diff -0.043942804451352
+  9/27 s51 centered/delta: maj 67% ovr 0% Emax 12 diff 4.726830622859856e-06
+  10/27 s50 centered/hebb: maj 67% ovr 0% Emax 1889 diff -0.00037072590764177654
+  11/27 s52 centered/delta: maj 66% ovr 0% Emax 12 diff -1.6205670992216865e-05
+  12/27 s51 argmax/delta: maj 95% ovr 92% Emax 109 diff -0.07487018144811544
+  13/27 s52 argmax/oja: maj 94% ovr 88% Emax 50 diff 0.15370562475428473
+  14/27 s52 centered/oja: maj 66% ovr 0% Emax 32 diff 0.03535314066301755
+  15/27 s50 argmax/oja: maj 97% ovr 98% Emax 58 diff -0.02535281976566872
+  16/27 s50 centered/oja: maj 67% ovr 0% Emax 32 diff -0.0020313625516159284
+  17/27 s51 argmax/oja: maj 95% ovr 92% Emax 50 diff 0.0409318012744678
+  18/27 s51 centered/oja: maj 67% ovr 0% Emax 31 diff 0.02112198778300796
+  19/27 s50 topk4/delta: maj 88% ovr 0% Emax 12 diff -1.3129201199466996e-07
+  20/27 s52 topk4/delta: maj 88% ovr 0% Emax 12 diff 8.044772752266506e-07
+  21/27 s51 topk4/delta: maj 88% ovr 0% Emax 12 diff -3.935967407100268e-08
+  22/27 s50 topk4/hebb: maj 88% ovr 0% Emax 2377 diff -4.193175204891819e-05
+  23/27 s52 topk4/hebb: maj 88% ovr 0% Emax 2378 diff -4.579076528345594e-05
+  24/27 s51 topk4/hebb: maj 88% ovr 0% Emax 2377 diff -1.760073211964008e-05
+  25/27 s52 topk4/oja: maj 88% ovr 0% Emax 13 diff -8.940434435499279e-07
+  26/27 s50 topk4/oja: maj 88% ovr 0% Emax 13 diff -9.55298248329424e-07
+  27/27 s51 topk4/oja: maj 88% ovr 0% Emax 13 diff -3.756028558811663e-07
+
+gate mode (Dir.A) x E-rule (Dir.E), beta 0.5, seeds [50, 51, 52]
+comp25 argmax reference at beta 0.5: 94% maj / 89% one-v-rest
+
+     gate  E-rule    maj  one-v-rest  net gate      E-max      diff  status
+   argmax   delta    95%         93%    -0.845      164.1   -0.1201  ok
+   argmax     oja    95%         93%    -0.845       58.2   +0.0564  ok
+   argmax    hebb    95%         93%    -0.845     2897.3   +0.2308  DIVERGED
+ centered   delta    66%          0%    +0.000       12.0   -0.0002  ok
+ centered     oja    66%          0%    +0.000       32.3   +0.0181  ok
+ centered    hebb    66%          0%    +0.000     1889.2   -0.0001  DIVERGED
+    topk4   delta    88%          0%    -0.414       11.8   +0.0000  ok
+    topk4     oja    88%          0%    -0.414       13.4   -0.0000  ok
+    topk4    hebb    88%          0%    -0.414     2377.8   -0.0000  DIVERGED
+
+PRIMARY, does the gate fix the collapse (read down the delta column):
+     argmax: one-v-rest 93% (+0% vs argmax)  no material change
+   centered: one-v-rest 0% (-93% vs argmax)  ARGMAX IMPLICATED
+      topk4: one-v-rest 0% (-93% vs argmax)  ARGMAX IMPLICATED
+
+CROSS, does the E-rule ranking survive fixing the gate:
+     argmax: oja - delta = +0.1765   (round-1 argmax value was +0.177)
+   centered: oja - delta = +0.0184
+      topk4: oja - delta = -0.0000
+
+  oja's advantage over delta: +0.1765 under argmax -> +0.0184 under centered
+  SHRINKS: oja's win was substantially an artifact of the collapsed substrate (possibility b)
+
+BOUNDED, does hebb stop diverging when the gate is fixed:
+     argmax: E-max 2897.3  still DIVERGED
+   centered: E-max 1889.2  still DIVERGED
+      topk4: E-max 2377.8  still DIVERGED

@@ -1,0 +1,48 @@
+device cuda, steps 50000, arms frozen,original,centered,oja,instar
+
+=== frozen ===
+  frozen: live_dims 1.00  rep_std 1.00  kNN 44.30  ridge 56.70  logistic 56.70  secs 10.68  mean_abs_cos 0.09  w_norm 29.39
+
+=== original ===
+    original 10000/50000  13s
+    original 20000/50000  26s
+    original 30000/50000  38s
+    original 40000/50000  51s
+    original 50000/50000  63s
+  original: live_dims 1.00  rep_std 1.00  kNN 49.90  ridge 58.60  logistic 59.90  secs 72.61  mean_abs_cos 0.08  w_norm 52.64
+
+=== centered ===
+    centered 10000/50000  9s
+    centered 20000/50000  17s
+    centered 30000/50000  25s
+    centered 40000/50000  33s
+    centered 50000/50000  40s
+  centered: live_dims 1.00  rep_std 1.00  kNN 30.20  ridge 35.80  logistic 38.50  secs 50.03  mean_abs_cos 0.77  w_norm 9.80
+
+=== oja ===
+    oja 10000/50000  14s
+    oja 20000/50000  27s
+    oja 30000/50000  41s
+    oja 40000/50000  54s
+    oja 50000/50000  67s
+    ridge failed (_LinAlgError): rep is degenerate, live_dims=0.000 rep_std=nan
+  oja: live_dims 0.00  rep_std nan  kNN 11.20  ridge nan  logistic 10.30  secs 76.86  mean_abs_cos 1.00  w_norm 14.15
+
+=== instar ===
+    instar 10000/50000  14s
+    instar 20000/50000  27s
+    instar 30000/50000  40s
+    instar 40000/50000  53s
+    instar 50000/50000  67s
+    ridge failed (_LinAlgError): rep is degenerate, live_dims=0.000 rep_std=nan
+  instar: live_dims 0.00  rep_std nan  kNN 11.20  ridge nan  logistic 10.30  secs 76.10  mean_abs_cos 1.00  w_norm 67.81
+
+      arm     kNN   ridge   logit    dkNN  dridge  dlogit   |cos|      |W|    live
+   frozen   44.30   56.70   56.70   +0.00   +0.00   +0.00   0.090     29.4   1.000
+ original   49.90   58.60   59.90   +5.60   +1.90   +3.20   0.080     52.6   1.000
+ centered   30.20   35.80   38.50  -14.10  -20.90  -18.20   0.766      9.8   1.000
+      oja   11.20     nan   10.30  -33.10    +nan  -46.40   1.000     14.1   0.000
+   instar   11.20     nan   10.30  -33.10    +nan  -46.40   1.000     67.8   0.000
+
+deltas are vs the frozen control (same init, same warmup, no learning).
+mean_abs_cos: mean |cosine| between layer-1 channel weights. High = channels collapsed onto one prototype; the anti-Hebbian repulsion exists to keep this low.

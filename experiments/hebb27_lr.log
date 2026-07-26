@@ -1,0 +1,73 @@
+hebb27: 48 cells, 30 to run, 18 reused from ledger
+  1/30  seed 52 delta lr_e=0.001: diff 0.3650982757064251
+  2/30  seed 52 hebb lr_e=0.001: diff 0.7952318101899142
+  3/30  seed 50 delta lr_e=0.001: diff -0.012400572178009495
+  4/30  seed 50 hebb lr_e=0.001: diff -0.0444916191864862
+  5/30  seed 51 hebb lr_e=0.001: diff -0.061452864336497354
+  6/30  seed 51 delta lr_e=0.001: diff -0.02183350804834206
+  7/30  seed 50 oja lr_e=0.001: diff -0.04163581629091962
+  8/30  seed 52 oja lr_e=0.001: diff 0.9012444380131992
+  9/30  seed 50 instar lr_e=0.001: diff -0.04290974408701828
+  10/30  seed 51 oja lr_e=0.001: diff -0.009451057374147212
+  11/30  seed 52 instar lr_e=0.001: diff 0.7532163100715755
+  12/30  seed 51 instar lr_e=0.001: diff -0.04982237625118632
+  13/30  seed 52 delta lr_e=0.01: diff 0.01964737777640444
+  14/30  seed 50 delta lr_e=0.01: diff 0.00031350073900480654
+  15/30  seed 51 delta lr_e=0.01: diff -0.006363436251683858
+  16/30  seed 50 softhebb lr_e=0.001: diff -0.04171811717159157
+  17/30  seed 51 softhebb lr_e=0.001: diff -0.04104809566410894
+  18/30  seed 52 softhebb lr_e=0.001: diff 0.49240728481145757
+  19/30  seed 52 hebb lr_e=0.01: diff 0.7997326070988052
+  20/30  seed 50 hebb lr_e=0.01: diff -0.04395750211235556
+  21/30  seed 51 hebb lr_e=0.01: diff -0.06321533104821651
+  22/30  seed 52 oja lr_e=0.01: diff 0.580248502544029
+  23/30  seed 51 oja lr_e=0.01: diff 0.08648266962311776
+  24/30  seed 50 oja lr_e=0.01: diff -0.00932401175075856
+  25/30  seed 52 instar lr_e=0.01: diff 0.5191232909336874
+  26/30  seed 51 instar lr_e=0.01: diff -0.04172254335109804
+  27/30  seed 50 instar lr_e=0.01: diff -0.061342776863019755
+  28/30  seed 52 softhebb lr_e=0.01: diff 0.9438634210348372
+  29/30  seed 50 softhebb lr_e=0.01: diff 0.007129419662432912
+  30/30  seed 51 softhebb lr_e=0.01: diff -0.0979280121379339
+
+E-rule x step-size sweep (fan3, seeds [50, 51, 52], comp25 streams, 12000 steps)
+reference: frozen -0.0137 (E held at init, A learning); comp25 dire_off signed/0.5 = -0.0137
+majority-sign is A-side collapse, same in every arm incl. frozen: reported, never gated
+
+     rule    lr_e      diff       kp1        kz   maj%       E-grow  vs frozen  status
+    delta   0.001   +0.1103   -0.0647   -0.1750  95.3%         0.96    +0.1240  ok
+                  per-seed -0.0124 -0.0218 +0.3651
+    delta    0.01   +0.0045   -0.0090   -0.0136  95.3%         0.80    +0.0182  ok
+                  per-seed +0.0003 -0.0064 +0.0196
+    delta     0.1   -0.1201   -0.1341   -0.0140  95.3%         1.41    -0.1064  ok
+                  per-seed -0.1095 -0.0749 -0.1759
+     hebb   0.001   +0.2298   -0.1164   -0.3462  95.3%         1.79    +0.2434  ok
+                  per-seed -0.0445 -0.0615 +0.7952
+     hebb    0.01   +0.2309   -0.1141   -0.3449  95.3%        14.37    +0.2445  DIVERGED
+                  per-seed -0.0440 -0.0632 +0.7997
+     hebb     0.1   +0.2308   -0.1141   -0.3449  95.3%       143.23    +0.2445  DIVERGED
+                  per-seed -0.0439 -0.0633 +0.7998
+      oja   0.001   +0.2834   -0.0915   -0.3749  95.3%         0.53    +0.2971  ok
+                  per-seed -0.0416 -0.0095 +0.9012
+      oja    0.01   +0.2191   -0.0998   -0.3190  95.3%         0.85    +0.2328  ok
+                  per-seed -0.0093 +0.0865 +0.5802
+      oja     0.1   +0.0564   -0.1421   -0.1986  95.3%         1.30    +0.0701  ok
+                  per-seed -0.0254 +0.0409 +0.1537
+   instar   0.001   +0.2202   -0.1460   -0.3662  95.3%        14.71    +0.2338  DIVERGED
+                  per-seed -0.0429 -0.0498 +0.7532
+   instar    0.01   +0.1387   -0.5035   -0.6422  95.3% 7705438113903837.00    +0.1524  DIVERGED
+                  per-seed -0.0613 -0.0417 +0.5191
+   instar     0.1      +nan      +nan      +nan  95.3%          nan       +nan  DIVERGED
+                  per-seed 
+ softhebb   0.001   +0.1365   -0.6130   -0.7495  95.3%         0.97    +0.1502  ok
+                  per-seed -0.0417 -0.0410 +0.4924
+ softhebb    0.01   +0.2844   -0.4106   -0.6950  95.3%         1.20    +0.2980  ok
+                  per-seed +0.0071 -0.0979 +0.9439
+ softhebb     0.1   +0.2925   -0.4042   -0.6967  95.3% 346897515425.65    +0.3062  DIVERGED
+                  per-seed +0.0415 -0.0981 +0.9341
+
+stable AND beats frozen on every seed (paired):
+  oja @ lr_e=0.01: mean +0.2328 over frozen, per-seed +0.1209 +0.0595 +0.5181  (n=3, sign-test p~0.125, suggestive only)
+  oja @ lr_e=0.1: mean +0.0701 over frozen, per-seed +0.1048 +0.0139 +0.0916  (n=3, sign-test p~0.125, suggestive only)
+
+DIVERGED means unreadable at that step size, NOT 'does not help'. Separating those two is the whole point of the lr_e axis.

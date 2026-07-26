@@ -1,0 +1,61 @@
+beta34: 33 cells, 33 to run (Dir.E FROZEN in all, rule=softhebb in all)
+  1/33 s51 frozen: maj 56.8% patterns 1.00 |a| 5.69 net +nan (in -0.834 rec -0.837) |W| 11.3
+  2/33 s52 frozen: maj 57.7% patterns 1.00 |a| 5.67 net +nan (in -0.844 rec -0.842) |W| 11.3
+  3/33 s52 b0.5: maj 94.3% patterns 0.71 |a| 4.83 net -0.846 (in -0.882 rec -0.849) |W| 2438.0
+  4/33 s52 b1.25: maj 95.3% patterns 0.65 |a| 6.54 net -0.443 (in -0.600 rec -0.586) |W| 67897.7
+  5/33 s50 b1.25: maj 92.7% patterns 0.80 |a| 5.24 net -0.444 (in -0.589 rec -0.577) |W| 7927910.3
+  6/33 s50 b1: maj 92.7% patterns 0.69 |a| 5.86 net -0.604 (in -0.576 rec -0.638) |W| 419975.7
+  7/33 s51 b0.5: maj 94.6% patterns 0.76 |a| 5.75 net -0.848 (in -0.862 rec -0.844) |W| 543.8
+  8/33 s51 b1: maj 95.0% patterns 0.76 |a| 5.36 net -0.593 (in -0.628 rec -0.667) |W| 359103.7
+  9/33 s50 frozen: maj 56.6% patterns 1.00 |a| 5.59 net +nan (in -0.856 rec -0.839) |W| 11.3
+  10/33 s52 b1: maj 95.7% patterns 0.67 |a| 5.07 net -0.632 (in -0.748 rec -0.685) |W| 212872.5
+  11/33 s51 b1.25: maj 93.9% patterns 0.57 |a| 5.95 net -0.479 (in -0.488 rec -0.559) |W| 176677.1
+  12/33 s50 b1.5: maj 93.0% patterns 0.61 |a| 5.08 net -0.357 (in -0.552 rec -0.554) |W| 58500294.3
+  13/33 s50 b0.5: maj 97.0% patterns 0.63 |a| 5.97 net -0.839 (in -0.839 rec -0.847) |W| 2202.3
+  14/33 s52 b1.75: maj 94.3% patterns 0.63 |a| 5.68 net -0.159 (in -0.426 rec -0.368) |W| 13104942.1
+  15/33 s50 b1.75: maj 93.2% patterns 0.73 |a| 5.87 net -0.161 (in -0.195 rec -0.375) |W| 16916430.4
+  16/33 s51 b1.75: maj 95.1% patterns 0.61 |a| 6.19 net -0.002 (in -0.343 rec -0.239) |W| 4810302.6
+  17/33 s52 b2: maj 87.3% patterns 0.86 |a| 5.26 net -0.010 (in -0.384 rec -0.260) |W| 123120.3
+  18/33 s50 b2: maj 84.0% patterns 0.88 |a| 5.35 net +0.085 (in -0.060 rec -0.399) |W| 36367.6
+  19/33 s51 b1.5: maj 95.2% patterns 0.65 |a| 5.03 net -0.263 (in -0.416 rec -0.455) |W| 250481.5
+  20/33 s50 b3: maj 57.7% patterns 1.00 |a| 5.70 net +0.998 (in +0.998 rec +0.999) |W| 11.2
+  21/33 s52 b1.5: maj 96.0% patterns 0.57 |a| 5.68 net -0.262 (in -0.302 rec -0.417) |W| 5022275.9
+  22/33 s51 b3: maj 57.0% patterns 1.00 |a| 5.66 net +0.998 (in +0.999 rec +0.999) |W| 11.3
+  23/33 s51 b2: maj 90.4% patterns 0.88 |a| 5.96 net +0.107 (in -0.238 rec -0.355) |W| 568367.6
+  24/33 s50 b4: maj 55.4% patterns 1.00 |a| 5.66 net +0.999 (in +1.000 rec +1.000) |W| 11.2
+  25/33 s52 b3: maj 57.1% patterns 1.00 |a| 5.69 net +0.997 (in +0.997 rec +0.997) |W| 11.2
+  26/33 s52 b4: maj 58.0% patterns 1.00 |a| 5.64 net +0.999 (in +1.000 rec +1.000) |W| 11.2
+  27/33 s51 b4: maj 56.9% patterns 1.00 |a| 5.69 net +0.999 (in +1.000 rec +1.000) |W| 11.2
+  28/33 s51 b8: maj 55.7% patterns 1.00 |a| 5.65 net +1.000 (in +1.000 rec +1.000) |W| 11.2
+  29/33 s50 unsigned: maj 100.0% patterns 0.02 |a| 5.67 net +1.000 (in +1.000 rec +1.000) |W| 30.7
+  30/33 s50 b8: maj 56.8% patterns 1.00 |a| 5.64 net +1.000 (in +1.000 rec +1.000) |W| 11.2
+  31/33 s51 unsigned: maj 100.0% patterns 0.02 |a| 5.79 net +1.000 (in +1.000 rec +1.000) |W| 30.7
+  32/33 s52 unsigned: maj 100.0% patterns 0.02 |a| 5.57 net +1.000 (in +1.000 rec +1.000) |W| 30.7
+  33/33 s52 b8: maj 57.0% patterns 1.00 |a| 5.68 net +1.000 (in +1.000 rec +1.000) |W| 11.2
+
+gate temperature x collapse, Dir.E frozen, rule=softhebb, seeds [50, 51, 52], 12000 steps
+refs: no-learning twin ~58% maj = chance for d=32; arule31 softhebb @ beta 0.5 = 95.3% maj / 0.70 patterns; comp25 @ beta 2.0 = 87% maj
+class-split sample per seed: 1200 input-sender gate calls, 102800 recurrent-sender, over 400 frozen-weight steps
+frozen arm's net_mass is nan by construction: a_frozen skips the learning block so the gate is never called during training. Its net_in/net_rec come from the split pass and give the untrained baseline (comp25 reference at beta 0.5 is -0.845).
+
+      arm     maj   maj_sd  patterns     |a|      net   net_in  net_rec     |W|      diff
+   frozen   57.0%   0.0060      1.00    5.65     +nan   -0.845   -0.839    11.3   -0.0476
+     b0.5   95.3%   0.0146      0.70    5.52   -0.845   -0.861   -0.847  1728.0   -0.0137
+       b1   94.5%   0.0160      0.71    5.43   -0.610   -0.651   -0.663 330650.6   +0.0912
+    b1.25   94.0%   0.0128      0.67    5.91   -0.455   -0.559   -0.574 2724161.7   +0.0543
+     b1.5   94.7%   0.0154      0.61    5.26   -0.294   -0.424   -0.475 21257683.9   +0.0532
+    b1.75   94.2%   0.0093      0.66    5.91   -0.107   -0.321   -0.328 11610558.4   -0.3555
+       b2   87.2%   0.0322      0.87    5.52   +0.061   -0.227   -0.338 242618.5   +0.2392
+       b3   57.2%   0.0035      1.00    5.68   +0.998   +0.998   +0.998    11.2   -0.0622
+       b4   56.8%   0.0134      1.00    5.66   +0.999   +1.000   +1.000    11.2   -0.0250
+       b8   56.5%   0.0067      1.00    5.66   +1.000   +1.000   +1.000    11.2   -0.0232
+ unsigned  100.0%   0.0000      0.02    5.68   +1.000   +1.000   +1.000    30.7   -0.0040
+
+reading:
+  no-learning reference this run: maj 57.0% |a| 5.65 |W| 11.3
+  GLOBAL FIX CANDIDATES (maj < 85%, |a| alive, net >= 0): b3 (maj 57.2%, net +0.998), b4 (maj 56.8%, net +0.999), b8 (maj 56.5%, net +1.000)
+  -> if one holds up, the per-class design is unmotivated. Kill it before building it.
+  largest sender-class net-mass gap: b2 at +0.111 (net_in - net_rec)
+  -> a material gap means the two regimes already exist here and the per-class split reads a real distinction.
+
+net mass is 2*p_win - 1 for the signed gate. Run 33 found it load-bearing on CIFAR: it sustains |W| against the -w*u decay in gated-Oja. Read |W| alongside it, never net mass alone.

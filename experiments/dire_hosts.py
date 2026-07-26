@@ -394,7 +394,7 @@ class BareAgtX(AgtBase):
     at a time from there."""
 
     def __init__(self, cfg, path, seed=0, dire=True, frozen=False, tap=False,
-                 a_frozen=False):
+                 a_frozen=False, dire_rule="delta"):
         super().__init__(cfg, path)
         self.age = 0
         self.dire, self.frozen = dire, frozen
@@ -493,8 +493,36 @@ class BareAgtX(AgtBase):
                     else (torch.relu(snap[col.loc]) if cfg.transport == "relu"
                           else fc.triangle(snap[col.loc], power=cfg.power))
                 w = col.conns[(tloc, Dir.E)]
+                # Rule-form sweep on the E channel. delta is the incumbent and
+                # its branch is untouched, so registered runs stay identical.
+                # The others drop the error term: they never subtract what they
+                # already predict, so they have no least-squares optimum to
+                # collapse onto (the AOFF26 degeneracy). Matched design: every
+                # arm gets the SAME lr_e and the SAME NLMS denominator, so the
+                # only thing varying is the rule's form. The library rules are
+                # called at ss=1.0 and differenced to recover a unit-step dw.
+                rule_e = getattr(self, "dire_rule", "delta")
+                post = target.nr_1.actual
+                if rule_e == "delta":
+                    upd = torch.outer(pre, err)
+                elif rule_e == "hebb":
+                    upd = torch.outer(pre, post)
+                elif rule_e == "oja":
+                    upd = fc.lrn_oja(pre, w, post, ss=1.0) - w
+                elif rule_e == "instar":
+                    upd = fc.lrn_instar(pre, w, post, ss=1.0) - w
+                elif rule_e == "softhebb":
+                    gate = fc.softmax_wta(post, beta=cfg.beta, signed=cfg.signed)
+                    upd = fc.lrn_oja_gated(pre, w, gate, post, ss=1.0) - w
+                # no bcm here: lrn_adaptive takes Activs (it reads x.actual and
+                # the running avg/avg_sq for its sliding threshold), which the
+                # E channel does not maintain. The A side at this rung does not
+                # offer it either (BareXCfg: softhebb | oja | instar | basic).
+                # no basic here: lrn_basic is dw ~ xy, identical to hebb above.
+                else:
+                    raise ValueError(f"unknown dire_rule {rule_e!r}")
                 col.conns[(tloc, Dir.E)] = \
-                    w + cfg.lr_e * torch.outer(pre, err) / (1 + pre @ pre)
+                    w + cfg.lr_e * upd / (1 + pre @ pre)
         self.last_taps = taps
         self.age += 1
         return []

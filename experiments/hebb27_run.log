@@ -1,0 +1,44 @@
+hebb27: 18 jobs, 18 to run
+  hebb27 1/18  seed 52 hebb: diff 0.7997714155973297
+  hebb27 2/18  seed 52 delta: diff -0.17594862214896673
+  hebb27 3/18  seed 50 hebb: diff -0.043942804451352
+  hebb27 4/18  seed 50 delta: diff -0.10949880024645861
+  hebb27 5/18  seed 51 hebb: diff -0.06333818593085452
+  hebb27 6/18  seed 51 delta: diff -0.07487018144811544
+  hebb27 7/18  seed 52 instar: diff nan
+  hebb27 8/18  seed 51 oja: diff 0.0409318012744678
+  hebb27 9/18  seed 52 oja: diff 0.15370562475428473
+  hebb27 10/18  seed 50 instar: diff nan
+  hebb27 11/18  seed 51 instar: diff nan
+  hebb27 12/18  seed 50 oja: diff -0.02535281976566872
+  hebb27 13/18  seed 52 frozen: diff 0.062119150136783485
+  hebb27 14/18  seed 50 frozen: diff -0.13017782473388928
+  hebb27 15/18  seed 51 frozen: diff 0.027026523833101446
+  hebb27 16/18  seed 50 softhebb: diff 0.04148297111447036
+  hebb27 17/18  seed 52 softhebb: diff 0.934068266725723
+  hebb27 18/18  seed 51 softhebb: diff -0.0980982400508294
+
+E-rule sweep at the bare rung (fan3, seeds 50-52, comp25 streams)
+     rule      diff       kp1        kz  maj-sign  E-growth    E-max  vitals
+    delta   -0.0890   -0.1934   -0.1043    89.7%      1.02    164.1  ok
+          per-seed -0.1095 +0.0042 -0.0749 -0.1759
+     hebb   +0.1742   -0.1783   -0.3525    89.7%    104.51   2897.3  RUNAWAY-NORM
+          per-seed -0.0439 +0.0042 -0.0633 +0.7998
+      oja   +0.0564   -0.1421   -0.1986    95.3%      1.12     58.2  SATURATED
+          per-seed -0.0254 +0.0409 +0.1537
+   instar      +nan      +nan      +nan    95.3%       nan      inf  RUNAWAY-NORM SATURATED NAN
+          per-seed +nan +nan +nan
+ softhebb   +0.2925   -0.4042   -0.6967    95.3% 121194346128.43 495818909941760.0  RUNAWAY-NORM SATURATED
+          per-seed +0.0415 -0.0981 +0.9341
+   frozen   -0.0137   -0.9118   -0.8982    95.3%      1.00     12.2  SATURATED
+          per-seed -0.1302 +0.0270 +0.0621
+
+  reference points: frozen +nan   delta -0.0890
+  the three-point read (only readable arms):
+         hebb: unreadable
+          oja: unreadable
+       instar: unreadable
+     softhebb: unreadable
+
+  best error-free arm: None at -inf (frozen +nan, delta -0.0890)
+  CHECK VITALS COLUMN FIRST: an arm flagged RUNAWAY-NORM or SATURATED is a finding about the rule, not a differential.
