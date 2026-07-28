@@ -1,15 +1,15 @@
 """
-Is the antipodal collapse a SUBSTRATE problem or a SOFTHEBB problem?
-(RW, 2026-07-25.) Free play, seeds 50-52, fan3, Dir.E FROZEN throughout.
+Is the antipodal collapse a substrate problem or a softhebb problem?
+(RW, 2026-07-25.) Free play, seeds 50-52, fan3, Dir.E frozen throughout.
 
 Why this was never asked. The 216-config sweeps varied the Dir.A rule across
 {softhebb, oja, instar, basic} over 650+ runs, but their ledger rows carry
-alive/passed/silent/honest/nan/n_pred/margins and NO degeneracy statistic:
-the collapse measure did not exist yet, it was invented by the
-24_watch_fan3 debugger observation months later. Everything after that
-observation (comp25, aoff26, the fan3 registered runs, hebb27/ojab2/gate29)
-pinned rule="softhebb", the faithful preset. So the collapse has only ever
-been measured on ONE A-rule.
+alive/passed/silent/honest/nan/n_pred/margins and no degeneracy statistic:
+the collapse measure did not exist yet, it was invented by the 24_watch_fan3
+debugger observation, which came afterwards. Everything after that observation
+(comp25, aoff26, the fan3 registered runs, hebb27/ojab2/gate29) pinned
+rule="softhebb", the faithful preset. So the collapse has only ever been
+measured on one A-rule.
 
 And it matters, because only softhebb uses the gate:
     softhebb -> fc.softmax_wta(y, beta, signed) then lrn_oja_gated

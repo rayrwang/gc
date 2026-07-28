@@ -1,7 +1,7 @@
 """
 Activation form x reset policy, both weight channels frozen (RW, 2026-07-27).
 
-Question. Every run from 25 to 38 varied a LEARNING knob and read a learning
+Question. Every run from 25 to 38 varied a learning knob and read a learning
 outcome. This one freezes both channels and asks what the substrate does as a
 dynamical system: given fixed random weights, what activity does the grid
 produce, and how do the activation nonlinearity and the reset policy shape it.
@@ -12,7 +12,7 @@ between arms is a property of the dynamics alone.
 Why these two knobs. Both are pinned at exactly one setting in every prior run
 and neither has ever been moved.
 
-  ACTIVATION. `_transport` applies the nonlinearity to the SENDER before the
+  Activation. `_transport` applies the nonlinearity to the sender before the
   matmul: raw is `x @ w`, relu is `relu(x) @ w`, triangle is
   `relu(x - x.mean())**power @ w`. The shipped default is triangle at power
   0.3. Triangle subtracts the mean, so it is the only one of the three that
@@ -20,14 +20,14 @@ and neither has ever been moved.
   source of the synchrony the A-rule work kept running into, and it has never
   been isolated from the learning.
 
-  RESET. `fc.update` returns `zeros_like`, so the accumulator `nr_1_` is hard
+  Reset. `fc.update` returns `zeros_like`, so the accumulator `nr_1_` is hard
   zeroed after every commit. The step is therefore memoryless in the buffer:
   whatever arrives in one step is fully consumed by it. A leak instead of a
   zero turns the same grid into a leaky integrator, which is a different
   dynamical system with the same weights. `keep` is the fraction retained, so
   keep=0.0 is the incumbent.
 
-  NORM, carried as a third axis because it is free and is the obvious
+  Norm, carried as a third axis because it is free and is the obvious
   confounder. `BareCol.update_activations(use_norm)` divides the committed
   activity by a running RMS floored at 0.9. That is a divisive normalisation,
   the classic stabiliser, and if it dominates then the other two axes are
@@ -76,7 +76,7 @@ finding:
 Vitals. Any arm whose activity overflows or goes non-finite is reported
 DIVERGED and its statistics are dropped, not clipped; clipping would turn a
 finding about the dynamics into an artefact of the harness. Arms that go
-identically zero are reported SILENT for the same reason.
+identically zero are reported silent for the same reason.
 
 Summaries only (kind actdyn39).
 """
@@ -289,7 +289,7 @@ def _pr_block(X):
 
 
 def _participation(X, d_col):
-    """PR PER COLUMN, averaged. computed per column deliberately: the
+    """Participation ratio per column, averaged. computed per column deliberately: the
     estimator is bounded above by the sample count, and the concatenated
     state is 16*32 = 512 wide, so a global PR on a few thousand steps would
     report the number of samples rather than the dimensionality of the
@@ -355,10 +355,10 @@ def run_one(job):
                           n_cols=sweep.N_COLS, **arm_cfg(act))
     host = BareHost(sweep.BareAgtXC(
         cfg, _bare_path(f"actdyn39/a{os.getpid()}"), seed=seed,
-        dire=True, frozen=True))          # frozen: BOTH channels, no learning
+        dire=True, frozen=True))          # frozen: both channels, no learning
     agt = host.agt
 
-    # Benettin: a SECOND host, identical weights and init because the seed is
+    # Benettin: a second host, identical weights and init because the seed is
     # the same, perturbed once at the end of the transient and then advanced
     # on the identical input stream. the separation is renormalised every step
     # so it stays in the linear regime, and the exponent is the mean log
@@ -488,7 +488,7 @@ def report(out):
              and r[k] == r[k]]
         return sum(v) / len(v) if v else float("nan")
 
-    print("\nactivation x reset, BOTH channels frozen, seeds", list(SEEDS))
+    print("\nactivation x reset, both channels frozen, seeds", list(SEEDS))
     print("lyap > 0 chaotic, ~0 marginal, < 0 contracting. "
           "pr is effective dimensionality (1 = rank-1 activity).")
     for norm in NORMS:

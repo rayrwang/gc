@@ -1,7 +1,7 @@
 """
 Topology x activation, both weight channels frozen (RW, 2026-07-27).
 
-Companion to 39. That run asked what the NONLINEARITY and the RESET do to the
+Companion to 39. That run asked what the nonlinearity and the reset do to the
 dynamics with the wiring held at the shipped values; this one holds the
 nonlinearity at three representative points and moves the wiring.
 
@@ -45,7 +45,7 @@ cause:
     until 2026-06-24  activation is `fc.atv` = spike(x) @ w, a step function.
                       bounded and binary, so the recurrent loop cannot run away
     2026-06-24 1d5a211  switched to atv_triangle = relu(x - mean)^p @ w.
-                      UNBOUNDED. this is the change that made divergence
+                      unbounded. this is the change that made divergence
                       possible
     2026-06-24 dfa2fe9  init scale 1.0 -> 1.1, raising loop gain again
     2026-06-26 94a1cba  gated Oja
@@ -72,17 +72,17 @@ Two confounds found while checking the arms construct, both left in the design
 deliberately and both made visible by reporting the realised connection counts
 `nA` and `nE` next to every row:
 
-  DENSITY. `dist_exp` is nominally a structure knob but it is also a density
+  Density. `dist_exp` is nominally a structure knob but it is also a density
   knob: at the baseline the graph has nA=240, nE=455, and at dist_exp=0 the
   same nominal probabilities give nA=697, nE=1006. Comparing those two rows
-  compares an unstructured graph against a spatial one AND a dense graph
+  compares an unstructured graph against a spatial one and a dense graph
   against a sparse one. The census is the only way to tell which did the work,
   and `p_a` is swept alongside precisely so density can be matched after the
   fact rather than assumed away.
 
-  CHANNEL COMPETITION. `single_conn` breaks out of the loop after the first
+  Channel competition. `single_conn` breaks out of the loop after the first
   successful connection to a target, and Dir.A is offered first, so raising
-  `p_a` CROWDS OUT Dir.E: p_a=1.0 gives nA=833 against the baseline's 240
+  `p_a` crowds out Dir.E: p_a=1.0 gives nA=833 against the baseline's 240
   while nE falls from 455 to 283. The two channels are competing for one slot
   per target. That is a property of the shipped wiring nobody has stated, and
   it means p_a and p_e are not independent axes on this substrate.
@@ -353,7 +353,7 @@ def report(out):
              and r[k] == r[k]]
         return sum(v) / len(v) if v else float("nan")
 
-    print("\ntopology star sweep, BOTH channels frozen, seeds", list(SEEDS))
+    print("\ntopology star sweep, both channels frozen, seeds", list(SEEDS))
     print("nA/nE are the realised connection counts: the knobs are nominal, "
           "these are what the graph actually got.")
     for a in ACTS:
