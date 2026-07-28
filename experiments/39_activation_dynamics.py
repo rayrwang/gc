@@ -230,11 +230,27 @@ def cfg_hash(act, keep, norm):
                         dict(arm_cfg(act), keep=keep, use_norm=norm), STEPS)
 
 
+_PRISTINE_UPDATE = None
+
+
 def _patch(act, keep, norm):
-    """install the arm. all three patches are process-local: each worker runs
-    exactly one cell, so nothing leaks between arms."""
+    """Install the arm. A process pool reuses its workers, so every patch here
+    has to be re-applied from the pristine function on each call, not layered
+    on whatever the previous cell left behind.
+
+    The norm patch used to be applied only in the norm=False branch, over
+    whatever `update_activations` currently was. Once a worker ran one
+    norm=False cell the override stayed installed, and every norm=True cell
+    that worker picked up afterwards silently ran with the norm off. That made
+    the norm axis of runs 39 and 41 report a null it had not measured: 12 of
+    300 pairs in run 39 and 12 of 144 in run 41 were the only ones where the
+    norm-on cell reached a worker that had not yet seen a norm-off cell."""
     import src.agents as ag
     from experiments import dire_hosts as dh
+
+    global _PRISTINE_UPDATE
+    if _PRISTINE_UPDATE is None:
+        _PRISTINE_UPDATE = ag.BareCol.update_activations
 
     f = act_fn(act)
     dh.BareAgtX._transport = lambda self, x, w: f(x) @ w
@@ -246,10 +262,12 @@ def _patch(act, keep, norm):
         fc.update = lambda x, threshold=1.0: torch.zeros_like(x)
         fc.update_e = lambda x: torch.zeros_like(x)
 
-    if not norm:
-        base = ag.BareCol.update_activations
+    if norm:
+        ag.BareCol.update_activations = _PRISTINE_UPDATE
+    else:
         ag.BareCol.update_activations = \
-            lambda self, use_norm=True: base(self, use_norm=False)
+            lambda self, use_norm=True, _b=_PRISTINE_UPDATE: _b(self,
+                                                                use_norm=False)
 
 
 def state_of(agt):
