@@ -270,6 +270,39 @@ def _patch(act, keep, norm):
                                                                 use_norm=False)
 
 
+def twin_sync(agt, twin_agt, bulk, vec):
+    """Put the twin in the host's state, displaced to `vec` in the observed
+    coordinates. Every other per-column variable is copied across.
+
+    A column carries more state than the activity vector this run measures:
+    `Activs` also holds avg, avg_sq and rms_avg, and the accumulator nr_1_
+    holds whatever has arrived but not yet been committed. An earlier version
+    of this function wrote only nr_1.actual, so the twin kept its own running
+    RMS and its own accumulator, and the separation being measured was those
+    relaxing rather than the trajectories diverging.
+
+    That mattered wherever the extra variables are live. With the norm off and
+    keep 0 they are not: rms_avg is pinned to 1.0 and the accumulator is zeroed
+    every step, so the old function happened to be correct. Turn either knob on
+    and it stopped being. Measured on tri0.3 at conn_scale 2: keep 0.9 read
+    +10.07 with the partial copy and +0.38 with the full one, and the median
+    twin separation sat at 2.35 against a renormalisation target of 1e-4, four
+    orders of magnitude adrift. Under the partial copy step1 also produced a
+    number where it should have produced none."""
+    i = 0
+    for loc in bulk:
+        c, hc = twin_agt.cols[loc], agt.cols[loc]
+        for dst, src in ((c.nr_1, hc.nr_1), (c.nr_1_, hc.nr_1_)):
+            dst.actual = src.actual.clone()
+            dst.expect = src.expect.clone()
+            dst.avg = src.avg.clone()
+            dst.avg_sq = src.avg_sq.clone()
+            dst.rms_avg = src.rms_avg
+        n = c.nr_1.actual.numel()
+        c.nr_1.actual = vec[i:i + n].view_as(c.nr_1.actual).clone()
+        i += n
+
+
 def state_of(agt):
     """the bulk activity as one flat vector, input column excluded."""
     return torch.cat([c.nr_1.actual.flatten() for loc, c in agt.cols.items()
@@ -371,13 +404,7 @@ def run_one(job):
     bulk = [loc for loc in agt.cols if not agt.is_i(loc)]
 
     def twin_set(vec):
-        """write a flat state back into the twin's bulk columns."""
-        i = 0
-        for loc in bulk:
-            c = twin_agt.cols[loc]
-            n = c.nr_1.actual.numel()
-            c.nr_1.actual = vec[i:i + n].view_as(c.nr_1.actual).clone()
-            i += n
+        return twin_sync(agt, twin_agt, bulk, vec)
 
     rows, keys = [], []
     dlog, status, launched = [], "ok", False

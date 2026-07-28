@@ -147,12 +147,7 @@ def run_one(job):
     g = cfg.conn_scale * k_mean ** 0.5
 
     def twin_set(vec):
-        i = 0
-        for loc in bulk:
-            c = twin_agt.cols[loc]
-            n = c.nr_1.actual.numel()
-            c.nr_1.actual = vec[i:i + n].view_as(c.nr_1.actual).clone()
-            i += n
+        act39.twin_sync(agt, twin_agt, bulk, vec)
 
     rows, keys, dlog = [], [], []
     status, launched = "ok", False
