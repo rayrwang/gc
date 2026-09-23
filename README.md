@@ -6,7 +6,7 @@
 </p>
 
 The bet:
-> It is possible to construct an agent whose knowledge grows predominantly by proposing new ideas in response to problems. New ideas that fail internal or external contradiction are discarded, while existing ideas that fail are replaced once a better alternative is found, only surviving as autobiographical memory. All of this operates without optimizing a (fixed) scalar. Run far enough, this generates the agent's own goals without collapsing into incoherence. Such an agent, if successfully implemented, is a person with the right to individual freedom.
+> It is possible to construct an agent whose knowledge grows by proposing new ideas in response to problems. New ideas that fail internal or external contradiction are discarded, while existing ideas that fail are replaced once a better alternative is found, surviving only as autobiographical memory; this process also generates the agent's own goals. Such an agent, if successfully implemented, is a person with the right to individual freedom.
 
 (*Disclaimer: Very rough/early/speculative work*)
 
@@ -135,3 +135,6 @@ Right now it kind of sucks, need to make it "actually be good":
 **gc**
 1. **g**eneral intelligence / **c**reativity
 2. George Carlin
+3. generation & criticism
+4. goal creation
+5. garbage collector
