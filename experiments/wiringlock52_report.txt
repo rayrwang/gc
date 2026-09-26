@@ -1,0 +1,162 @@
+cells 2200: ok 2136, not ok 64
+  raw|200|2.0|0.3|mnist|51|0.0|0: DIVERGED
+  raw|200|2.0|0.3|mnist|52|0.0|0: DIVERGED
+  raw|200|2.0|0.3|mnist|53|0.0|0: DIVERGED
+  raw|200|2.0|0.3|mnist|50|0.0|0: DIVERGED
+  relu|200|2.0|0.3|mnist|51|0.0|0: DIVERGED
+  relu|200|2.0|0.3|mnist|52|0.0|0: DIVERGED
+  relu|200|2.0|0.3|mnist|53|0.0|0: DIVERGED
+  relu|200|2.0|0.3|mnist|50|0.0|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|50|0.0|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|52|0.0|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|53|0.0|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|51|0.0|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|50|0.0|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|51|0.0|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|52|0.0|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|53|0.0|0: DIVERGED
+  raw|200|2.0|0.3|mnist|51|0.9|0: DIVERGED
+  raw|200|2.0|0.3|mnist|52|0.9|0: DIVERGED
+  raw|200|2.0|0.3|mnist|50|0.9|0: DIVERGED
+  raw|200|2.0|0.3|mnist|53|0.9|0: DIVERGED
+  relu|200|2.0|0.3|mnist|52|0.9|0: DIVERGED
+  relu|200|2.0|0.3|mnist|53|0.9|0: DIVERGED
+  relu|200|2.0|0.3|mnist|50|0.9|0: DIVERGED
+  relu|200|2.0|0.3|mnist|51|0.9|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|51|0.9|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|52|0.9|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|53|0.9|0: DIVERGED
+  tri1.0|200|2.0|0.3|mnist|50|0.9|0: DIVERGED
+  raw|49|1.0|0.3|kp1|51|0.0|0: DIVERGED
+  raw|49|1.0|0.3|kp1|52|0.0|0: DIVERGED
+  raw|49|1.0|0.3|kp1|50|0.0|0: DIVERGED
+  raw|49|1.0|0.3|kp1|53|0.0|0: DIVERGED
+  relu|49|1.0|0.3|kp1|50|0.0|0: DIVERGED
+  relu|49|1.0|0.3|kp1|52|0.0|0: DIVERGED
+  relu|49|1.0|0.3|kp1|53|0.0|0: DIVERGED
+  relu|49|1.0|0.3|kp1|51|0.0|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|51|0.9|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|53|0.9|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|50|0.0|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|51|0.0|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|53|0.0|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|52|0.0|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|50|0.9|0: DIVERGED
+  kwta4|200|2.0|0.3|mnist|52|0.9|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|50|0.0|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|51|0.0|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|52|0.0|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|53|0.0|0: DIVERGED
+  raw|49|1.0|0.3|kp1|50|0.9|0: DIVERGED
+  raw|49|1.0|0.3|kp1|53|0.9|0: DIVERGED
+  relu|49|1.0|0.3|kp1|50|0.9|0: DIVERGED
+  raw|49|1.0|0.3|kp1|51|0.9|0: DIVERGED
+  raw|49|1.0|0.3|kp1|52|0.9|0: DIVERGED
+  relu|49|1.0|0.3|kp1|52|0.9|0: DIVERGED
+  relu|49|1.0|0.3|kp1|53|0.9|0: DIVERGED
+  relu|49|1.0|0.3|kp1|51|0.9|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|50|0.9|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|51|0.9|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|52|0.9|0: DIVERGED
+  tri1.0|49|1.0|0.3|kp1|53|0.9|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|50|0.9|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|52|0.9|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|51|0.9|0: DIVERGED
+  kwta4|49|1.0|0.3|kp1|53|0.9|0: DIVERGED
+
+A. host check, example 16's network, seeds pooled (stock: src BareAgt seeds 0-3; harness: BareAgtXC seeds 50-53)
+  tri0.3  stock c1 0.921..0.929   harness c1 0.914..0.919
+  wta     stock c1 0.048..0.059   harness c1 0.048..0.059
+  tanh    stock c1 -0.014..0.005   harness c1 -0.003..0.055
+  sign    stock c1 -0.006..0.003   harness c1 -0.000..0.005
+
+B. per activation over the main grid (keep 0, norm on; 36 wirings x 3 inputs... i.e. 2 n_cols x 2 dist_exp x 3 p_a x 3 inputs x 4 seeds = 144 cells each)
+  act      static mean    min    max |fac1| max sent static sent level lock>=.5  period  dead
+  raw            0.102  0.000  1.000      0.989       0.102      0.002        1       3  0.08
+  relu           0.925  0.687  1.000      0.880       0.931      0.323        2       6  0.08
+  tri0.3         0.913  0.782  0.963      0.330       0.919      0.465        0       0  0.08
+  tri0.7         0.961  0.776  0.999      0.740       0.966      0.384        0       3  0.08
+  tri1.0         0.931  0.711  1.000      0.987       0.938      0.326        4       8  0.08
+  tanh           0.031  0.001  0.361      0.265       0.029      0.000        0       0  0.08
+  sig4_0         0.997  0.942  1.000      0.997       0.998      0.607       53      96  0.05
+  sig8_0         0.959  0.878  1.000      0.997       0.962      0.550        3       6  0.05
+  step0          0.808  0.735  0.983      0.172       0.803      0.496        0       2  0.05
+  cstep          0.784  0.703  0.816      0.270       0.790      0.499        0       0  0.08
+  sign           0.007  0.002  0.098      0.090       0.006      0.000        0       0  0.08
+  wta            0.120  0.037  1.000      0.997       0.090      0.031        1       4  0.05
+  kwta4          0.201  0.159  0.266      0.092       0.200      0.114        0       0  0.08
+
+C. static by factor, each averaged over the other factors and seeds
+  act           n=49     n=200    de=1.0    de=2.0   pa=0.15    pa=0.3    pa=0.6  inp=none   inp=kp1 inp=mnist
+  raw          0.103     0.102     0.079     0.125     0.101     0.080     0.125     0.088     0.087     0.132
+  relu         0.901     0.949     0.930     0.921     0.905     0.917     0.954     0.942     0.926     0.909
+  tri0.3       0.904     0.922     0.914     0.912     0.910     0.910     0.919     0.921     0.915     0.904
+  tri0.7       0.946     0.977     0.962     0.961     0.954     0.958     0.972     0.976     0.962     0.946
+  tri1.0       0.911     0.951     0.932     0.931     0.926     0.921     0.946     0.948     0.932     0.914
+  tanh         0.052     0.009     0.016     0.045     0.053     0.028     0.011     0.012     0.028     0.052
+  sig4_0       0.994     0.999     0.997     0.997     0.995     0.997     0.999     1.000     0.998     0.993
+  sig8_0       0.952     0.966     0.954     0.964     0.966     0.951     0.959     0.967     0.959     0.951
+  step0        0.805     0.810     0.791     0.825     0.845     0.793     0.785     0.815     0.807     0.801
+  cstep        0.777     0.791     0.784     0.784     0.782     0.784     0.786     0.787     0.785     0.779
+  sign         0.010     0.004     0.005     0.009     0.010     0.007     0.004     0.003     0.008     0.009
+  wta          0.142     0.098     0.058     0.183     0.260     0.060     0.041     0.139     0.112     0.110
+  kwta4        0.204     0.198     0.195     0.206     0.212     0.197     0.193     0.199     0.201     0.202
+
+D. the graphs (per wiring, seeds pooled; Dir.A among bulk columns), with tri0.3's static
+     n   de    pa   kin  kin0  kin1  kin2  kin3+   cyc  gscc  tri0.3 static  dead
+    49    1  0.15  2.40  0.09  0.22  0.25   0.43  0.76  0.76          0.898  0.11
+    49    1  0.30  4.92  0.00  0.05  0.04   0.91  0.99  0.99          0.907  0.00
+    49    1  0.60 10.19  0.00  0.00  0.00   1.00  1.00  1.00          0.916  0.00
+    49    2  0.15  1.27  0.29  0.33  0.25   0.13  0.27  0.17          0.894  0.42
+    49    2  0.30  2.46  0.08  0.18  0.26   0.48  0.76  0.73          0.892  0.08
+    49    2  0.60  4.97  0.00  0.02  0.08   0.90  1.00  1.00          0.918  0.00
+   200    1  0.15  5.68  0.01  0.02  0.07   0.91  0.98  0.98          0.921  0.01
+   200    1  0.30 11.46  0.00  0.00  0.00   1.00  1.00  1.00          0.922  0.00
+   200    1  0.60 22.88  0.00  0.00  0.00   1.00  1.00  1.00          0.919  0.00
+   200    2  0.15  1.89  0.17  0.27  0.27   0.30  0.53  0.50          0.929  0.28
+   200    2  0.30  3.79  0.03  0.09  0.16   0.73  0.93  0.93          0.919  0.03
+   200    2  0.60  7.52  0.00  0.01  0.01   0.97  1.00  1.00          0.922  0.00
+
+E. per column, pooled over the main grid: static and locked share by in-degree and by cycle membership (live columns only)
+  tri0.3: kin 0 n=39 static 0.355 locked 0.00; kin 1 n=1081 static 0.907 locked 0.00; kin 2 n=1661 static 0.911 locked 0.00; kin 3 n=1768 static 0.913 locked 0.00; kin 4+ n=12258 static 0.917 locked 0.00; on cycle n=15879 static 0.916 locked 0.00; off cycle n=928 static 0.878 locked 0.00
+  step0: kin 0 n=39 static 0.355 locked 0.00; kin 1 n=1395 static 0.848 locked 0.23; kin 2 n=1743 static 0.838 locked 0.05; kin 3 n=1773 static 0.819 locked 0.01; kin 4+ n=12258 static 0.790 locked 0.00; on cycle n=15879 static 0.795 locked 0.00; off cycle n=1329 static 0.875 locked 0.30
+  relu: kin 0 n=39 static 0.355 locked 0.00; kin 1 n=1081 static 0.894 locked 0.08; kin 2 n=1661 static 0.910 locked 0.07; kin 3 n=1768 static 0.916 locked 0.05; kin 4+ n=12258 static 0.949 locked 0.00; on cycle n=15879 static 0.941 locked 0.02; off cycle n=928 static 0.869 locked 0.07
+  tanh: kin 0 n=39 static 0.355 locked 0.00; kin 1 n=1081 static 0.040 locked 0.00; kin 2 n=1661 static 0.036 locked 0.00; kin 3 n=1768 static 0.029 locked 0.00; kin 4+ n=12258 static 0.011 locked 0.00; on cycle n=15879 static 0.015 locked 0.00; off cycle n=928 static 0.071 locked 0.00
+  sign: kin 0 n=39 static 0.355 locked 0.00; kin 1 n=1081 static 0.014 locked 0.00; kin 2 n=1661 static 0.011 locked 0.00; kin 3 n=1768 static 0.008 locked 0.00; kin 4+ n=12258 static 0.004 locked 0.00; on cycle n=15879 static 0.005 locked 0.00; off cycle n=928 static 0.039 locked 0.00
+  wta: kin 0 n=39 static 0.355 locked 0.00; kin 1 n=1395 static 0.348 locked 0.23; kin 2 n=1743 static 0.271 locked 0.05; kin 3 n=1773 static 0.178 locked 0.01; kin 4+ n=12258 static 0.060 locked 0.00; on cycle n=15879 static 0.084 locked 0.00; off cycle n=1329 static 0.517 locked 0.31
+
+F. the step settings at the two anchors (seeds pooled): static / fac1 / locked share / cells with a short period / diverged
+  ex16 (n 200, dist_exp 2, p_a 0.3, mnist)
+    act                    keep 0.0 norm 1               keep 0.0 norm 0               keep 0.9 norm 1               keep 0.9 norm 0
+    raw                0.07/-0.11/0.00/0/0                all 4 diverged           0.61/+0.99/0.35/0/0                all 4 diverged
+    relu               0.91/-0.04/0.00/0/0                all 4 diverged           0.99/+0.99/0.97/0/0                all 4 diverged
+    tri0.3             0.92/-0.01/0.00/0/0           0.92/-0.01/0.00/0/0           0.97/+0.99/0.85/0/0           0.97/+0.99/0.82/0/0
+    tri0.7             0.96/-0.01/0.00/0/0           0.98/+0.05/0.00/0/0           1.00/+0.99/0.97/0/0           1.00/+0.99/1.00/0/0
+    tri1.0             0.92/-0.03/0.00/0/0                all 4 diverged           1.00/+0.99/0.97/0/0                all 4 diverged
+    tanh               0.03/-0.01/0.00/0/0           0.01/-0.00/0.00/0/0           0.56/+0.99/0.00/0/0           0.23/+0.99/0.00/0/0
+    sig4_0             1.00/-0.03/0.25/0/0           0.93/-0.00/0.00/0/0           1.00/+0.99/0.97/0/0           0.92/+0.99/0.01/0/0
+    sig8_0             0.96/-0.01/0.00/0/0           0.86/-0.01/0.00/0/0           0.99/+1.00/0.97/0/0           0.92/+0.99/0.01/0/0
+    step0              0.80/-0.00/0.00/0/0           0.80/-0.00/0.00/0/0           0.92/+0.99/0.01/0/0           0.92/+0.99/0.01/0/0
+    cstep              0.79/-0.01/0.00/0/0           0.79/-0.00/0.00/0/0           0.92/+0.99/0.00/0/0           0.92/+0.99/0.00/0/0
+    sign               0.00/-0.00/0.00/0/0           0.00/-0.00/0.00/0/0           0.30/+0.99/0.00/0/0           0.30/+0.99/0.00/0/0
+    wta                0.06/-0.00/0.00/0/0           0.06/-0.00/0.00/0/0           0.26/+0.99/0.00/0/0           0.26/+0.99/0.00/0/0
+    kwta4              0.20/-0.01/0.00/0/0                all 4 diverged           0.47/+0.99/0.00/0/0                all 4 diverged
+  run39 (n 49, dist_exp 1, p_a 0.3, kp1)
+    act                    keep 0.0 norm 1               keep 0.0 norm 0               keep 0.9 norm 1               keep 0.9 norm 0
+    raw                0.01/+0.03/0.00/0/0                all 4 diverged           0.45/+0.99/0.01/0/0                all 4 diverged
+    relu               0.90/-0.30/0.00/0/0                all 4 diverged           0.99/+0.99/0.96/0/0                all 4 diverged
+    tri0.3             0.91/-0.02/0.00/0/0           0.91/-0.00/0.00/0/0           0.97/+0.99/0.66/0/0           0.97/+0.99/0.73/0/0
+    tri0.7             0.95/-0.28/0.00/0/0           0.98/-0.11/0.00/0/0           0.99/+0.99/0.96/0/0           1.00/+0.99/1.00/0/0
+    tri1.0             0.92/-0.43/0.00/0/0                all 4 diverged           0.99/+0.99/0.96/0/0                all 4 diverged
+    tanh               0.01/-0.02/0.00/0/0           0.00/-0.00/0.00/0/0           0.41/+0.99/0.00/0/0           0.20/+0.99/0.00/0/0
+    sig4_0             1.00/-0.32/0.00/4/0           0.90/-0.01/0.00/0/0           1.00/-0.05/0.95/4/0           0.91/+0.99/0.00/0/0
+    sig8_0             0.94/-0.01/0.00/0/0           0.84/-0.00/0.00/0/0           0.98/+0.99/0.95/0/0           0.91/+0.99/0.00/0/0
+    step0              0.78/-0.01/0.00/0/0           0.78/-0.00/0.00/0/0           0.91/+0.99/0.00/0/0           0.91/+0.99/0.00/0/0
+    cstep              0.79/-0.01/0.00/0/0           0.78/-0.01/0.00/0/0           0.91/+0.99/0.00/0/0           0.91/+0.99/0.00/0/0
+    sign               0.00/-0.00/0.00/0/0           0.00/-0.00/0.00/0/0           0.20/+0.99/0.00/0/0           0.20/+0.99/0.00/0/0
+    wta                0.04/-0.01/0.00/0/0           0.04/-0.01/0.00/0/0           0.21/+0.99/0.00/0/0           0.21/+0.99/0.00/0/0
+    kwta4              0.20/-0.01/0.00/0/0                all 4 diverged           0.45/+0.99/0.00/0/0                all 4 diverged
+
+G. what static tracks, across the main-grid cells: Pearson r with the sending side
+  static vs sent static: r = 0.999 over 1872 cells
+  static vs sent level: r = 0.913 over 1872 cells

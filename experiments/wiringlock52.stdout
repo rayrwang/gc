@@ -1,0 +1,200 @@
+2200 cells on 20 workers
+100/2200
+200/2200
+300/2200
+400/2200
+500/2200
+600/2200
+700/2200
+800/2200
+900/2200
+1000/2200
+1100/2200
+1200/2200
+1300/2200
+1400/2200
+1500/2200
+1600/2200
+1700/2200
+1800/2200
+1900/2200
+2000/2200
+2100/2200
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 8811.56it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 14665.40it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 97598.70it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3453.48it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 8422.30it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 17050.02it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 96520.63it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3449.24it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 9137.92it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 18893.26it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 97000.56it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3532.75it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 9300.01it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 16980.99it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 82858.63it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3457.78it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7371.36it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 13797.05it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 50683.39it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2375.30it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 5384.22it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 10951.19it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 33905.70it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2422.75it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7489.83it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 12905.55it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 57633.86it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2404.32it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7557.30it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 13443.28it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 57872.42it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 9868.95it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 19878.22it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 97837.74it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2356.41it/s]
+Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3495.67it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7869.24it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 13573.80it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 57283.58it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2428.34it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 8886.24it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 18001.30it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 18927.79it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3519.25it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 8542.37it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 17403.75it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 82670.82it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3440.43it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 9362.29it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 17924.38it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 94508.88it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 3439.13it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7449.92it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 13107.20it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 57158.68it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2422.24it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7073.03it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 12595.51it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 58331.19it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2426.37it/s]
+
+Initializing new agent...
+Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 7169.75it/s]
+Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 13751.82it/s]
+Initializing bulk of cols:   0%|          | 0/200 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 200/200 [00:00<00:00, 58310.91it/s]
+Initializing conns:   0%|          | 0/202 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 202/202 [00:00<00:00, 2412.70it/s]
+2200/2200
+done init.
+done init.
+done init.
+done init.
+done init.
+done init.
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702240":
+Saving cfg...
+done init.
+done init.
+done init.
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]done init.
+done init.
+done init.
+done init.
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702243":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]done init.
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702244":
+Saving cfg...
+done init.
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702229":
+Saving cfg...
+done init.
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702237":
+Saving cfg...
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702246":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702245":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702230":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702236":
+Saving cfg...
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702226":
+Saving cfg...
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702234":
+Saving cfg...
+
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702231":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702232":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702242":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702239":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]
+Saving agent to "/home/raymond/gc/saves/wiringlock52/stock1702238":
+Saving cfg...
+Saving cols:   0%|          | 0/202 [00:00<?, ?it/s]Saving cols: 100%|██████████| 202/202 [00:00<00:00, 2301.90it/s]Saving cols: 100%|██████████| 202/202 [00:00<00:00, 2299.30it/s]
+
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 2182.23it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 2119.35it/s]
+Saving cols:  76%|███████▌  | 153/202 [00:00<00:00, 1528.15it/s]Saving cols:  77%|███████▋  | 155/202 [00:00<00:00, 1546.88it/s]Saving cols:  84%|████████▍ | 170/202 [00:00<00:00, 1699.87it/s]Saving cols:  84%|████████▍ | 170/202 [00:00<00:00, 1699.43it/s]Saving cols:  84%|████████▎ | 169/202 [00:00<00:00, 1684.35it/s]Saving cols:  62%|██████▏   | 126/202 [00:00<00:00, 1256.18it/s]Saving cols:  81%|████████  | 163/202 [00:00<00:00, 1628.02it/s]Saving cols:  88%|████████▊ | 177/202 [00:00<00:00, 1761.96it/s]Saving cols:  81%|████████  | 163/202 [00:00<00:00, 1628.88it/s]Saving cols:  86%|████████▌ | 173/202 [00:00<00:00, 1729.51it/s]Saving cols:  79%|███████▊  | 159/202 [00:00<00:00, 1583.20it/s]Saving cols:  81%|████████  | 164/202 [00:00<00:00, 1638.29it/s]Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1780.00it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1732.13it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1712.06it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1671.94it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1647.42it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1646.39it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1614.33it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1658.66it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1610.92it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1494.79it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1448.23it/s]
+Saving cols: 100%|██████████| 202/202 [00:00<00:00, 1424.51it/s]
+done
