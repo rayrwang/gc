@@ -1,0 +1,2 @@
+learning off: step-to-step pattern correlation 0.922, 10 steps apart 0.921; units whose sign never changed over the last 200 steps 0.440; mean |state| 0.788; chosen digit changes on 0.01 of steps (last 20 digits: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]); 3.2 steps/s
+learning on : step-to-step pattern correlation 0.712, 10 steps apart 0.718; units whose sign never changed over the last 200 steps 0.224; mean |state| 0.815; chosen digit changes on 0.00 of steps (last 20 digits: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]); 3.1 steps/s
