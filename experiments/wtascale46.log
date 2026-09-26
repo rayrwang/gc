@@ -1,0 +1,12 @@
+wta    keep 0.9 norm off fanout 3 scale  0.25: PR  16.00  mean|state|    0.5357  summed>0.5 0.223  argmax switch 0.115  winner-seq hash 31534737
+wta    keep 0.9 norm off fanout 3 scale   2.0: PR  15.97  mean|state|    4.2922  summed>0.5 0.462  argmax switch 0.116  winner-seq hash 90414327
+wta    keep 0.9 norm off fanout 3 scale  16.0: PR  15.79  mean|state|   34.3598  summed>0.5 0.499  argmax switch 0.116  winner-seq hash 94062725
+tri0.3 keep 0.9 norm off fanout 3 scale  0.25: PR   8.73  mean|state|    4.7110  summed>0.5 0.466  argmax switch 0.011  winner-seq hash 76501227
+tri0.3 keep 0.9 norm off fanout 3 scale   2.0: PR   7.79  mean|state|   92.5628  summed>0.5 0.502  argmax switch 0.009  winner-seq hash 72825052
+tri0.3 keep 0.9 norm off fanout 3 scale  16.0: PR   6.58  mean|state| 1798.5692  summed>0.5 0.502  argmax switch 0.009  winner-seq hash 88496664
+wta    keep 0.9 norm off fanout 0 scale  0.25: PR  15.63  mean|state|    0.5367  summed>0.5 0.222  argmax switch 0.115  winner-seq hash 6902237
+wta    keep 0.9 norm off fanout 0 scale   2.0: PR  16.04  mean|state|    4.2453  summed>0.5 0.462  argmax switch 0.119  winner-seq hash 40236056
+wta    keep 0.9 norm off fanout 0 scale  16.0: PR  16.05  mean|state|   33.6402  summed>0.5 0.498  argmax switch 0.121  winner-seq hash 31993343
+tri0.3 keep 0.9 norm off fanout 0 scale  0.25: PR   7.00  mean|state|    4.7245  summed>0.5 0.466  argmax switch 0.009  winner-seq hash 96944643
+tri0.3 keep 0.9 norm off fanout 0 scale   2.0: PR   9.02  mean|state|   92.4160  summed>0.5 0.503  argmax switch 0.010  winner-seq hash 50562936
+tri0.3 keep 0.9 norm off fanout 0 scale  16.0: PR   7.57  mean|state| 1793.3575  summed>0.5 0.502  argmax switch 0.009  winner-seq hash 69662049

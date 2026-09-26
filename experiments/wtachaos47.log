@@ -1,0 +1,96 @@
+wta    eps 0 step 401: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 402: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 405: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 410: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 420: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 450: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 500: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 1000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 2000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 4000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0 step 7999: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0: host argmax changes on 0.116 of column-steps; argmax sequence over the last 3000 steps: period None
+wta    eps 1e-06 step 401: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 402: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 405: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 410: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 420: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 450: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 500: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 1000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 2000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 4000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06 step 7999: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 1e-06: host argmax changes on 0.116 of column-steps; argmax sequence over the last 3000 steps: period None
+wta    eps 0.001 step 401: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 402: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 405: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 410: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 420: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 450: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 500: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 1000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 2000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 4000: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001 step 7999: rel. distance 0.00e+00, columns with a different argmax 0.000
+wta    eps 0.001: host argmax changes on 0.116 of column-steps; argmax sequence over the last 3000 steps: period None
+wta    eps 0.1 step 401: rel. distance 5.59e-02, columns with a different argmax 0.061
+wta    eps 0.1 step 402: rel. distance 7.10e-02, columns with a different argmax 0.061
+wta    eps 0.1 step 405: rel. distance 1.12e-01, columns with a different argmax 0.082
+wta    eps 0.1 step 410: rel. distance 2.22e-01, columns with a different argmax 0.163
+wta    eps 0.1 step 420: rel. distance 4.35e-01, columns with a different argmax 0.327
+wta    eps 0.1 step 450: rel. distance 1.14e+00, columns with a different argmax 0.857
+wta    eps 0.1 step 500: rel. distance 1.39e+00, columns with a different argmax 0.959
+wta    eps 0.1 step 1000: rel. distance 1.26e+00, columns with a different argmax 0.918
+wta    eps 0.1 step 2000: rel. distance 1.26e+00, columns with a different argmax 1.000
+wta    eps 0.1 step 4000: rel. distance 1.44e+00, columns with a different argmax 0.959
+wta    eps 0.1 step 7999: rel. distance 1.25e+00, columns with a different argmax 0.837
+wta    eps 0.1: host argmax changes on 0.116 of column-steps; argmax sequence over the last 3000 steps: period None
+tri0.3 eps 0 step 401: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 402: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 405: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 410: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 420: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 450: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 500: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 1000: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 2000: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 4000: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0 step 7999: rel. distance 0.00e+00, columns with a different argmax 0.000
+tri0.3 eps 0: host argmax changes on 0.009 of column-steps; argmax sequence over the last 3000 steps: period None
+tri0.3 eps 1e-06 step 401: rel. distance 3.41e-07, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 402: rel. distance 3.17e-07, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 405: rel. distance 2.60e-07, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 410: rel. distance 2.14e-07, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 420: rel. distance 2.71e-07, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 450: rel. distance 5.29e-07, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 500: rel. distance 4.30e-06, columns with a different argmax 0.000
+tri0.3 eps 1e-06 step 1000: rel. distance 2.05e-01, columns with a different argmax 0.224
+tri0.3 eps 1e-06 step 2000: rel. distance 3.58e-01, columns with a different argmax 0.286
+tri0.3 eps 1e-06 step 4000: rel. distance 2.11e-01, columns with a different argmax 0.265
+tri0.3 eps 1e-06 step 7999: rel. distance 2.37e-01, columns with a different argmax 0.388
+tri0.3 eps 1e-06: host argmax changes on 0.009 of column-steps; argmax sequence over the last 3000 steps: period None
+tri0.3 eps 0.001 step 401: rel. distance 2.65e-04, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 402: rel. distance 2.41e-04, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 405: rel. distance 2.32e-04, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 410: rel. distance 1.92e-04, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 420: rel. distance 5.54e-04, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 450: rel. distance 1.28e-03, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 500: rel. distance 1.09e-02, columns with a different argmax 0.000
+tri0.3 eps 0.001 step 1000: rel. distance 3.83e-01, columns with a different argmax 0.367
+tri0.3 eps 0.001 step 2000: rel. distance 2.58e-01, columns with a different argmax 0.245
+tri0.3 eps 0.001 step 4000: rel. distance 2.43e-01, columns with a different argmax 0.224
+tri0.3 eps 0.001 step 7999: rel. distance 3.43e-01, columns with a different argmax 0.469
+tri0.3 eps 0.001: host argmax changes on 0.009 of column-steps; argmax sequence over the last 3000 steps: period None
+tri0.3 eps 0.1 step 401: rel. distance 1.47e-02, columns with a different argmax 0.020
+tri0.3 eps 0.1 step 402: rel. distance 1.33e-02, columns with a different argmax 0.000
+tri0.3 eps 0.1 step 405: rel. distance 1.20e-02, columns with a different argmax 0.020
+tri0.3 eps 0.1 step 410: rel. distance 1.24e-02, columns with a different argmax 0.020
+tri0.3 eps 0.1 step 420: rel. distance 1.52e-02, columns with a different argmax 0.000
+tri0.3 eps 0.1 step 450: rel. distance 2.42e-02, columns with a different argmax 0.020
+tri0.3 eps 0.1 step 500: rel. distance 7.61e-02, columns with a different argmax 0.122
+tri0.3 eps 0.1 step 1000: rel. distance 2.57e-01, columns with a different argmax 0.286
+tri0.3 eps 0.1 step 2000: rel. distance 2.88e-01, columns with a different argmax 0.265
+tri0.3 eps 0.1 step 4000: rel. distance 2.64e-01, columns with a different argmax 0.286
+tri0.3 eps 0.1 step 7999: rel. distance 2.18e-01, columns with a different argmax 0.286
+tri0.3 eps 0.1: host argmax changes on 0.009 of column-steps; argmax sequence over the last 3000 steps: period None

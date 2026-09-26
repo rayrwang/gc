@@ -1,0 +1,60 @@
+wta     keep 0.0  norm off seed 50: pr_in  23.53  pr_out  23.51  send 1.000  nz 0.031  switch 0.959  |state|    0.6103
+wta     keep 0.0  norm off seed 51: pr_in  24.20  pr_out  24.24  send 1.000  nz 0.031  switch 0.959  |state|    0.6375
+wta     keep 0.5  norm off seed 50: pr_in  20.57  pr_out  17.45  send 1.000  nz 0.031  switch 0.635  |state|    0.8674
+wta     keep 0.5  norm off seed 51: pr_in  21.73  pr_out  18.86  send 1.000  nz 0.031  switch 0.640  |state|    0.9020
+wta     keep 0.9  norm off seed 50: pr_in  15.97  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    4.2922
+wta     keep 0.9  norm off seed 51: pr_in  16.33  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    4.4524
+wta     keep 0.0  norm on  seed 50: pr_in  23.56  pr_out  23.51  send 1.000  nz 0.031  switch 0.959  |state|    0.6594
+wta     keep 0.0  norm on  seed 51: pr_in  24.24  pr_out  24.24  send 1.000  nz 0.031  switch 0.959  |state|    0.6830
+wta     keep 0.5  norm on  seed 50: pr_in  20.88  pr_out  17.45  send 1.000  nz 0.031  switch 0.635  |state|    0.7697
+wta     keep 0.5  norm on  seed 51: pr_in  22.04  pr_out  18.86  send 1.000  nz 0.031  switch 0.640  |state|    0.7806
+wta     keep 0.9  norm on  seed 50: pr_in  16.87  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    0.8035
+wta     keep 0.9  norm on  seed 51: pr_in  17.31  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    0.8045
+wta0    keep 0.0  norm off seed 50: pr_in  23.53  pr_out  23.51  send 1.000  nz 0.031  switch 0.959  |state|    0.6103
+wta0    keep 0.0  norm off seed 51: pr_in  24.20  pr_out  24.24  send 1.000  nz 0.031  switch 0.959  |state|    0.6375
+wta0    keep 0.5  norm off seed 50: pr_in  20.57  pr_out  17.45  send 1.000  nz 0.031  switch 0.635  |state|    0.8674
+wta0    keep 0.5  norm off seed 51: pr_in  21.73  pr_out  18.86  send 1.000  nz 0.031  switch 0.640  |state|    0.9020
+wta0    keep 0.9  norm off seed 50: pr_in  15.97  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    4.2922
+wta0    keep 0.9  norm off seed 51: pr_in  16.33  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    4.4524
+wta0    keep 0.0  norm on  seed 50: pr_in  23.56  pr_out  23.51  send 1.000  nz 0.031  switch 0.959  |state|    0.6594
+wta0    keep 0.0  norm on  seed 51: pr_in  24.24  pr_out  24.24  send 1.000  nz 0.031  switch 0.959  |state|    0.6830
+wta0    keep 0.5  norm on  seed 50: pr_in  20.88  pr_out  17.45  send 1.000  nz 0.031  switch 0.635  |state|    0.7697
+wta0    keep 0.5  norm on  seed 51: pr_in  22.04  pr_out  18.86  send 1.000  nz 0.031  switch 0.640  |state|    0.7806
+wta0    keep 0.9  norm on  seed 50: pr_in  16.87  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    0.8035
+wta0    keep 0.9  norm on  seed 51: pr_in  17.31  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    0.8045
+wtapos  keep 0.0  norm off seed 50: pr_in  23.53  pr_out  23.51  send 1.000  nz 0.031  switch 0.959  |state|    0.6103
+wtapos  keep 0.0  norm off seed 51: pr_in  24.20  pr_out  24.24  send 1.000  nz 0.031  switch 0.959  |state|    0.6375
+wtapos  keep 0.5  norm off seed 50: pr_in  20.57  pr_out  17.45  send 1.000  nz 0.031  switch 0.635  |state|    0.8674
+wtapos  keep 0.5  norm off seed 51: pr_in  21.73  pr_out  18.86  send 1.000  nz 0.031  switch 0.640  |state|    0.9020
+wtapos  keep 0.9  norm off seed 50: pr_in  15.97  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    4.2922
+wtapos  keep 0.9  norm off seed 51: pr_in  16.33  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    4.4524
+wtapos  keep 0.0  norm on  seed 50: pr_in  23.56  pr_out  23.51  send 1.000  nz 0.031  switch 0.959  |state|    0.6594
+wtapos  keep 0.0  norm on  seed 51: pr_in  24.24  pr_out  24.24  send 1.000  nz 0.031  switch 0.959  |state|    0.6830
+wtapos  keep 0.5  norm on  seed 50: pr_in  20.88  pr_out  17.45  send 1.000  nz 0.031  switch 0.635  |state|    0.7697
+wtapos  keep 0.5  norm on  seed 51: pr_in  22.04  pr_out  18.86  send 1.000  nz 0.031  switch 0.640  |state|    0.7806
+wtapos  keep 0.9  norm on  seed 50: pr_in  16.87  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    0.8035
+wtapos  keep 0.9  norm on  seed 51: pr_in  17.31  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    0.8045
+wtaraw  keep 0.0  norm off seed 50: DIVERGED at step 164
+wtaraw  keep 0.0  norm off seed 51: DIVERGED at step 160
+wtaraw  keep 0.5  norm off seed 50: DIVERGED at step 141
+wtaraw  keep 0.5  norm off seed 51: DIVERGED at step 137
+wtaraw  keep 0.9  norm off seed 50: DIVERGED at step 113
+wtaraw  keep 0.9  norm off seed 51: DIVERGED at step 112
+wtaraw  keep 0.0  norm on  seed 50: pr_in  23.57  pr_out  22.28  send 1.000  nz 0.031  switch 0.959  |state|    0.7950
+wtaraw  keep 0.0  norm on  seed 51: pr_in  24.14  pr_out  22.91  send 1.000  nz 0.031  switch 0.960  |state|    0.7960
+wtaraw  keep 0.5  norm on  seed 50: pr_in  20.89  pr_out  17.20  send 1.000  nz 0.031  switch 0.594  |state|    0.8001
+wtaraw  keep 0.5  norm on  seed 51: pr_in  21.89  pr_out  18.49  send 1.000  nz 0.031  switch 0.596  |state|    0.8011
+wtaraw  keep 0.9  norm on  seed 50: pr_in  16.61  pr_out  14.75  send 1.000  nz 0.031  switch 0.107  |state|    0.8036
+wtaraw  keep 0.9  norm on  seed 51: pr_in  17.28  pr_out  15.53  send 1.000  nz 0.031  switch 0.113  |state|    0.8038
+wtaclip keep 0.0  norm off seed 50: pr_in  23.57  pr_out  23.38  send 1.000  nz 0.031  switch 0.959  |state|    0.6033
+wtaclip keep 0.0  norm off seed 51: pr_in  24.20  pr_out  24.10  send 1.000  nz 0.031  switch 0.959  |state|    0.6284
+wtaclip keep 0.5  norm off seed 50: pr_in  21.05  pr_out  18.40  send 1.000  nz 0.031  switch 0.640  |state|    0.8608
+wtaclip keep 0.5  norm off seed 51: pr_in  21.78  pr_out  19.08  send 1.000  nz 0.031  switch 0.630  |state|    0.9026
+wtaclip keep 0.9  norm off seed 50: pr_in  15.97  pr_out  16.16  send 1.000  nz 0.031  switch 0.116  |state|    4.2922
+wtaclip keep 0.9  norm off seed 51: pr_in  16.33  pr_out  16.54  send 1.000  nz 0.031  switch 0.118  |state|    4.4524
+wtaclip keep 0.0  norm on  seed 50: pr_in  23.56  pr_out  23.35  send 1.000  nz 0.031  switch 0.960  |state|    0.6575
+wtaclip keep 0.0  norm on  seed 51: pr_in  24.30  pr_out  24.24  send 1.000  nz 0.031  switch 0.961  |state|    0.6780
+wtaclip keep 0.5  norm on  seed 50: pr_in  21.29  pr_out  18.23  send 1.000  nz 0.031  switch 0.632  |state|    0.7687
+wtaclip keep 0.5  norm on  seed 51: pr_in  22.21  pr_out  19.08  send 1.000  nz 0.031  switch 0.646  |state|    0.7800
+wtaclip keep 0.9  norm on  seed 50: pr_in  17.11  pr_out  15.90  send 1.000  nz 0.031  switch 0.118  |state|    0.8039
+wtaclip keep 0.9  norm on  seed 51: pr_in  16.98  pr_out  15.74  send 1.000  nz 0.031  switch 0.119  |state|    0.8039
