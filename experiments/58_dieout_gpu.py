@@ -46,6 +46,8 @@ Parts, each with its own results file and launch record in outputs/:
   full f32/f64 all 4,416 cells, dense on the GPU, in 56's record format, timed.
   full exact   all 4,416 cells in the stock's order on the CPU in float32, one thread,
                batched per group: whether a batch can reproduce 56 bit for bit.
+  full exact2  the same after the fix for batch invariance of the input product
+               (the first exact run had 288 MNIST cells off in the last bits).
 58_report.py compares them with 56 cell by cell.
 
 Usage:
@@ -54,6 +56,7 @@ Usage:
     venv/bin/python experiments/58_dieout_gpu.py full f32
     venv/bin/python experiments/58_dieout_gpu.py full f64
     venv/bin/python experiments/58_dieout_gpu.py full exact
+    venv/bin/python experiments/58_dieout_gpu.py full exact2
 """
 
 import importlib
@@ -326,6 +329,14 @@ def simulate(h, jobs, dtype, device, mode="dense", xs=None, ref=None):
     keep = torch.tensor([[j[4]] for j in jobs], **kw)
     lf = torch.tensor([[1.0 - j[4] if j[7] else 1.0] for j in jobs], **kw)
     norm = torch.tensor([[j[5]] for j in jobs], dtype=torch.bool, device=device)
+    # the edge mode's input product, done as the stock does it: one vector times the
+    # weights per distinct input, not a batched matrix product (whose 784-long sums
+    # round differently: 58's first exact run, 288 MNIST cells off in the last bits)
+    fac_rows = {}
+    for i, j in enumerate(jobs):
+        fac_rows.setdefault(1.0 - j[4] if j[7] else 1.0, []).append(i)
+    fac_rows = [(v, torch.tensor(ii, device=device)) for v, ii in fac_rows.items()]
+    u0_vec = h["u0"].to(**kw)
     X = h["X0"].to(**kw).repeat(B, 1)
     A = h["A0"].to(**kw).repeat(B, 1)
     R = torch.ones(B, n, dtype=torch.float64, device=device)
@@ -362,7 +373,13 @@ def simulate(h, jobs, dtype, device, mode="dense", xs=None, ref=None):
             for s, tt, w in edges:
                 b = slice(tt * D_COL, (tt + 1) * D_COL)
                 if s < 0:
-                    A[:, b] = A[:, b] + U @ w
+                    if t == 1:
+                        A[:, b] = A[:, b] + u0_vec @ w
+                    else:
+                        x = xs[t - 2]
+                        for v, rows in fac_rows:
+                            xv = x if v == 1.0 else v * x  # as 56 scaled the leak cells' inputs
+                            A[rows, b] = A[rows, b] + xv @ w
                 else:
                     A[:, b] = A[:, b] + (Y[:, s * D_COL:(s + 1) * D_COL] @ w) * lf
         Av = A.view(B, n, D_COL)
@@ -574,8 +591,9 @@ def main():
     if what == "full":
         name = sys.argv[2]
         dtype, device, mode = {"f32": (torch.float32, GPU, "dense"), "f64": (torch.float64, GPU, "dense"),
-                               "exact": (torch.float32, CPU, "edge")}[name]
-        if name == "exact":
+                               "exact": (torch.float32, CPU, "edge"),
+                               "exact2": (torch.float32, CPU, "edge")}[name]
+        if name.startswith("exact"):
             torch.set_num_threads(1)  # as 56's cells ran
         jl = f"{BASE}_{name}.jsonl"
         rec = launch.start(f"{BASE}_{name}", {"cells": len(m56.jobs()), "groups": len(groups()),

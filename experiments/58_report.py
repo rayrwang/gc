@@ -108,6 +108,7 @@ def body():
     f32 = full_section(out, "f32", log)
     f64 = full_section(out, "f64", log)
     full_section(out, "exact", log)
+    full_section(out, "exact2", log)
     if f32 and f64:
         both = set(f32) & set(f64)
         same = sum(1 for t in both if f32[t]["outcome"] == f64[t]["outcome"])
@@ -116,8 +117,8 @@ def body():
 
 
 if __name__ == "__main__":
-    raw = [n for n in ("58_dieout_gpu_check.json", "58_dieout_gpu_f32.jsonl", "58_dieout_gpu_f64.jsonl", "58_dieout_gpu_exact.jsonl",
-                       "58_dieout_gpu_check.log", "58_dieout_gpu_f32.log", "58_dieout_gpu_f64.log", "58_dieout_gpu_exact.log")
+    raw = [n for n in ("58_dieout_gpu_check.json", "58_dieout_gpu_f32.jsonl", "58_dieout_gpu_f64.jsonl", "58_dieout_gpu_exact.jsonl", "58_dieout_gpu_exact2.jsonl",
+                       "58_dieout_gpu_check.log", "58_dieout_gpu_f32.log", "58_dieout_gpu_f64.log", "58_dieout_gpu_exact.log", "58_dieout_gpu_exact2.log")
            if os.path.exists(os.path.join(OUT, n))]
     write("58", "58_dieout_gpu.py", raw, body(),
           notes=["- Compared against `outputs/56_dieout.jsonl` (56's records; 56's own report is 56_report.md)."])
