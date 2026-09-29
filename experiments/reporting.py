@@ -3,12 +3,12 @@
 RW's plan for experiments, 2026-09-29: raw results stay on disk in outputs/, which git
 does not track; what is committed for an experiment is its source (NN_name.py), its
 report generator (NN_report.py) and the report (NN_report.md) beside them. The source
-is committed before the run (pool_runner.py refuses launches from uncommitted code),
+is committed before the run (launch.py refuses launches from uncommitted code),
 the report after it, and the report carries what makes the run reproducible.
 
 write() puts the header on a report: the source script; the launch records copied from
-the runner's stamps in outputs/ (commit, versions, pip freeze hash, job counts), or, for
-runs from before the stamps, the script's first commit and the raw files' last-write
+outputs/ (launch.py: commit, versions, pip freeze hash, job counts), or, for runs from
+before the records, the script's first commit and the raw files' last-write
 times, so a reader can compare them; each raw file's size, line count and sha256, and
 the commit where a file committed before the move to outputs/ can still be found; and
 the commit and state of the generator itself. Tables go in a fenced block so they keep
@@ -93,7 +93,7 @@ def _committed(old):
 def _stamp_lines(path):
     doc = json.load(open(path))
     rel = os.path.relpath(path, HERE)
-    ran = [l for l in doc.get("launches", []) if (l.get("finished") or 0) > 0 or l.get("failed")]
+    ran = [l for l in doc.get("launches", []) if l.get("to_run") != 0]  # to_run 0: nothing left to do
     idle = len(doc.get("launches", [])) - len(ran)
     out = []
     for l in ran:
@@ -103,8 +103,9 @@ def _stamp_lines(path):
             f"`{(l.get('commit') or '?')[:12]}`"
             + ("" if repro is None else ", reproducible from the commit" if repro
                else f", NOT reproducible from the commit (uncommitted: {l.get('dirty_files')})")
-            + f"; {l.get('finished')} jobs finished, {l.get('failed')} failed, "
-            f"{l.get('already_done')} already done; `{' '.join(l.get('argv', []))}` on {l.get('host')}; "
+            + "".join(f"; {l[k]} {w}" for k, w in (("finished", "finished"), ("failed", "failed"),
+                                                   ("already_done", "already done")) if l.get(k) is not None)
+            + f"; `{' '.join(l.get('argv', []))}` on {l.get('host')}; "
             f"Python {l.get('python')}, torch {l.get('torch')}, numpy {l.get('numpy')}"
             + (f", CUDA {l['cuda']}" if l.get("cuda") else "")
             + (f"; GPU {l['gpu']}" if l.get("gpu") else "")
