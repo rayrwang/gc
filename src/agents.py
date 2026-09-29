@@ -184,10 +184,10 @@ class ColBase(ABC):
         #                        ^ actual or expectation conn
         #                               ^ source or target
         #                                          ^ current or new
-        #                 v
+        #                          v
     conn_layer_dict: ClassVar[dict[str, tuple[str, Literal[0, 1]]]]
-        # to                         ^ name of activation layer and 
-        #                                 ^ kind (actual or expectations)
+        # to                                  ^ name of activation layer and 
+        #                                          ^ kind (actual or expectations)
 
     def __getattr__(self, name):
         if name in self.conn_layer_dict:
