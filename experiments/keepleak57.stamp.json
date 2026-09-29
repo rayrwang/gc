@@ -1,0 +1,95 @@
+{
+ "launches": [
+  {
+   "start": "2026-09-29T14:21:19-04:00",
+   "end": "2026-09-29T14:21:19-04:00",
+   "status": "done",
+   "argv": [
+    "experiments/57_keep_sweep_leak.py"
+   ],
+   "host": "R",
+   "commit": "a9e17cc7ac3fd947ca45e9450a0445de7a18dcea",
+   "dirty_tracked": true,
+   "diff_hash": "26c8583f18192c6b",
+   "python": "3.14.4",
+   "torch": "2.12.0+cu130",
+   "numpy": "2.5.2",
+   "jobs": 1728,
+   "already_done": 1728,
+   "to_run": 0,
+   "workers": 16,
+   "chunk": 640,
+   "files": {
+    "experiments/10_sweep_bare_x.py": {
+     "sha256": "d8058cfe1597469e",
+     "state": "committed"
+    },
+    "experiments/11_replicate_instar_relu.py": {
+     "sha256": "92c6fc480fac9df0",
+     "state": "committed"
+    },
+    "experiments/14_registered_bare_freeze.py": {
+     "sha256": "245a213103a66aca",
+     "state": "committed"
+    },
+    "experiments/27_hebb_e_probe.py": {
+     "sha256": "fd82171875ec2cde",
+     "state": "committed"
+    },
+    "experiments/31_a_rule_degeneracy.py": {
+     "sha256": "b7a09348732146d4",
+     "state": "committed"
+    },
+    "experiments/39_activation_dynamics.py": {
+     "sha256": "68791553d85070af",
+     "state": "committed"
+    },
+    "experiments/52_wiring_lock.py": {
+     "sha256": "696fc96c06283e11",
+     "state": "committed"
+    },
+    "experiments/55_fatigue_lock.py": {
+     "sha256": "08119939b7c6b5ac",
+     "state": "committed"
+    },
+    "experiments/57_keep_sweep_leak.py": {
+     "sha256": "6c8355fad534c417",
+     "state": "committed"
+    },
+    "experiments/d3.py": {
+     "sha256": "3300b922459ec20f",
+     "state": "committed"
+    },
+    "experiments/dire_exam.py": {
+     "sha256": "bfd65eac740567f9",
+     "state": "committed"
+    },
+    "experiments/dire_hosts.py": {
+     "sha256": "cc632d98b515555f",
+     "state": "committed"
+    },
+    "experiments/pool_runner.py": {
+     "sha256": "36d121aa9741b97f",
+     "state": "modified"
+    },
+    "src/agents.py": {
+     "sha256": "d7d5f7eaf601189d",
+     "state": "committed"
+    },
+    "src/funcs.py": {
+     "sha256": "a14e932d3e11f175",
+     "state": "committed"
+    },
+    "src/iotypes.py": {
+     "sha256": "d010899b3ad20d6e",
+     "state": "committed"
+    }
+   },
+   "worker_files": {},
+   "changed_during_run": [],
+   "code_copy": "keepleak57_code/2026-09-29T142119-0400",
+   "finished": 0,
+   "failed": 0
+  }
+ ]
+}
