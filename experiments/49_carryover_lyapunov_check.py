@@ -66,7 +66,7 @@ sweep, de, T = r39.sweep, r39.de, r39.T
 SEED, LAUNCH, HORIZON, EPS, NDIR, SETTLE = 50, 400, 600, 1e-6, 3, 5
 ACTS = ("tri0.3", "sign", "wta")
 KEEPS = (0.0, 0.25, 0.5, 0.75, 0.9)
-LOG = os.path.join(HERE, "lyapcheck49.log")
+LOG = os.path.join(HERE, "outputs", "49_carryover_lyapunov_check.log")
 
 
 def slope(ts, ys):

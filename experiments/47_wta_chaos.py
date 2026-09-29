@@ -55,7 +55,7 @@ SEED, KEEP, NORM, STEPS, LAUNCH = 50, 0.9, False, 8000, 400
 EPS = (0.0, 1e-6, 1e-3, 1e-1)
 ACTS = ("wta", "tri0.3")
 REPORT = {401, 402, 405, 410, 420, 450, 500, 1000, 2000, 4000, STEPS - 1}
-LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wtachaos47.log")
+LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "47_wta_chaos.log")
 
 
 def full_sync(host, twin, bulk, vec):

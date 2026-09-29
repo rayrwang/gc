@@ -51,7 +51,7 @@ ACTS = ("wta", "wta0", "wtapos", "wtaraw", "wtaclip")
 KEEPS = (0.0, 0.5, 0.9)
 NORMS = (False, True)
 SEEDS = (50, 51)
-LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wtavar48.log")
+LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "48_wta_variants.log")
 
 
 def variant(name):

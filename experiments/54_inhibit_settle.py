@@ -13,7 +13,7 @@ so keep 0, seed 0 so every condition gets the same weights). Varied: the activat
 by a pass-through). Measured per step: mean |a_t - a_t-1| over every nr_*.actual; for the
 inhibit-on runs also the mean |change| the inhibition adds, to show it fires.
 
-Output: inhibitsettle54.log and inhibitsettle54.json beside this file.
+Output: outputs/54_inhibit_settle.log and .json; summary in 54_report.md.
 """
 
 import os
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     changes = {name: [] for name, _, _ in conditions}
     inhib = {name: [] for name, _, _ in conditions}
 
-    log = open(os.path.join(HERE, "inhibitsettle54.log"), "w")
+    log = open(os.path.join(HERE, "outputs", "54_inhibit_settle.log"), "w")
     print(f"n_cols {n_cols}, steps {STEPS}, device {torch.get_default_device()}", file=log, flush=True)
     for step in range(STEPS):
         for name, activation, on in conditions:
@@ -123,5 +123,5 @@ if __name__ == "__main__":
     for name, s in summary.items():
         print(name, json.dumps(s), file=log)
     log.close()
-    with open(os.path.join(HERE, "inhibitsettle54.json"), "w") as f:
+    with open(os.path.join(HERE, "outputs", "54_inhibit_settle.json"), "w") as f:
         json.dump({"changes": changes, "summary": summary, "n_cols": n_cols, "steps": STEPS}, f)

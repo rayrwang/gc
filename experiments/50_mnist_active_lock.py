@@ -42,7 +42,7 @@ sys.path.insert(0, ROOT)
 os.chdir(ROOT)  # the MNIST loader reads ./data
 
 STEPS, WINDOW, SEED, N_COLS = 500, 200, 0, 200
-LOG = os.path.join(ROOT, "experiments", "mnistlock50.log")
+LOG = os.path.join(ROOT, "experiments", "outputs", "50_mnist_active_lock.log")
 
 
 def arm(learning):

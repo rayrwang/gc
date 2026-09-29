@@ -1,96 +1,0 @@
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 36.73it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 5833.52it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 1669.50it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 2952.10it/s]
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 4860.14it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8962.19it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 2527.97it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 2942.30it/s]
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 5907.47it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8793.09it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 2514.33it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns:  88%|████████▊ | 90/102 [00:00<00:00, 862.68it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 650.11it/s]
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 4809.98it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8701.88it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols:  99%|█████████▉| 99/100 [00:00<00:00, 984.22it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 959.68it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns:   1%|          | 1/102 [03:41<6:12:47, 221.47s/it]Initializing conns: 100%|██████████| 102/102 [03:41<00:00,  2.17s/it] 
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 4755.45it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8719.97it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 2301.17it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 2715.59it/s]
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 4665.52it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8943.08it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 2150.74it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 2644.09it/s]
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 4821.04it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8050.49it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 2218.62it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 2542.67it/s]
-done init.
-
-Initializing new agent...
-Initializing input cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing input cols: 100%|██████████| 1/1 [00:00<00:00, 4728.64it/s]
-Initializing output cols:   0%|          | 0/1 [00:00<?, ?it/s]Initializing output cols: 100%|██████████| 1/1 [00:00<00:00, 8905.10it/s]
-Initializing bulk of cols:   0%|          | 0/100 [00:00<?, ?it/s]Initializing bulk of cols: 100%|██████████| 100/100 [00:00<00:00, 2186.74it/s]
-Initializing conns:   0%|          | 0/102 [00:00<?, ?it/s]Initializing conns: 100%|██████████| 102/102 [00:00<00:00, 2473.14it/s]
-done init.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_sig_b40_inhiboff":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   7%|▋         | 7/102 [00:00<00:01, 69.61it/s]Saving cols:  14%|█▎        | 14/102 [00:00<00:01, 63.85it/s]Saving cols:  21%|██        | 21/102 [00:00<00:01, 60.97it/s]Saving cols:  27%|██▋       | 28/102 [00:00<00:01, 58.42it/s]Saving cols:  33%|███▎      | 34/102 [00:00<00:01, 54.42it/s]Saving cols:  39%|███▉      | 40/102 [00:00<00:01, 50.48it/s]Saving cols:  45%|████▌     | 46/102 [00:00<00:01, 51.02it/s]Saving cols:  51%|█████     | 52/102 [00:00<00:01, 49.09it/s]Saving cols:  56%|█████▌    | 57/102 [00:01<00:00, 47.63it/s]Saving cols:  61%|██████    | 62/102 [00:01<00:00, 48.16it/s]Saving cols:  67%|██████▋   | 68/102 [00:01<00:00, 50.49it/s]Saving cols:  73%|███████▎  | 74/102 [00:01<00:00, 51.49it/s]Saving cols:  78%|███████▊  | 80/102 [00:01<00:00, 38.56it/s]Saving cols:  83%|████████▎ | 85/102 [00:01<00:00, 28.03it/s]Saving cols:  88%|████████▊ | 90/102 [00:02<00:00, 31.90it/s]Saving cols:  96%|█████████▌| 98/102 [00:02<00:00, 41.04it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 45.62it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_sig_b40_inhibon":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   8%|▊         | 8/102 [00:00<00:01, 75.73it/s]Saving cols:  16%|█▌        | 16/102 [00:00<00:01, 65.89it/s]Saving cols:  23%|██▎       | 23/102 [00:00<00:01, 54.43it/s]Saving cols:  28%|██▊       | 29/102 [00:00<00:01, 49.55it/s]Saving cols:  34%|███▍      | 35/102 [00:00<00:01, 42.02it/s]Saving cols:  39%|███▉      | 40/102 [00:00<00:01, 40.73it/s]Saving cols:  44%|████▍     | 45/102 [00:00<00:01, 42.19it/s]Saving cols:  49%|████▉     | 50/102 [00:01<00:01, 42.16it/s]Saving cols:  54%|█████▍    | 55/102 [00:01<00:01, 37.72it/s]Saving cols:  59%|█████▉    | 60/102 [00:01<00:01, 38.81it/s]Saving cols:  63%|██████▎   | 64/102 [00:01<00:00, 38.53it/s]Saving cols:  69%|██████▊   | 70/102 [00:01<00:00, 42.07it/s]Saving cols:  74%|███████▎  | 75/102 [00:01<00:00, 42.60it/s]Saving cols:  78%|███████▊  | 80/102 [00:01<00:00, 39.32it/s]Saving cols:  83%|████████▎ | 85/102 [00:01<00:00, 40.35it/s]Saving cols:  88%|████████▊ | 90/102 [00:02<00:00, 42.10it/s]Saving cols:  95%|█████████▌| 97/102 [00:02<00:00, 48.66it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 44.57it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_sig_b4_inhiboff":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   4%|▍         | 4/102 [00:00<00:03, 25.30it/s]Saving cols:   7%|▋         | 7/102 [00:00<00:05, 17.02it/s]Saving cols:  13%|█▎        | 13/102 [00:00<00:02, 29.67it/s]Saving cols:  18%|█▊        | 18/102 [00:00<00:02, 34.50it/s]Saving cols:  24%|██▎       | 24/102 [00:00<00:01, 40.13it/s]Saving cols:  28%|██▊       | 29/102 [00:00<00:01, 42.29it/s]Saving cols:  33%|███▎      | 34/102 [00:00<00:01, 41.60it/s]Saving cols:  38%|███▊      | 39/102 [00:01<00:01, 40.56it/s]Saving cols:  43%|████▎     | 44/102 [00:01<00:01, 41.39it/s]Saving cols:  48%|████▊     | 49/102 [00:01<00:01, 40.78it/s]Saving cols:  53%|█████▎    | 54/102 [00:01<00:01, 40.95it/s]Saving cols:  58%|█████▊    | 59/102 [00:01<00:01, 40.95it/s]Saving cols:  63%|██████▎   | 64/102 [00:01<00:00, 42.96it/s]Saving cols:  69%|██████▊   | 70/102 [00:01<00:00, 46.39it/s]Saving cols:  74%|███████▎  | 75/102 [00:01<00:00, 45.79it/s]Saving cols:  78%|███████▊  | 80/102 [00:02<00:00, 43.60it/s]Saving cols:  83%|████████▎ | 85/102 [00:02<00:00, 44.86it/s]Saving cols:  88%|████████▊ | 90/102 [00:02<00:00, 46.07it/s]Saving cols:  95%|█████████▌| 97/102 [00:02<00:00, 51.87it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 42.28it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_sig_b4_inhibon":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   7%|▋         | 7/102 [00:00<00:01, 69.41it/s]Saving cols:  14%|█▎        | 14/102 [00:00<00:01, 62.05it/s]Saving cols:  21%|██        | 21/102 [00:00<00:01, 59.25it/s]Saving cols:  26%|██▋       | 27/102 [00:00<00:01, 54.40it/s]Saving cols:  32%|███▏      | 33/102 [00:00<00:01, 52.23it/s]Saving cols:  38%|███▊      | 39/102 [00:00<00:01, 48.37it/s]Saving cols:  43%|████▎     | 44/102 [00:00<00:01, 47.71it/s]Saving cols:  48%|████▊     | 49/102 [00:01<00:03, 14.47it/s]Saving cols:  53%|█████▎    | 54/102 [00:01<00:02, 17.79it/s]Saving cols:  57%|█████▋    | 58/102 [00:02<00:02, 20.59it/s]Saving cols:  62%|██████▏   | 63/102 [00:02<00:01, 24.34it/s]Saving cols:  67%|██████▋   | 68/102 [00:02<00:01, 28.40it/s]Saving cols:  72%|███████▏  | 73/102 [00:02<00:00, 32.13it/s]Saving cols:  76%|███████▋  | 78/102 [00:02<00:00, 32.80it/s]Saving cols:  81%|████████▏ | 83/102 [00:02<00:00, 36.11it/s]Saving cols:  86%|████████▋ | 88/102 [00:02<00:00, 38.28it/s]Saving cols:  93%|█████████▎| 95/102 [00:02<00:00, 44.26it/s]Saving cols:  99%|█████████▉| 101/102 [00:02<00:00, 45.69it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 34.25it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_sig_b1_inhiboff":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   8%|▊         | 8/102 [00:00<00:01, 77.51it/s]Saving cols:  16%|█▌        | 16/102 [00:00<00:01, 56.88it/s]Saving cols:  23%|██▎       | 23/102 [00:00<00:02, 30.99it/s]Saving cols:  27%|██▋       | 28/102 [00:00<00:02, 32.76it/s]Saving cols:  33%|███▎      | 34/102 [00:00<00:01, 38.15it/s]Saving cols:  38%|███▊      | 39/102 [00:00<00:01, 39.47it/s]Saving cols:  44%|████▍     | 45/102 [00:01<00:01, 43.64it/s]Saving cols:  49%|████▉     | 50/102 [00:01<00:01, 44.19it/s]Saving cols:  54%|█████▍    | 55/102 [00:01<00:01, 44.75it/s]Saving cols:  59%|█████▉    | 60/102 [00:01<00:00, 44.83it/s]Saving cols:  64%|██████▎   | 65/102 [00:01<00:00, 45.90it/s]Saving cols:  69%|██████▊   | 70/102 [00:01<00:00, 45.24it/s]Saving cols:  74%|███████▎  | 75/102 [00:01<00:00, 45.49it/s]Saving cols:  78%|███████▊  | 80/102 [00:01<00:00, 44.44it/s]Saving cols:  84%|████████▍ | 86/102 [00:01<00:00, 48.48it/s]Saving cols:  89%|████████▉ | 91/102 [00:02<00:00, 47.35it/s]Saving cols:  96%|█████████▌| 98/102 [00:02<00:00, 51.19it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 45.09it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_sig_b1_inhibon":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   8%|▊         | 8/102 [00:00<00:01, 70.05it/s]Saving cols:  16%|█▌        | 16/102 [00:00<00:01, 60.28it/s]Saving cols:  23%|██▎       | 23/102 [00:00<00:01, 58.90it/s]Saving cols:  28%|██▊       | 29/102 [00:00<00:01, 57.00it/s]Saving cols:  34%|███▍      | 35/102 [00:01<00:05, 11.54it/s]Saving cols:  38%|███▊      | 39/102 [00:01<00:04, 13.73it/s]Saving cols:  43%|████▎     | 44/102 [00:02<00:03, 17.33it/s]Saving cols:  48%|████▊     | 49/102 [00:02<00:02, 21.10it/s]Saving cols:  53%|█████▎    | 54/102 [00:02<00:01, 24.18it/s]Saving cols:  58%|█████▊    | 59/102 [00:02<00:01, 28.08it/s]Saving cols:  63%|██████▎   | 64/102 [00:02<00:01, 31.24it/s]Saving cols:  68%|██████▊   | 69/102 [00:02<00:00, 34.89it/s]Saving cols:  73%|███████▎  | 74/102 [00:02<00:00, 37.92it/s]Saving cols:  77%|███████▋  | 79/102 [00:02<00:00, 36.83it/s]Saving cols:  82%|████████▏ | 84/102 [00:03<00:00, 39.35it/s]Saving cols:  87%|████████▋ | 89/102 [00:03<00:00, 40.85it/s]Saving cols:  93%|█████████▎| 95/102 [00:03<00:00, 45.77it/s]Saving cols: 100%|██████████| 102/102 [00:03<00:00, 50.10it/s]Saving cols: 100%|██████████| 102/102 [00:03<00:00, 30.37it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_spike_inhiboff":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   7%|▋         | 7/102 [00:00<00:01, 68.53it/s]Saving cols:  14%|█▎        | 14/102 [00:00<00:01, 57.07it/s]Saving cols:  20%|█▉        | 20/102 [00:00<00:01, 55.63it/s]Saving cols:  25%|██▌       | 26/102 [00:00<00:01, 53.42it/s]Saving cols:  31%|███▏      | 32/102 [00:00<00:01, 51.66it/s]Saving cols:  37%|███▋      | 38/102 [00:00<00:01, 45.88it/s]Saving cols:  42%|████▏     | 43/102 [00:00<00:01, 46.70it/s]Saving cols:  47%|████▋     | 48/102 [00:00<00:01, 46.27it/s]Saving cols:  52%|█████▏    | 53/102 [00:01<00:02, 20.37it/s]Saving cols:  56%|█████▌    | 57/102 [00:01<00:01, 23.21it/s]Saving cols:  61%|██████    | 62/102 [00:01<00:01, 27.56it/s]Saving cols:  66%|██████▌   | 67/102 [00:01<00:01, 31.30it/s]Saving cols:  72%|███████▏  | 73/102 [00:01<00:00, 36.46it/s]Saving cols:  76%|███████▋  | 78/102 [00:02<00:00, 35.68it/s]Saving cols:  81%|████████▏ | 83/102 [00:02<00:00, 38.12it/s]Saving cols:  86%|████████▋ | 88/102 [00:02<00:00, 39.93it/s]Saving cols:  92%|█████████▏| 94/102 [00:02<00:00, 43.35it/s]Saving cols:  98%|█████████▊| 100/102 [00:02<00:00, 46.97it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 39.32it/s]
-done saving.
-
-Saving agent to "/home/raymond/gc/saves/inhibit54_spike_inhibon":
-Saving cfg...
-Saving cols:   0%|          | 0/102 [00:00<?, ?it/s]Saving cols:   8%|▊         | 8/102 [00:00<00:01, 68.60it/s]Saving cols:  15%|█▍        | 15/102 [00:00<00:01, 60.26it/s]Saving cols:  22%|██▏       | 22/102 [00:00<00:01, 57.56it/s]Saving cols:  27%|██▋       | 28/102 [00:00<00:01, 56.55it/s]Saving cols:  33%|███▎      | 34/102 [00:00<00:01, 54.05it/s]Saving cols:  39%|███▉      | 40/102 [00:00<00:01, 49.99it/s]Saving cols:  45%|████▌     | 46/102 [00:00<00:01, 50.19it/s]Saving cols:  51%|█████     | 52/102 [00:01<00:02, 22.75it/s]Saving cols:  55%|█████▍    | 56/102 [00:01<00:01, 25.15it/s]Saving cols:  60%|█████▉    | 61/102 [00:01<00:01, 28.99it/s]Saving cols:  65%|██████▍   | 66/102 [00:01<00:01, 32.97it/s]Saving cols:  71%|███████   | 72/102 [00:01<00:00, 37.89it/s]Saving cols:  75%|███████▌  | 77/102 [00:01<00:00, 38.49it/s]Saving cols:  80%|████████  | 82/102 [00:02<00:00, 40.66it/s]Saving cols:  85%|████████▌ | 87/102 [00:02<00:00, 40.28it/s]Saving cols:  91%|█████████ | 93/102 [00:02<00:00, 45.16it/s]Saving cols:  98%|█████████▊| 100/102 [00:02<00:00, 49.81it/s]Saving cols: 100%|██████████| 102/102 [00:02<00:00, 41.30it/s]
-done saving.

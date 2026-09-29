@@ -109,7 +109,7 @@ fac1 -0.011; run 39's network 0.913 / 0.910 / -0.007; step0 0.805 / 0.806 /
 check: stock BareAgt on the CPU, seed 0, tri0.3 c1 0.921 (51 on the GPU,
 seed 0: 0.922), wta 0.059; the harness matches the stock host.
 
-Result, 2026-09-26 (wiringlock52.log, .json; tables in wiringlock52_report.txt):
+Result, 2026-09-26 (outputs/52_wiring_lock.log, .json; tables in 52_report.md):
 2,200 cells, the only failures the 64 expected divergences (raw, relu, tri1.0,
 kwta4 with the norm off). Host check: stock and harness within 0.01 for
 tri0.3, wta, tanh and sign. Main grid, mean static over 144 cells each: sig4_0
@@ -167,8 +167,8 @@ CONT = ("raw", "relu", "tri0.3", "tri0.7", "tri1.0", "tanh", "sig4_0", "sig8_0")
 DISC = ("step0", "cstep", "sign", "wta", "kwta4")
 ACTS = CONT + DISC
 ANCHORS = {"ex16": (200, 2.0, 0.3, "mnist"), "run39": (49, 1.0, 0.3, "kp1")}
-LOG = os.path.join(HERE, "wiringlock52.log")
-OUT = os.path.join(HERE, "wiringlock52.json")
+LOG = os.path.join(HERE, "outputs", "52_wiring_lock.log")
+OUT = os.path.join(HERE, "outputs", "52_wiring_lock.json")
 _MNIST = None
 
 
@@ -401,7 +401,7 @@ def line(r):
 
 
 def report():
-    """tables from wiringlock52.json; printed and written beside the log"""
+    """tables from outputs/52_wiring_lock.json, returned as text (52_report.py puts them in 52_report.md)"""
     rs = json.load(open(OUT))
     ok = [r for r in rs if r["status"] == "ok"]
     bad = [r for r in rs if r["status"] != "ok"]
@@ -521,15 +521,12 @@ def report():
         r_ = cov / math.sqrt(sum((x - mx) ** 2 for x in xs) * sum((y - my) ** 2 for y in ys))
         p(f"  static vs sent {key[2:]}: r = {r_:.3f} over {len(xs)} cells")
 
-    text = "\n".join(out)
-    print(text)
-    with open(os.path.join(HERE, "wiringlock52_report.txt"), "w") as fh:
-        fh.write(text + "\n")
+    return "\n".join(out)
 
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "report":
-        report()
+        print(report())
         return
     if len(sys.argv) > 1 and sys.argv[1] == "one":
         a, n, de_, pa, inp, s = sys.argv[2:8]

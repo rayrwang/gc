@@ -71,7 +71,7 @@ separate, so the first expectation above holds only in distribution; tri0.3 at
 keep 0.9, norm off, grows at +0.034 coded and +0.030 with the factor (49: +0.03);
 raw at keep 0.5 with the factor and the norm off diverges at step 70.
 
-Output: keepleak57.log, keepleak57.jsonl, keepleak57.json beside this file.
+Output: outputs/57_keep_sweep_leak.log, .jsonl and .json; tables in 57_report.md.
 Usage:
     venv/bin/python experiments/57_keep_sweep_leak.py          # all cells, 16 workers
     venv/bin/python experiments/57_keep_sweep_leak.py smoke    # a few cells, printed
@@ -93,8 +93,8 @@ m55 = importlib.import_module("55_fatigue_lock")
 m52, r39, sweep, de, T = m55.m52, m55.r39, m55.sweep, m55.de, m55.T
 ROOT = m55.ROOT
 STEPS, WINDOW = m52.STEPS, m52.WINDOW
-LOG = os.path.join(HERE, "keepleak57.log")
-OUT = os.path.join(HERE, "keepleak57.json")
+LOG = os.path.join(HERE, "outputs", "57_keep_sweep_leak.log")
+OUT = os.path.join(HERE, "outputs", "57_keep_sweep_leak.json")
 SEEDS = (50, 51, 52, 53)
 KEEP_FORMS = [(0.0, "code")] + [(k, f) for k in (0.25, 0.5, 0.75, 0.9) for f in ("code", "leak")]
 ARMS = ([(a, nm) for a in ("tanh", "sig4_0", "sig8_0", "step1", "tri0.3", "tri0.7") for nm in (True, False)]

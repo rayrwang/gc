@@ -25,7 +25,7 @@ and with the norm off the whole update (carried-over state, recurrent sum,
 input sum) is linear in the weights, so scaling every weight scales every
 summed input and keeps the winners.
 
-Result, 2026-09-26 (wtascale46.log): wta PR 16.00 / 15.97 / 15.79, argmax
+Result, 2026-09-26 (outputs/46_wta_scale.log): wta PR 16.00 / 15.97 / 15.79, argmax
 changes on 11.5-11.6% of steps at all three scales, |state| 0.54 / 4.29 /
 34.4 (linear); winner sequences not bit-identical (hashes differ; most likely
 rounding differences amplified over 2000 steps, not checked). tri0.3 PR
@@ -55,7 +55,7 @@ sweep, de, T = r39.sweep, r39.de, r39.T
 SEED = 50
 GRID = [(act, 0.9, False, s, f) for f in (3, 0) for act in ("wta", "tri0.3")
         for s in (0.25, 2.0, 16.0)]
-LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wtascale46.log")
+LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs", "46_wta_scale.log")
 
 
 def cell(act, keep, norm, scale, fanout=3):

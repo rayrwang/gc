@@ -12,8 +12,8 @@ no measures to fill), with 55r's guarded participation ratio, through pool_runne
 
 It is also a determinism check: each rerun cell's log line, formatted by 55's own
 line(), is compared with the logged one field for field (the time field excepted);
-matches, mismatches and every mismatching pair go to fatiguelock55_fill_check.txt.
-Output: fatiguelock55_fill.jsonl and .json, fatiguelock55_fill.log. 55's log and
+matches, mismatches and every mismatching pair go to outputs/55f_fatigue_lock_fill_check.txt.
+Output: outputs/55f_fatigue_lock_fill.jsonl and .json, outputs/55f_fatigue_lock_fill.log. 55's log and
 55r's files are not modified.
 Usage:
     venv/bin/python experiments/55f_fatigue_lock_fill.py          # all cells
@@ -30,15 +30,15 @@ sys.path.insert(0, HERE)
 
 m55r = importlib.import_module("55r_fatigue_lock_resume")
 m55 = m55r.m55
-OUT = os.path.join(HERE, "fatiguelock55_fill.json")
-LOG = os.path.join(HERE, "fatiguelock55_fill.log")
-CHECK = os.path.join(HERE, "fatiguelock55_fill_check.txt")
+OUT = os.path.join(HERE, "outputs", "55f_fatigue_lock_fill.json")
+LOG = os.path.join(HERE, "outputs", "55f_fatigue_lock_fill.log")
+CHECK = os.path.join(HERE, "outputs", "55f_fatigue_lock_fill_check.txt")
 
 
 def logged():
     """The ok log lines of cells that have no full record in 55r's results."""
     have = set()
-    rp = os.path.join(HERE, "fatiguelock55_resume.jsonl")
+    rp = os.path.join(HERE, "outputs", "55r_fatigue_lock_resume.jsonl")
     if os.path.exists(rp):
         for s in open(rp):
             have.add(json.loads(s)["tag"])

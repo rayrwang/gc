@@ -8,7 +8,17 @@
 # which bytes produced each verdict, and those objects can be exported as a
 # release asset if a specific result needs to ship with its evidence.
 #
-# Sizes at time of writing: tracked ~2.3MB, excluded ~2.3GB.
+# Sizes when this was written (2026-07-24): tracked ~2.3MB, excluded ~2.3GB.
+# On 2026-09-29, after the move to outputs/ below: tracked ~28MB, most of it runs/.
+#
+# From experiment 58 on (RW 2026-09-29), and retroactively for 46 to 57: raw
+# results go to outputs/, which is not tracked; what is tracked for each experiment
+# is its source (NN_name.py), its report generator (NN_report.py) and the report
+# (NN_report.md), which carries the commit the run launched from (pool_runner.py
+# refuses launches from uncommitted code) and a sha256 of each raw file. Raw files
+# stay on disk and in the backups; the ones committed before 2026-09-29 stay in git
+# history at the commits the reports name. runs/ below is the older scheme, kept for
+# the registered runs.
 
 __pycache__/
 
@@ -44,9 +54,7 @@ runs/r_*/log.jsonl
 !runs/r_20260709_162553_5fd3771_s0/log.jsonl
 !runs/r_20260709_162853_5fd3771_s7/log.jsonl
 
-# Save-as-you-go files that pool_runner.py appends to as each job finishes
-# (fatiguelock55_resume.jsonl, dieout56.jsonl, keepleak57.jsonl, ...). Each
-# duplicates the .json written beside it at the end of the run, so only the
-# .json is tracked; the .jsonl stays on disk so a rerun can skip finished jobs.
-# Leading slash: top level only, so every .jsonl under runs/ stays tracked.
-/*.jsonl
+# Raw results (the scheme above). The empty .gitkeep is tracked so the folder
+# exists in a fresh clone and the scripts can write into it.
+/outputs/*
+!/outputs/.gitkeep

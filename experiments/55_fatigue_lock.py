@@ -81,7 +81,8 @@ Expected (Claude's, written before the run):
    lets them escape before the adaptation catches up. The step of divergence is
    recorded.
 
-Output: fatiguelock55.log, fatiguelock55.json, fatiguelock55_report.txt.
+Output: outputs/55_fatigue_lock.log and .json (the first launch was killed before its JSON
+was written; 55r and 55f hold the full records); tables in 55_report.md.
 Usage:
     venv/bin/python experiments/55_fatigue_lock.py           # all cells, in parallel
     venv/bin/python experiments/55_fatigue_lock.py smoke     # six cells, printed
@@ -119,8 +120,8 @@ ARMS = ([(a, nm) for a in ("raw", "relu", "tri1.0", "kwta4") for nm in (True, Fa
         + [(a, nm) for a in ("tanh", "sig4_0", "step1", "tri0.3") for nm in (True, False)])
 BOUNDED = ("tanh", "sig4_0", "sign", "step0", "step1")
 EPS, SENS_AT, SENS_H = 1e-4, 939, 50
-LOG = os.path.join(HERE, "fatiguelock55.log")
-OUT = os.path.join(HERE, "fatiguelock55.json")
+LOG = os.path.join(HERE, "outputs", "55_fatigue_lock.log")
+OUT = os.path.join(HERE, "outputs", "55_fatigue_lock.json")
 
 
 def install(act, kind, tau, g):

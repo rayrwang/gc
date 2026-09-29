@@ -74,7 +74,7 @@ Expected (Claude's, written before the run):
    fan-out is 3 (the June input-starvation finding); MNIST into every column keeps
    more alive.
 
-Output: dieout56.log, dieout56.json beside this file.
+Output: outputs/56_dieout.log and .json; tables in 56_report.md.
 Usage:
     venv/bin/python experiments/56_dieout.py            # all runs, in parallel
     venv/bin/python experiments/56_dieout.py smoke      # a few runs, printed
@@ -104,8 +104,8 @@ ACTS = ("raw", "relu", "rrelu1", "tri0.3", "tri1.0", "tanh", "sig4_0", "sig4_1",
         "step0", "step0.5", "step1", "step2", "cstep", "sign", "wta", "kwta4")
 SCALES = (0.1, 0.3, 1.0, 2.0, 4.0, 16.0)
 NETS = {"run39": (49, 1.0, 0.3), "ex16": (200, 2.0, 0.3)}
-LOG = os.path.join(HERE, "dieout56.log")
-OUT = os.path.join(HERE, "dieout56.json")
+LOG = os.path.join(HERE, "outputs", "56_dieout.log")
+OUT = os.path.join(HERE, "outputs", "56_dieout.json")
 _MNIST = None
 
 

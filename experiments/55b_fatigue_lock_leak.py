@@ -31,7 +31,7 @@ tri1.0, kwta4 blow up less, since the hidden gain was 2x or 10x; tanh and sig4_0
 saturate less; step1 fires less), tri0.3 moderately (degree 0.3); fatigue's
 comparison with the norm as the bound is then made without the extra gain.
 
-Output: fatiguelock55_leak.log, fatiguelock55_leak.json beside this file; tags end
+Output: outputs/55b_fatigue_lock_leak.log and .json; tags end
 in "|leak". 55's own file is not modified.
 Usage:
     venv/bin/python experiments/55b_fatigue_lock_leak.py          # all runs, in parallel
@@ -51,8 +51,8 @@ m55 = importlib.import_module("55_fatigue_lock")
 m52 = m55.m52
 _INSTALL = m55.install
 _STREAM = m52.stream
-LOG = os.path.join(HERE, "fatiguelock55_leak.log")
-OUT = os.path.join(HERE, "fatiguelock55_leak.json")
+LOG = os.path.join(HERE, "outputs", "55b_fatigue_lock_leak.log")
+OUT = os.path.join(HERE, "outputs", "55b_fatigue_lock_leak.json")
 KEEPS = (0.5, 0.9)
 CHECK_ARMS = (("tri0.3", True), ("sig4_0", True), ("relu", True), ("wta", True))
 CHECK_FATIGUE = (("none", 0, 0.0), ("sub", 30, 1.0), ("div", 30, 2.0), ("dep", 30, 0.5))

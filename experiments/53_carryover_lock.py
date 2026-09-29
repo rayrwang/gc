@@ -41,7 +41,7 @@ constant level as at keep 0; frozen is high only where both hold (the
 triangle at high keep); for wta at keep 0.9, c1 high but c50 low; for the
 order-only arms nothing changes between norms (checked in 52's side grid).
 
-Result, 2026-09-26 (carrylock53.log, .json; tables in carrylock53_report.txt;
+Result, 2026-09-26 (outputs/53_carryover_lock.log, .json; tables in 53_report.md;
 lock and nbin tables printed from the JSON in the session): 800 cells, none
 failed. (1) Carry-over makes the changing part persist for every activation:
 fac1 about 0 at keep 0, then 0.33 to 0.98 at 0.25, 0.72 to 0.99 at 0.5, 0.95
@@ -92,8 +92,8 @@ ARMS = ([(a, True) for a in ("raw", "relu", "tri1.0", "kwta4")]
         + [(a, False) for a in ("sign", "step0", "cstep", "wta")]
         + [(a, nm) for a in ("tanh", "sig4_0", "sig8_0", "step1", "tri0.3", "tri0.7")
            for nm in (True, False)])
-LOG = os.path.join(HERE, "carrylock53.log")
-OUT = os.path.join(HERE, "carrylock53.json")
+LOG = os.path.join(HERE, "outputs", "53_carryover_lock.log")
+OUT = os.path.join(HERE, "outputs", "53_carryover_lock.json")
 _measure52 = m52.measure
 
 
@@ -170,15 +170,12 @@ def report():
                           and r["tag"].split("|")[0] == act and r["tag"].endswith(f"|{keep}|{int(nm)}")]
                     row.append(f"{mean([r[key] for r in cs]):8.3f}" if cs else f"{'DIV':>8}")
                 out.append(f"  {'':{len(net) + 2}}{act:8}{'on' if nm else 'off':>5}" + "".join(row))
-    text = "\n".join(out)
-    print(text)
-    with open(os.path.join(HERE, "carrylock53_report.txt"), "w") as fh:
-        fh.write(text + "\n")
+    return "\n".join(out)
 
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "report":
-        report()
+        print(report())
         return
     jobs = [(net, a, nm, k, s) for net in m52.ANCHORS for k in KEEPS for a, nm in ARMS
             for s in SEEDS]
