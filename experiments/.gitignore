@@ -43,3 +43,10 @@ runs/r_*/log.jsonl
 !runs/r_20260709_162210_5fd3771_s7/log.jsonl
 !runs/r_20260709_162553_5fd3771_s0/log.jsonl
 !runs/r_20260709_162853_5fd3771_s7/log.jsonl
+
+# Save-as-you-go files that pool_runner.py appends to as each job finishes
+# (fatiguelock55_resume.jsonl, dieout56.jsonl, keepleak57.jsonl, ...). Each
+# duplicates the .json written beside it at the end of the run, so only the
+# .json is tracked; the .jsonl stays on disk so a rerun can skip finished jobs.
+# Leading slash: top level only, so every .jsonl under runs/ stays tracked.
+/*.jsonl

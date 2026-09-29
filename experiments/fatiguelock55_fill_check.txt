@@ -1,0 +1,2 @@
+3074 cells reproduce their logged line exactly, 0 differ
+
